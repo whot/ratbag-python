@@ -451,7 +451,7 @@ class HidrawDevice(ratbag.Rodent):
         self.report_descriptor = info["report_descriptor"]
 
 
-class Hidpp20Driver(ratbag.Driver):
+class Hidpp20Driver(ratbag.drivers.Driver):
     """
     Implementation of the Logitech HID++ 2.0 protocol.
 

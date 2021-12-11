@@ -231,7 +231,7 @@ class Ratbag(GObject.Object):
         driver is found, that driver's :func:`LOAD_DRIVER_FUNC` is called with
         the *static* information about the device.
 
-        :return: a instance of :class:`ratbag.Driver`
+        :return: a instance of :class:`ratbag.drivers.Driver`
         """
         info = util.load_device_info(path)
         name = info.get("name", None)
@@ -274,10 +274,10 @@ class Ratbag(GObject.Object):
             return None
 
         try:
-            load_driver_func = getattr(module, Driver.DRIVER_LOAD_FUNC)
+            load_driver_func = getattr(module, ratbag.drivers.Driver.DRIVER_LOAD_FUNC)
         except AttributeError as e:
             logger.error(
-                f"Bug: driver {driver_name} does not have '{Driver.DRIVER_LOAD_FUNC}()'"
+                f"Bug: driver {driver_name} does not have '{ratbag.drivers.Driver.DRIVER_LOAD_FUNC}()'"
             )
             return None
         return load_driver_func(driver_name, device_info, driver_config)
@@ -313,153 +313,6 @@ class Recorder(GObject.Object):
         Log data sent to the device
         """
         pass
-
-
-class Driver(GObject.Object):
-    """
-    The parent class for all driver implementations. See
-    ``ratbag/drivers/drivername.py`` for the implementation of each driver
-    itself.
-
-    A driver **must** implement the :func:`DRIVER_LOAD_FUNC` function, it is
-    the entry point for ratbag to instantiate the driver for the device.
-    """
-
-    DRIVER_LOAD_FUNC = "load_driver"
-    """
-    The name of the function to instantiate a driver. A driver file must
-    contain at least the following code: ::
-
-        class MyDriver(ratbag.Driver):
-            ... implementation of the driver
-
-        def load_driver(driver_name="", device_info={}, driver_config={}):
-            # checks and balances
-            return myDriver()
-
-    The ``device_info`` and ``driver_config`` arguments are static information
-    about the device to be probed later, i.e. it comes from a data file, not
-    the device itself.
-
-    GObject Signals:
-
-      - ``device-added``: emitted for each :class:`ratbag.Device` that was
-        added during :meth:`probe`
-    """
-
-    __gsignals__ = {
-        "failed": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
-        "success": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
-        "device-added": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
-    }
-
-    def __init__(self):
-        GObject.Object.__init__(self)
-        self.name = None
-
-    def add_recorder(self, recorder):
-        """
-        Instruct the driver to add ``recorder`` to log driver communication to
-        the device. It is up to the driver to determine what communication is
-        notable enough to be recorder for later replay.
-        """
-        logger.warning(
-            f"Recorder {cls.__name__} requested but driver does not implement this functionality"
-        )
-
-    def probe(self, device):
-        """
-        Probe the device for information. On success, the driver will create a
-        :class:`ratbag.Device` with at least one profile and the appropriate
-        number of buttons/leds/resolutions.
-
-        A caller should subscribe to the ``device-added`` signal before
-        calling this function.
-
-        If ``device`` is a string or a ``pathlib.Path`` object, the driver
-        creates initializes for the device at that path. Otherwise, ``device``
-        is used as-is as backing device instance. This is used when emulating
-        devices - note that the exact requirements on the device behavior may
-        differ between drivers.
-
-        Completion of this function without an exception counts as success.
-
-        :param device: The path to the device or a fully initialized instance
-                       representing a device
-        """
-        raise NotImplementedError("This function must be implemented by the driver")
-
-
-#    def commit(self, device, callback, arg):
-#        """
-#        Commit the current state changes to the device. A driver **should**
-#        iterate through the profile(s) and other features and commit the
-#        change to the device.
-#
-#        State changes can be completed asynchronously, once complete invoke
-#        the ``callback`` function with ``arg`` as the parameter and the
-#        ``success`` keyword boolean argument. ::
-#
-#            def commit(self, callback, arg):
-#                write(fd, 'some bytes')
-#                callback(arg, success=True)
-#
-#        :param device: The device to initialize for this driver
-#        :param callback: The function to call on completion of the state changes
-#        :param arg: Argument to be passed to ``callback``
-#        """
-#        raise NotImplementedError("This function must be implemented by the driver")
-#
-#    @classmethod
-#    def find(cls, bus, vid, pid):
-#        """
-#        Load the driver assigned to the bus/VID/PID match. If a matching
-#        driver is found, that driver's :func:`LOAD_DRIVER_FUNC` is called with
-#        the *static* information about the device.
-#
-#        :return: a instance of :class:`ratbag.Driver`
-#        """
-#        match = f"{bus}:{vid:04x}:{pid:04x}"
-#        # FIXME: this needs to use the install path
-#        datafiles = util.load_data_files("data")
-#        try:
-#            datafile = datafiles[match]
-#        except KeyError:
-#            return None
-#
-#        # Flatten the config file to a dict of device info and
-#        # a dict of driver-specific configurations
-#        driver_name = datafile["Device"]["Driver"]
-#        device_info = {k: v for k, v in datafile["Device"].items()}
-#        del device_info["Driver"]
-#        del device_info["DeviceMatch"]
-#
-#        try:
-#            driver_config = {k: v for k, v in datafile[f"Driver/{driver_name}"].items()}
-#        except KeyError:
-#            # not all drivers have custom options
-#            driver_config = {}
-#
-#        # Import ratbag.drivers.foo and call load_driver() to instantiate the
-#        # driver.
-#        try:
-#            import importlib
-#
-#            logger.debug(f"Loading driver {driver_name}")
-#            module = importlib.import_module(f"ratbag.drivers.{driver_name}")
-#        except ImportError as e:
-#            logger.error(f"Driver {driver_name} failed to load: {e}")
-#            return None
-#
-#        try:
-#            load_driver_func = getattr(module, cls.DRIVER_LOAD_FUNC)
-#        except AttributeError as e:
-#            logger.error(
-#                f"Bug: driver {driver_name} does not have '{cls.DRIVER_LOAD_FUNC}()'"
-#            )
-#            return None
-#        return load_driver_func(driver_name, device_info, driver_config)
-#
 
 
 class Rodent(GObject.Object):

@@ -10,7 +10,7 @@ import ratbag
 
 logger = logging.getLogger(__name__)
 
-class Hidpp10Driver(ratbag.Driver):
+class Hidpp10Driver(ratbag.drivers.Driver):
     NAME = "Logitech HID++1.0"
 
     def probe(self, device):

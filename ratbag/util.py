@@ -9,6 +9,7 @@
 
 """
 
+import binascii
 import configparser
 import logging
 import pyudev
@@ -16,6 +17,14 @@ import pyudev
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+
+def as_hex(bs):
+    """
+    Convert the bytes ``bs`` to a ``"ab 12 cd 34"`` string
+    """
+    hx = binascii.hexlify(bs).decode("ascii")
+    return " ".join(["".join(s) for s in zip(hx[::2], hx[1::2])])
 
 
 def find_hidraw_devices():

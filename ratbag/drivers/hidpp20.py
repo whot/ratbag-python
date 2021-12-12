@@ -17,8 +17,10 @@ import gi
 from gi.repository import GObject
 
 import ratbag
+from ratbag.util import as_hex
 
 logger = logging.getLogger(__name__)
+
 
 RECEIVER_IDX = 0xFF
 REPORT_ID_SHORT = 0x10
@@ -597,12 +599,27 @@ class Query(object):
     page = None  # Override in subclass, self.page has precedence over class.page
     command = None  # Override in subclass, self.page has precedence over class.page
 
+    # a list of tuples  that are parsed before parse_reply. Each entry is a
+    # tuple in the form ``(format, fieldname)`` where ``format`` is a single
+    # `struct`` parsing format and fieldname is the attribute name of the
+    # class to set. e.g. ``("H", "report_rate")`` is set to
+    # `self->report_rate = $value`.
+    # Fields are parsed in-order, use `_` for padding and `?` for unknown
+    # fields (just for readability).
+    #
+    # Endianess defaults to BE. Prefix format with ``<`` or
+    # ``>`` and all **subsequent** fields use that endianess.
+    reply_format = None
+
     def __init__(self, device):
         # We have dynamic queries that change per-device, so we use self.page
         # before class.page
         cls = type(self)
         page = getattr(self, "page", cls.page)
         command = getattr(self, "command", cls.command)
+
+        if getattr(self, "reply_format", None) is None:
+            self.reply_format =  cls.reply_format
 
         assert page is not None
         assert command is not None
@@ -664,11 +681,42 @@ class Query(object):
     def reply_params(self):
         return self.reply[4:]
 
+    def _autoparse(self):
+        if not self.reply_format:
+            return
+
+        self._autostr = ""
+
+        endian = ">"  # default to BE
+
+        logger.debug(f"autoparse: reply: {as_hex(self.reply_params)}")
+
+        offset = 0
+        for format, name in self.reply_format:
+            # endianess is handled as a toggle, one field with different
+            # endianness changes the rest
+            if format[0] in [">", "<"]:
+                endian = format[0]
+                format = format[1:]
+            val = struct.unpack_from(endian + format, self.reply_params, offset=offset)
+            val = val[0]
+            sz = struct.calcsize(format)
+            if name == "_":
+                debugstr = "<pad bytes>"
+            elif name == "?":
+                debugstr = "<unknown>"
+            else:
+                debugstr = f"self.{name:24s} = {val}"
+                setattr(self, name, val)
+                self._autostr += f"{name}: {val} "
+            logger.debug(f"autoparse: off {offset:02d}: {as_hex(self.reply_params[offset:offset+sz]):5s} → {debugstr}")
+            offset += sz
+
     def parse_reply(self):
         """
-        Override this in the subclass. Parse the given bytes and set the
-        required instance attributes. :attr:`reply` is set with the bytes from
-        the reply.
+        Override this in the subclass if :attr:`reply_format` autoparsing is
+        insufficient. Parse the given bytes and set the required instance
+        attributes. :attr:`reply` is set with the bytes from the reply.
 
         If the caller calls :meth:`schedule_repeat` during ``parse_reply``,
         same command is issued again once ``parse_reply`` completes and
@@ -704,8 +752,16 @@ class Query(object):
             if self.reply[2] == 0x8F:
                 raise QueryError(self.device, self.bytes)
 
+            self._autoparse()
             self.parse_reply()
         return self
+
+
+    def __str__(self):
+        try:
+            return f"{type(self).__name__}: {self._autostr}"
+        except AttributeError:
+            return str(super())
 
 
 class QueryError(Exception):
@@ -746,22 +802,24 @@ class QueryProtocolVersion(Query):
 
     page = FeatureName.ROOT.value
     command = 0x10  # GET_PROTOCOL_VERSION
+    reply_format = [
+            ("B", "major"),
+            ("B", "minor"),
+    ]
 
     def __init__(self, device):
         super().__init__(device)
         self.version = (0, 0)
 
-    def parse_reply(self):
-        self.major = self.reply_params[0]
-        self.minor = self.reply_params[1]
-
-    def __str__(self):
-        return "query: protocol version: {self.major}.{self.minor}"
-
 
 class QueryRootGetFeature(Query):
     page = FeatureName.ROOT.value
     command = 0x00  # GET_FEATURE
+    reply_format = [
+            ("B", "feature_index"),
+            ("B", "feature_type"),
+            ("B", "feature_version"),
+    ]
 
     def __init__(self, device, feature):
         super().__init__(device)
@@ -771,11 +829,6 @@ class QueryRootGetFeature(Query):
         self.feature_version = None
         fbytes = int.to_bytes(feature.value, 2, "big", signed=False)
         self.set_query_params(list(fbytes))
-
-    def parse_reply(self):
-        self.feature_index = self.reply_params[0]
-        self.feature_type = self.reply_params[1]
-        self.feature_version = self.reply_params[2]
 
     def __str__(self):
         return (
@@ -788,6 +841,7 @@ class QueryRootGetFeature(Query):
 class QueryFeatureSetCount(Query):
     page = None  # Note: dynamic page depending on feature index
     command = 0x00  # GET_COUNT
+    reply_format = [("B", "count")]
 
     def __init__(self, device, root_feature_query):
         self.page = root_feature_query.feature_index
@@ -796,7 +850,6 @@ class QueryFeatureSetCount(Query):
         self.count = None
 
     def parse_reply(self):
-        self.count = self.reply_params[0]
         # feature set count does not include the root feature as documented
         # here:
         # https://6xq.net/git/lars/lshidpp.git/plain/doc/logitech_hidpp_2.0_specificati
@@ -810,6 +863,10 @@ class QueryFeatureSetCount(Query):
 class QueryFeatureSetId(Query):
     page = None  # Note: dynamic page depending on feture index
     command = 0x10  # GET_FEATURE_ID
+    reply_format = [
+            ("H", "feature_id"),
+            ("B", "feature_type"),
+    ]
 
     def __init__(self, device, root_feature_query, index):
         self.page = root_feature_query.feature_index
@@ -819,36 +876,34 @@ class QueryFeatureSetId(Query):
         self.feature_type = None
         self.query_params = [index]
 
-    def parse_reply(self):
+    def __parse_reply(self):
         feature_value = int.from_bytes(self.reply_params[:2], byteorder="big")
         self.feature_id = feature_value
         self.feature_type = self.reply_params[2]
-
-    def __str__(self):
-        return f"{type(self).__name__}: 0x{self.feature_id} type {self.feature_type}"
 
 
 class QueryOnboardProfilesDesc(Query):
     page = None  # feature index
     command = 0x00
+    reply_format = [
+            ("B", "memory_model_id"),
+            ("B", "profile_format_id"),
+            ("B", "macro_format_id"),
+            ("B", "profile_count"),
+            ("B", "profile_count_oob"),
+            ("B", "button_count"),
+            ("B", "sector_count"),
+            ("H", "sector_size"),
+            ("B", "mechanical_layout"),
+            ("B", "various_info"),
+            ("ccccc", "_"),
+    ]
 
     def __init__(self, device):
         self.page = device.features[FeatureName.ONBOARD_PROFILES].index
         super().__init__(device)
 
     def parse_reply(self):
-        vals = struct.unpack(">BBBBBBBHBBccccc", self.reply_params)
-
-        self.memory_model_id = vals[0]
-        self.profile_format_id = vals[1]
-        self.macro_format_id = vals[2]
-        self.profile_count = vals[3]
-        self.profile_count_oob = vals[4]
-        self.button_count = vals[5]
-        self.sector_count = vals[6]
-        self.sector_size = vals[7]
-        self.mechanical_layout = vals[8]
-        self.various_info = vals[9]
         self.has_g_shift = (self.mechanical_layout & 0x03) == 0x02
         self.has_dpi_shift = ((self.mechanical_layout & 0x0C) >> 2) == 0x02
         self.is_corded = (self.various_info & 0x07) in [1, 4]
@@ -870,16 +925,11 @@ class QueryOnboardProfilesDesc(Query):
 class QueryOnboardProfilesGetMode(Query):
     page = None  # feature index
     command = 0x20
+    reply_format = [("B", "mode")]
 
     def __init__(self, device):
         self.page = device.features[FeatureName.ONBOARD_PROFILES].index
         super().__init__(device)
-
-    def parse_reply(self):
-        self.mode = self.reply_params[0]
-
-    def __str__(self):
-        return f"{type(self).__name__}: mode {self.mode}"
 
 
 class QueryOnboardProfilesMemRead(Query):

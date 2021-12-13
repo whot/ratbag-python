@@ -13,6 +13,7 @@ import binascii
 import configparser
 import logging
 import pyudev
+import struct
 
 from pathlib import Path
 
@@ -100,3 +101,57 @@ def load_device_info(devnode):
     info["report_descriptor"] = find_report_descriptor(device)
 
     return info
+
+
+def attr_from_data(obj, fmt_tuples, data, offset=0):
+    """
+    ``fmt_tuples`` is a list of tuples that are converted into attributes on
+    ``obj``. Each entry is a tuple in the form ``(format, fieldname)`` where
+    ``format`` is a single `struct`` parsing format and fieldname is the
+    attribute name. e.g. ``("H", "report_rate")`` is set
+    to `ojb.report_rate = $value`.  Fields are parsed in-order, use `_` for
+    padding and `?` for unknown fields (just for readability).
+
+    Endianess defaults to BE. Prefix format with ``<`` or
+    ``>`` and all **subsequent** fields use that endianess.
+
+        format = [("B", "nprofiles"), (">H", "checksum"), ("<H", "resolution)]
+        obj = MyObject()
+        offset = attr_from_data(obj, format, mybytes, offset=0)
+        print(obj.nprofiles)
+
+    :param obj: the object to set the attributes for
+    :param fmt_tuples: a list of tuples with the first element a struct format
+        and the second element the attribute name
+    :param data: the data to parse
+    :param offset: the offset to start parsing from
+
+    :returns: the new offset after parsing all tuples
+    """
+
+    logger.debug(f"dataattr: {as_hex(data)}")
+
+    endian = ">"  # default to BE
+
+    for fmt, name in fmt_tuples:
+        # endianess is handled as a toggle, one field with different
+        # endianness changes the rest
+        if fmt[0] in [">", "<"]:
+            endian = fmt[0]
+            fmt = fmt[1:]
+        val = struct.unpack_from(endian + fmt, data, offset=offset)
+        sz = struct.calcsize(fmt)
+        if name == "_":
+            debugstr = "<pad bytes>"
+        elif name == "?":
+            debugstr = "<unknown>"
+        else:
+            val = val[0]
+            debugstr = f"self.{name:24s} = {val}"
+            setattr(obj, name, val)
+        logger.debug(
+            f"dataattr: off {offset:02d}: {as_hex(data[offset:offset+sz]):5s} → {debugstr}"
+        )
+        offset += sz
+
+    return offset

@@ -606,16 +606,8 @@ class Query(object):
     page = None  # Override in subclass, self.page has precedence over class.page
     command = None  # Override in subclass, self.page has precedence over class.page
 
-    # a list of tuples  that are parsed before parse_reply. Each entry is a
-    # tuple in the form ``(format, fieldname)`` where ``format`` is a single
-    # `struct`` parsing format and fieldname is the attribute name of the
-    # class to set. e.g. ``("H", "report_rate")`` is set to
-    # `self->report_rate = $value`.
-    # Fields are parsed in-order, use `_` for padding and `?` for unknown
-    # fields (just for readability).
-    #
-    # Endianess defaults to BE. Prefix format with ``<`` or
-    # ``>`` and all **subsequent** fields use that endianess.
+    # a list of tuples that are parsed before parse_reply, see
+    # ratbag.util.attr_from_data for details
     reply_format = None
 
     def __init__(self, device):
@@ -626,7 +618,7 @@ class Query(object):
         command = getattr(self, "command", cls.command)
 
         if getattr(self, "reply_format", None) is None:
-            self.reply_format =  cls.reply_format
+            self.reply_format = cls.reply_format
 
         assert page is not None
         assert command is not None
@@ -697,27 +689,15 @@ class Query(object):
         endian = ">"  # default to BE
 
         logger.debug(f"autoparse: reply: {as_hex(self.reply_params)}")
+        ratbag.util.attr_from_data(self, self.reply_format, self.reply_params, offset=0)
 
-        offset = 0
-        for format, name in self.reply_format:
-            # endianess is handled as a toggle, one field with different
-            # endianness changes the rest
-            if format[0] in [">", "<"]:
-                endian = format[0]
-                format = format[1:]
-            val = struct.unpack_from(endian + format, self.reply_params, offset=offset)
-            val = val[0]
-            sz = struct.calcsize(format)
-            if name == "_":
-                debugstr = "<pad bytes>"
-            elif name == "?":
-                debugstr = "<unknown>"
-            else:
-                debugstr = f"self.{name:24s} = {val}"
-                setattr(self, name, val)
-                self._autostr += f"{name}: {val} "
-            logger.debug(f"autoparse: off {offset:02d}: {as_hex(self.reply_params[offset:offset+sz]):5s} → {debugstr}")
-            offset += sz
+        self._autostr = " ".join(
+            [
+                f"{name}: {getattr(self, name)}"
+                for _, name in self.reply_format
+                if name not in ["_", "?"]
+            ]
+        )
 
     def parse_reply(self):
         """
@@ -809,8 +789,8 @@ class QueryProtocolVersion(Query):
     page = FeatureName.ROOT.value
     command = 0x10  # GET_PROTOCOL_VERSION
     reply_format = [
-            ("B", "major"),
-            ("B", "minor"),
+        ("B", "major"),
+        ("B", "minor"),
     ]
 
     def __init__(self, device):
@@ -822,9 +802,9 @@ class QueryRootGetFeature(Query):
     page = FeatureName.ROOT.value
     command = 0x00  # GET_FEATURE
     reply_format = [
-            ("B", "feature_index"),
-            ("B", "feature_type"),
-            ("B", "feature_version"),
+        ("B", "feature_index"),
+        ("B", "feature_type"),
+        ("B", "feature_version"),
     ]
 
     def __init__(self, device, feature):
@@ -870,8 +850,8 @@ class QueryFeatureSetId(Query):
     page = None  # Note: dynamic page depending on feture index
     command = 0x10  # GET_FEATURE_ID
     reply_format = [
-            ("H", "feature_id"),
-            ("B", "feature_type"),
+        ("H", "feature_id"),
+        ("B", "feature_type"),
     ]
 
     def __init__(self, device, root_feature_query, index):
@@ -892,17 +872,17 @@ class QueryOnboardProfilesDesc(Query):
     page = None  # feature index
     command = 0x00
     reply_format = [
-            ("B", "memory_model_id"),
-            ("B", "profile_format_id"),
-            ("B", "macro_format_id"),
-            ("B", "profile_count"),
-            ("B", "profile_count_oob"),
-            ("B", "button_count"),
-            ("B", "sector_count"),
-            ("H", "sector_size"),
-            ("B", "mechanical_layout"),
-            ("B", "various_info"),
-            ("ccccc", "_"),
+        ("B", "memory_model_id"),
+        ("B", "profile_format_id"),
+        ("B", "macro_format_id"),
+        ("B", "profile_count"),
+        ("B", "profile_count_oob"),
+        ("B", "button_count"),
+        ("B", "sector_count"),
+        ("H", "sector_size"),
+        ("B", "mechanical_layout"),
+        ("B", "various_info"),
+        ("ccccc", "_"),
     ]
 
     def __init__(self, device):

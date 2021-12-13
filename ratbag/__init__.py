@@ -98,27 +98,6 @@ class ProtocolError(Exception):
         self.conversation = None
 
 
-class Message(GObject.Object):
-    """
-    A message sent to the device or received from the device.
-    """
-
-    class Direction(enum.Enum):
-        """Message direction"""
-
-        RX = enum.auto()
-        TX = enum.auto()
-
-    def __init__(self, bytes, direction=Direction.TX):
-        self.direction = direction
-        self.bytes = bytes
-        self.msgtype = type(self).NAME
-
-    def __str__(self):
-        bytestr = " ".join(f"{b:02x}" for b in self.bytes)
-        return f"{self.msgtype} {self.direction.name} ({len(self.bytes)}): {bytestr}"
-
-
 class Ratbag(GObject.Object):
     """
     An instance managing one or more ratbag devices. This is the entry point
@@ -315,98 +294,6 @@ class Recorder(GObject.Object):
         pass
 
 
-class Rodent(GObject.Object):
-    """
-    An class abstracting a physical device, connected via a non-blocking
-    file descriptor. This class exists so we have a default interface for
-    communicating with the device that we can hook into for logging and
-    others.
-
-    :param path: the path to the physical device
-
-    .. note:: The name Rodent was chosen to avoid confusion with :class:`ratbag.Device`.
-
-    .. attribute:: name
-
-        The device's name (as advertized by the device itself)
-
-    .. attribute:: path
-
-        The device's path we're reading to/writing from
-
-    """
-
-    __gsignals__ = {
-        "data-to-device": (
-            GObject.SignalFlags.RUN_FIRST,
-            None,
-            (GObject.TYPE_PYOBJECT,),
-        ),
-        "data-from-device": (
-            GObject.SignalFlags.RUN_FIRST,
-            None,
-            (GObject.TYPE_PYOBJECT,),
-        ),
-    }
-
-    class Request(ratbag.Message):
-        """:meta private:"""
-
-        NAME = "fd"
-
-        def __init__(self, bytes):
-            super().__init__(bytes, direction=ratbag.Message.Direction.TX)
-
-    class Reply(ratbag.Message):
-        """:meta private:"""
-
-        NAME = "fd"
-
-        def __init__(self, bytes):
-            super().__init__(bytes, direction=ratbag.Message.Direction.RX)
-
-    def __init__(self, path):
-        GObject.Object.__init__(self)
-        self.name = "Unnamed device"
-        self.path = path
-
-        self._fd = open(path, "r+b", buffering=0)
-        os.set_blocking(self._fd.fileno(), False)
-
-    def start(self):
-        """
-        Start parsing data from the device.
-        """
-        pass
-
-    def send(self, bytes):
-        """
-        Send data to the device
-        """
-        logger.debug(Rodent.Request(bytes))
-        self.emit("data-to-device", bytes)
-        self._fd.write(bytes)
-
-    def recv(self):
-        """
-        Receive data from the device
-        """
-        poll = select.poll()
-        poll.register(self._fd, select.POLLIN)
-
-        while True:
-            fds = poll.poll(1000)
-            if not fds:
-                continue  # block until we get an answer or error
-
-            data = self._fd.read()
-            logger.debug(Rodent.Reply(data))
-            self.emit("data-from-device", data)
-            return data
-
-        return None
-
-
 class Device(GObject.Object):
     """
     A device as exposed to Ratbag clients. A driver implementation must not
@@ -414,10 +301,6 @@ class Device(GObject.Object):
     accessed by the client. Usually this means not sending the
     :class:`ratbag.Driver`::``device-added`` signal until the device is
     finalized.
-
-    A :class:`ratbag.Device` may be backed by one or more
-    :class:`ratbag.Rodent` instances, this is an implementation detail of the
-    driver.
 
     GObject Signals:
 

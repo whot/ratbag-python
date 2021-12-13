@@ -11,6 +11,7 @@ import gi
 from gi.repository import GObject
 
 import ratbag
+import ratbag.drivers
 
 
 class InsufficientData(Exception):
@@ -21,7 +22,7 @@ class InsufficientData(Exception):
     pass
 
 
-class YamlDevice(ratbag.Rodent):
+class YamlDevice(ratbag.drivers.Rodent):
     """
     Creates a :class:`ratbag.Rodent` instance based on a recording made by
     :class:`ratbag.recoder.YamlDeviceRecorder`.

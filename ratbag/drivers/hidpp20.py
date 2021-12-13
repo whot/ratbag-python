@@ -444,7 +444,7 @@ class Hidpp20Device(GObject.Object):
         return reply
 
 
-class HidrawDevice(ratbag.Rodent):
+class HidrawDevice(ratbag.drivers.Rodent):
     def __init__(self, path):
         assert path.startswith("/dev/hidraw")
         self.path = path

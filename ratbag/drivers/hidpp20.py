@@ -278,7 +278,9 @@ class Hidpp20Device(GObject.Object):
         return self.hidraw_device.path
 
     def start(self):
-        supported = self._get_supported_report_types(self.hidraw_device.report_descriptor)
+        supported = self._get_supported_report_types(
+            self.hidraw_device.report_descriptor
+        )
         required = (REPORT_ID_SHORT, REPORT_ID_LONG)
         if not (set(supported) & set(required)):
             raise ratbag.SomethingIsMissingError(
@@ -502,6 +504,7 @@ class Hidpp20Driver(ratbag.drivers.Driver):
         self.device = Hidpp20Device(self.hidraw_device, self.index)
 
         for rec in self.recorders:
+
             def cb_logtx(device, data):
                 rec.log_tx(data)
 
@@ -510,10 +513,14 @@ class Hidpp20Driver(ratbag.drivers.Driver):
 
             self.hidraw_device.connect("data-from-device", cb_logrx)
             self.hidraw_device.connect("data-to-device", cb_logtx)
-            rec.init({"name": self.device.name,
-                "driver": "hidpp20",
-                "path": self.device.path,
-                "report_descriptor": self.hidraw_device.report_descriptor})
+            rec.init(
+                {
+                    "name": self.device.name,
+                    "driver": "hidpp20",
+                    "path": self.device.path,
+                    "report_descriptor": self.hidraw_device.report_descriptor,
+                }
+            )
 
         self.ratbag_device = ratbag.Device(self, self.device.path, self.device.name)
         self.ratbag_device.connect("commit", self.cb_commit)
@@ -524,7 +531,7 @@ class Hidpp20Driver(ratbag.drivers.Driver):
             p = ratbag.Profile(self.ratbag_device, idx, name=profile.name)
             for dpi_idx, dpi in enumerate(profile.dpi):
                 r = ratbag.Resolution(p, dpi_idx, dpi)
-                p .add_resolution(r)
+                p.add_resolution(r)
 
             self.ratbag_device.add_profile(p)
         self.emit("device-added", self.ratbag_device)
@@ -755,7 +762,6 @@ class Query(object):
             self._autoparse()
             self.parse_reply()
         return self
-
 
     def __str__(self):
         try:

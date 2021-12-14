@@ -5,9 +5,12 @@
 # This file is formatted with Python Black
 
 import logging
+import pathlib
+import pytest
 
 import ratbag
 import ratbag.util
+
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +21,7 @@ def test_find_hidraw_devices():
         assert device.startswith("/dev/hidraw")
 
 
+@pytest.mark.skipif(not pathlib.Path("/dev/hidraw0").exists(), reason="no /dev/hidraw0")
 def test_hidraw_info():
     info = ratbag.util.load_device_info("/dev/hidraw0")
     assert info["name"] is not None

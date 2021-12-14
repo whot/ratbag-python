@@ -115,9 +115,10 @@ def attr_from_data(obj, fmt_tuples, data, offset=0):
 
      - ``("H", "report_rate")`` is a 16-bit ``obj.report_rate``
      - ``(">H", "report_rate")`` is a 16-bit BigEndian ``obj.report_rate``
-     - ``("BBB", "color")`` is a three times 8 bit ``obj.color`` tuple
+     - ``("BBB", "color")`` is a ``(x, y, z)`` tuple of 8 bits
      - ``("BB", "_")`` are two bytes padding
      - ``("HH", "?")`` are two unknown 16-bit fields
+     - ``("5*HH", "?")`` is a list of five tuples with 2 16 bit entries each
 
     Endianess defaults to BE. Prefix format with ``<`` or
     ``>`` and all **subsequent** fields use that endianess. ::
@@ -126,6 +127,9 @@ def attr_from_data(obj, fmt_tuples, data, offset=0):
         obj = MyObject()
         offset = attr_from_data(obj, format, mybytes, offset=0)
         print(obj.nprofiles)
+
+    Grouping is possible by prefixing the format string with ``N*`` where
+    ``N`` is an integer greater than 1.
 
     :param obj: the object to set the attributes for
     :param fmt_tuples: a list of tuples with the first element a struct format
@@ -147,21 +151,34 @@ def attr_from_data(obj, fmt_tuples, data, offset=0):
             endian = fmt[0]
             fmt = fmt[1:]
 
+        groupcount = 1
+        if fmt[0].isdigit():
+            groupcount, fmt = fmt.split("*")
+            groupcount = int(groupcount)
+            assert groupcount > 1
+
         count = len(fmt)
-        val = struct.unpack_from(endian + fmt, data, offset=offset)
-        sz = struct.calcsize(fmt)
-        if name == "_":
-            debugstr = "<pad bytes>"
-        elif name == "?":
-            debugstr = "<unknown>"
-        else:
-            if count == 1:
-                val = val[0]
-            debugstr = f"self.{name:24s} = {val}"
-            setattr(obj, name, val)
-        logger_autoparse.debug(
-            f"offset {offset:02d}: {as_hex(data[offset:offset+sz]):5s} → {debugstr}"
-        )
-        offset += sz
+        for _ in range(groupcount):
+            val = struct.unpack_from(endian + fmt, data, offset=offset)
+            sz = struct.calcsize(fmt)
+            if name == "_":
+                debugstr = "<pad bytes>"
+            elif name == "?":
+                debugstr = "<unknown>"
+            else:
+                if count == 1:
+                    val = val[0]
+                if groupcount > 1:
+                    debugstr = f"self.{name:24s} += {val}"
+                    attr = getattr(obj, name, [])
+                    attr.append(val)
+                    setattr(obj, name, attr)
+                else:
+                    debugstr = f"self.{name:24s} = {val}"
+                    setattr(obj, name, val)
+            logger_autoparse.debug(
+                f"offset {offset:02d}: {as_hex(data[offset:offset+sz]):5s} → {debugstr}"
+            )
+            offset += sz
 
     return offset

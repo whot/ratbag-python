@@ -6,15 +6,25 @@
 #
 
 import enum
+import fcntl
+import logging
+import os
+
+import hidtools.hid
 
 import gi
 from gi.repository import GObject
 
+import ratbag
+
+logger = logging.getLogger(__name__)
 
 class Message(GObject.Object):
     """
     A message sent to the device or received from the device.
     """
+
+    SUBTYPE = ""
 
     class Direction(enum.Enum):
         """Message direction"""
@@ -27,10 +37,15 @@ class Message(GObject.Object):
         self.direction = direction
         self.bytes = bytes
         self.msgtype = type(self).NAME
+        self.subtype = type(self).SUBTYPE
 
     def __str__(self):
         bytestr = " ".join(f"{b:02x}" for b in self.bytes)
-        return f"{self.msgtype} {self.direction.name} ({len(self.bytes)}): {bytestr}"
+        if self.subtype:
+            subtype = f" {self.subtype}"
+        else:
+            subtype = ""
+        return f"{self.msgtype}{subtype} {self.direction.name} ({len(self.bytes)}): {bytestr}"
 
 
 class Rodent(GObject.Object):
@@ -70,6 +85,18 @@ class Rodent(GObject.Object):
             None,
             (GObject.TYPE_PYOBJECT,),
         ),
+        "ioctl-command": (
+            GObject.SignalFlags.RUN_FIRST,
+            None,
+            # ioctl name (string), data (bytes)
+            (GObject.TYPE_PYOBJECT, GObject.TYPE_PYOBJECT),
+        ),
+        "ioctl-reply": (
+            GObject.SignalFlags.RUN_FIRST,
+            None,
+            # ioctl name (string), data (bytes)
+            (GObject.TYPE_PYOBJECT, GObject.TYPE_PYOBJECT),
+        ),
     }
 
     class Request(Message):
@@ -93,20 +120,18 @@ class Rodent(GObject.Object):
 
         NAME = "ioctl"
 
-        def __init__(self, bytes):
+        def __init__(self, name, bytes):
             super().__init__(bytes, direction=Message.Direction.TX)
+            self.subtype = name
 
     class IoctlReply(Message):
         """:meta private:"""
 
         NAME = "ioctl"
 
-        def __init__(self, bytes):
+        def __init__(self, name, bytes):
             super().__init__(bytes, direction=Message.Direction.RX)
-
-
-    class Ioctl(enum.Enum):
-        HIDRAW_GET_FEATURE = enum.auto()
+            self.subtype = name
 
     def __init__(self, path):
         GObject.Object.__init__(self)
@@ -114,7 +139,9 @@ class Rodent(GObject.Object):
 
         info = ratbag.util.load_device_info(path)
         self.name = info["name"] or "Unnamed device"
-        self.report_descriptor = info["report_descriptor"]
+        self.report_descriptor = info.get("report_descriptor", None)
+        if self.report_descriptor is not None:
+            self._rdesc = hidtools.hid.ReportDescriptor.from_bytes(self.report_descriptor)
 
         self._fd = open(path, "r+b", buffering=0)
         os.set_blocking(self._fd.fileno(), False)
@@ -151,6 +178,31 @@ class Rodent(GObject.Object):
             return data
 
         return None
+
+    def hid_get_feature(self, report_id):
+        report = self._rdesc.feature_reports[report_id]
+        rsize = report.size
+        buf = bytearray([report_id & 0xff]) + bytearray(rsize - 1)
+        logger.debug(Rodent.IoctlCommand("HIDIOCGFEATURE", buf))
+        self.emit("ioctl-command", "HIDIOCGFEATURE", buf)
+
+        fcntl.ioctl(self._fd.fileno(), _IOC_HIDIOCGFEATURE(None, len(buf)), buf)
+        logger.debug(Rodent.IoctlReply("HIDIOCGFEATURE", buf))
+        self.emit("ioctl-reply", "HIDIOCGFEATURE", buf)
+        return list(buf)  # Note: first byte is report ID
+
+
+    def hid_set_feature(self, report_id, data):
+        report = self._rdesc.feature_reports[report_id]
+        assert data[0] == report_id
+        buf = bytearray(data)
+
+        logger.debug(Rodent.IoctlCommand("HIDIOCSFEATURE", buf))
+        self.emit("ioctl-command", "HIDIOCSFEATURE", buf)
+
+        sz = fcntl.ioctl(self._fd.fileno(), _IOC_HIDIOCSFEATURE(None, len(buf)), buf)
+        if sz != len(data):
+            raise OSError('Failed to write data: {data} - bytes written: {sz}')
 
 
 class Driver(GObject.Object):
@@ -226,3 +278,81 @@ class Driver(GObject.Object):
                        representing a device
         """
         raise NotImplementedError("This function must be implemented by the driver")
+
+
+
+
+# ioctl handling is copied from hid-tools
+# We only need a small subset of it but we do need to hook into the transport
+# later, so copying it was easier than modifying hidtools
+def _ioctl(fd, EVIOC, code, return_type, buf=None):
+    size = struct.calcsize(return_type)
+    if buf is None:
+        buf = size * '\x00'
+    abs = fcntl.ioctl(fd, EVIOC(code, size), buf)
+    return struct.unpack(return_type, abs)
+
+
+# extracted from <asm-generic/ioctl.h>
+_IOC_WRITE = 1
+_IOC_READ = 2
+
+_IOC_NRBITS = 8
+_IOC_TYPEBITS = 8
+_IOC_SIZEBITS = 14
+_IOC_DIRBITS = 2
+
+_IOC_NRSHIFT = 0
+_IOC_TYPESHIFT = _IOC_NRSHIFT + _IOC_NRBITS
+_IOC_SIZESHIFT = _IOC_TYPESHIFT + _IOC_TYPEBITS
+_IOC_DIRSHIFT = _IOC_SIZESHIFT + _IOC_SIZEBITS
+
+
+# define _IOC(dir,type,nr,size) \
+# 	(((dir)  << _IOC_DIRSHIFT) | \
+# 	 ((type) << _IOC_TYPESHIFT) | \
+# 	 ((nr)   << _IOC_NRSHIFT) | \
+# 	 ((size) << _IOC_SIZESHIFT))
+def _IOC(dir, type, nr, size):
+    return ((dir << _IOC_DIRSHIFT) |
+            (ord(type) << _IOC_TYPESHIFT) |
+            (nr << _IOC_NRSHIFT) |
+            (size << _IOC_SIZESHIFT))
+
+
+# define _IOR(type,nr,size)	_IOC(_IOC_READ,(type),(nr),(_IOC_TYPECHECK(size)))
+def _IOR(type, nr, size):
+    return _IOC(_IOC_READ, type, nr, size)
+
+
+# define _IOW(type,nr,size)	_IOC(_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))
+def _IOW(type, nr, size):
+    return _IOC(_IOC_WRITE, type, nr, size)
+
+
+# define HIDIOCGFEATURE(len) _IOC(_IOC_WRITE|_IOC_READ, 'H', 0x07, len)
+def _IOC_HIDIOCGFEATURE(none, len):
+    return _IOC(_IOC_WRITE | _IOC_READ, 'H', 0x07, len)
+
+
+def _HIDIOCGFEATURE(fd, report_id, rsize):
+    """ get feature report """
+    assert report_id <= 255 and report_id > -1
+
+    # rsize has the report length in it
+    buf = bytearray([report_id & 0xff]) + bytearray(rsize - 1)
+    fcntl.ioctl(fd, _IOC_HIDIOCGFEATURE(None, len(buf)), buf)
+    return list(buf)  # Note: first byte is report ID
+
+
+# define HIDIOCSFEATURE(len) _IOC(_IOC_WRITE|_IOC_READ, 'H', 0x06, len)
+def _IOC_HIDIOCSFEATURE(none, len):
+    return _IOC(_IOC_WRITE | _IOC_READ, 'H', 0x06, len)
+
+
+def _HIDIOCSFEATURE(fd, data):
+    """ set feature report """
+
+    buf = bytearray(data)
+    sz = fcntl.ioctl(fd, _IOC_HIDIOCSFEATURE(None, len(buf)), buf)
+    return sz

@@ -65,27 +65,36 @@ class YamlDeviceRecorder(ratbag.Recorder):
         self.logfile.write("data:\n")
         self.logfile.flush()
 
-    def _log_data(self, direction, data):
-        grouping = 8
+    def _log_bytes(self, data, prefix=""):
+        GROUPING = 8
 
-        prefix = f"  - {direction}: ["
+        prefix += "["
         prefix_len = len(prefix)
-        group_width = prefix_len + len(" ,".join(["   " for _ in range(grouping)])) + 2
+        group_width = prefix_len + len(" ,".join(["   "] * GROUPING)) + 2
+
         idx = 0
         while idx < len(data):
-            slice = data[idx : idx + grouping]
+            slice = data[idx : idx + GROUPING]
 
             datastr = prefix + ", ".join([f"{v:3d}" for v in slice])
             humanstr = "  # " + " ".join([f"{v:02x}" for v in slice])
-            if idx + grouping > len(data):
+            if idx + GROUPING > len(data):
                 datastr += "]"
             else:
                 datastr += ","
 
-            self.logfile.write(f"{datastr:{group_width}s}")
-            self.logfile.write(humanstr + "\n")
-            idx += grouping
+            self.logfile.write(f"{datastr:{group_width}s}{humanstr}\n")
+            idx += GROUPING
             prefix = " " * prefix_len
+
+
+    def _log_data(self, direction, data, extra={}):
+        prefix = f"  - {direction}: "
+        self._log_bytes(data, prefix)
+
+        for k, v in extra.items():
+            self.logfile.write(f"    {k}: {v}\n")
+
         self.logfile.flush()
 
     def log_rx(self, data):

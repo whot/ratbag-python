@@ -108,13 +108,17 @@ def attr_from_data(obj, fmt_tuples, data, offset=0):
     """
     ``fmt_tuples`` is a list of tuples that are converted into attributes on
     ``obj``. Each entry is a tuple in the form ``(format, fieldname)`` where
-    ``format`` is a single `struct`` parsing format and fieldname is the
-    attribute name. e.g. ``("H", "report_rate")`` is set
-    to `ojb.report_rate = $value`.  Fields are parsed in-order, use `_` for
-    padding and `?` for unknown fields (just for readability).
+    ``format`` is a `struct`` parsing format and fieldname is the
+    attribute name. e.g.
+
+     - ``("H", "report_rate")`` is a 16-bit ``obj.report_rate``
+     - ``(">H", "report_rate")`` is a 16-bit BigEndian ``obj.report_rate``
+     - ``("BBB", "color")`` is a three times 8 bit ``obj.color`` tuple
+     - ``("BB", "_")`` are two bytes padding
+     - ``("HH", "?")`` are two unknown 16-bit fields
 
     Endianess defaults to BE. Prefix format with ``<`` or
-    ``>`` and all **subsequent** fields use that endianess.
+    ``>`` and all **subsequent** fields use that endianess. ::
 
         format = [("B", "nprofiles"), (">H", "checksum"), ("<H", "resolution)]
         obj = MyObject()
@@ -140,6 +144,8 @@ def attr_from_data(obj, fmt_tuples, data, offset=0):
         if fmt[0] in [">", "<"]:
             endian = fmt[0]
             fmt = fmt[1:]
+
+        count = len(fmt)
         val = struct.unpack_from(endian + fmt, data, offset=offset)
         sz = struct.calcsize(fmt)
         if name == "_":
@@ -147,7 +153,8 @@ def attr_from_data(obj, fmt_tuples, data, offset=0):
         elif name == "?":
             debugstr = "<unknown>"
         else:
-            val = val[0]
+            if count == 1:
+                val = val[0]
             debugstr = f"self.{name:24s} = {val}"
             setattr(obj, name, val)
         logger_autoparse.debug(

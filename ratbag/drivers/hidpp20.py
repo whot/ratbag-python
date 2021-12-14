@@ -444,17 +444,6 @@ class Hidpp20Device(GObject.Object):
         return reply
 
 
-class HidrawDevice(ratbag.drivers.Rodent):
-    def __init__(self, path):
-        assert path.startswith("/dev/hidraw")
-        self.path = path
-        super().__init__(path)
-
-        info = ratbag.util.load_device_info(path)
-        self.name = info["name"]
-        self.report_descriptor = info["report_descriptor"]
-
-
 class Hidpp20Driver(ratbag.drivers.Driver):
     """
     Implementation of the Logitech HID++ 2.0 protocol.
@@ -498,7 +487,8 @@ class Hidpp20Driver(ratbag.drivers.Driver):
 
     def probe(self, device):
         if isinstance(device, str) or isinstance(device, pathlib.Path):
-            self.hidraw_device = HidrawDevice(device)
+            assert device.startswith("/dev/hidraw")
+            self.hidraw_device = Rodent(device)
         else:
             self.hidraw_device = device
         self.device = Hidpp20Device(self.hidraw_device, self.index)

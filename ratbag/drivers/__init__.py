@@ -52,6 +52,11 @@ class Rodent(GObject.Object):
 
         The device's path we're reading to/writing from
 
+    .. attribute:: report_descriptor
+
+        The bytes for this hidraw device's report descriptor (if this device
+        is a hidraw device, otherwise ``None``)
+
     """
 
     __gsignals__ = {
@@ -83,10 +88,33 @@ class Rodent(GObject.Object):
         def __init__(self, bytes):
             super().__init__(bytes, direction=Message.Direction.RX)
 
+    class IoctlCommand(Message):
+        """:meta private:"""
+
+        NAME = "ioctl"
+
+        def __init__(self, bytes):
+            super().__init__(bytes, direction=Message.Direction.TX)
+
+    class IoctlReply(Message):
+        """:meta private:"""
+
+        NAME = "ioctl"
+
+        def __init__(self, bytes):
+            super().__init__(bytes, direction=Message.Direction.RX)
+
+
+    class Ioctl(enum.Enum):
+        HIDRAW_GET_FEATURE = enum.auto()
+
     def __init__(self, path):
         GObject.Object.__init__(self)
-        self.name = "Unnamed device"
         self.path = path
+
+        info = ratbag.util.load_device_info(path)
+        self.name = info["name"] or "Unnamed device"
+        self.report_descriptor = info["report_descriptor"]
 
         self._fd = open(path, "r+b", buffering=0)
         os.set_blocking(self._fd.fileno(), False)

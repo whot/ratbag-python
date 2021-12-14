@@ -87,14 +87,15 @@ class YamlDeviceRecorder(ratbag.Recorder):
             idx += GROUPING
             prefix = " " * prefix_len
 
-
-    def _log_data(self, direction, data, extra={}):
-        prefix = f"  - {direction}: "
-        self._log_bytes(data, prefix)
-
-        for k, v in extra.items():
+    def _log_data(self, direction, data, extra={"type": "fd"}):
+        it = iter(extra.items())
+        k, v = next(it)
+        self.logfile.write(f"  - {k}: {v}\n")
+        for k, v in it:
             self.logfile.write(f"    {k}: {v}\n")
 
+        prefix = f"    {direction}: "
+        self._log_bytes(data, prefix)
         self.logfile.flush()
 
     def log_rx(self, data):
@@ -102,3 +103,10 @@ class YamlDeviceRecorder(ratbag.Recorder):
 
     def log_tx(self, data):
         self._log_data("tx", data)
+
+    def log_ioctl_tx(self, ioctl_name, data):
+        self._log_data("tx", data, extra={"type": "ioctl", "name": ioctl_name})
+
+    def log_ioctl_rx(self, ioctl_name, data):
+        self._log_bytes(data, prefix=f"    rx: ")
+        self.logfile.flush()

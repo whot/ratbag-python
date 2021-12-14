@@ -18,6 +18,7 @@ import struct
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+logger_autoparse = logging.getLogger("ratbag.autoparse")
 
 
 def as_hex(bs):
@@ -129,7 +130,7 @@ def attr_from_data(obj, fmt_tuples, data, offset=0):
     :returns: the new offset after parsing all tuples
     """
 
-    logger.debug(f"dataattr: {as_hex(data)}")
+    logger_autoparse.debug(f"parsing: {as_hex(data)}")
 
     endian = ">"  # default to BE
 
@@ -149,8 +150,8 @@ def attr_from_data(obj, fmt_tuples, data, offset=0):
             val = val[0]
             debugstr = f"self.{name:24s} = {val}"
             setattr(obj, name, val)
-        logger.debug(
-            f"dataattr: off {offset:02d}: {as_hex(data[offset:offset+sz]):5s} → {debugstr}"
+        logger_autoparse.debug(
+            f"offset {offset:02d}: {as_hex(data[offset:offset+sz]):5s} → {debugstr}"
         )
         offset += sz
 

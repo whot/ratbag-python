@@ -133,11 +133,13 @@ class YamlDevice(ratbag.drivers.Rodent):
         """
         try:
             self.recv_data = self.conversations[data]
+            logger.debug(f"send: {as_hex(data)}")
         except KeyError:
             raise InsufficientDataError(f"Unable to find reply to request: {data}")
 
     def recv(self):
         """Return the matching reply for the last :meth:`send` call"""
+        logger.debug(f"recv: {as_hex(self.recv_data)}")
         return self.recv_data
 
     def hid_get_feature(self, report_id):

@@ -25,6 +25,8 @@ def as_hex(bs):
     """
     Convert the bytes ``bs`` to a ``"ab 12 cd 34"`` string
     """
+    if not bs:
+        return "<none>"
     hx = binascii.hexlify(bs).decode("ascii")
     return " ".join(["".join(s) for s in zip(hx[::2], hx[1::2])])
 

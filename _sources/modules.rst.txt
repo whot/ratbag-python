@@ -1,0 +1,7 @@
+ratbag
+======
+
+.. toctree::
+   :maxdepth: 4
+
+   ratbag

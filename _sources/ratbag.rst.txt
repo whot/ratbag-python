@@ -1,0 +1,45 @@
+ratbag package
+==============
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   ratbag.drivers
+
+Submodules
+----------
+
+ratbag.emulator module
+----------------------
+
+.. automodule:: ratbag.emulator
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ratbag.recorder module
+----------------------
+
+.. automodule:: ratbag.recorder
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ratbag.util module
+------------------
+
+.. automodule:: ratbag.util
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: ratbag
+   :members:
+   :undoc-members:
+   :show-inheritance:

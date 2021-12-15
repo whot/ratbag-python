@@ -319,6 +319,14 @@ class Device(GObject.Object):
     :class:`ratbag.Driver`::``device-added`` signal until the device is
     finalized.
 
+    .. attribute:: name
+
+        The device name
+
+    .. attribute:: path
+
+        The path to the source device
+
     GObject Signals:
 
     - ``disconnected``: this device has been disconnected
@@ -340,15 +348,52 @@ class Device(GObject.Object):
         self.name = name
         self.profiles = {}
         self._driver = driver
+        self._dirty = False
 
     def commit(self):
+        if not self.dirty:
+            # well, that was easy
+            return
+
+        logger.debug("Writing current changes to device")
         self.emit("commit")
+
+        def clean(x):
+            x.dirty = False
+
+        # Now reset all dirty values
+        for p in self.profiles.values():
+            map(clean, p.buttons.values())
+            map(clean, p.resolutions.values())
+            map(clean, p.leds.values())
+            p.dirty = False
+        self.dirty = False
 
     def add_profile(self, profile):
         """
         Add the profile to the device.
         """
+
+        def cb_dirty(profile, pspec):
+            self.dirty = self.dirty or profile.dirty
+
         self.profiles[profile.index] = profile
+        profile.connect("notify::dirty", cb_dirty)
+
+    @GObject.Property
+    def dirty(self):
+        """
+        `True` if changes are uncommited. Connect to ``notify::dirty`` to receive changes.
+        """
+        return self._dirty
+
+    @dirty.setter
+    def dirty(self, is_dirty):
+        if self._dirty != is_dirty:
+            self._dirty = is_dirty
+            self.notify("dirty")
+            if self._dirty:
+                logger.debug(f"Device {self.name} has uncommited changes")
 
     def dump(self):
         p = "  " + "\n  ".join([p.dump() for p in self.profiles.values()])
@@ -377,6 +422,7 @@ class Feature(GObject.Object):
         GObject.Object.__init__(self)
         self.device = device
         self._index = index
+        self._dirty = False
         logger.debug(
             f"{self.device.name}: creating {type(self).__name__} with index {self.index}"
         )
@@ -407,8 +453,35 @@ class Feature(GObject.Object):
 
 
 class Profile(Feature):
+    """
+    A profile on the device. A device must have at least one profile, the
+    number of available proviles is device-specific.
+
+    Only one profile may be active at any time. When the active profile
+    changes, the ``active`` signal is emitted for the previously
+    active profile with a boolean false value, then the ``active`` signal is
+    emitted on the newly active profile.
+
+    .. attribute:: name
+
+        The profile name (may be software-assigned)
+
+    .. attribute:: buttons
+
+        The list of :class:`Button` that are available in this profile
+
+    .. attribute:: resolutions
+
+        The list of :class:`Resolution` that are available in this profile
+
+    .. attribute:: leds
+
+        The list of :class:`Led` that are available in this profile
+
+    """
+
     __gsignals__ = {
-        "active": (GObject.SignalFlags.RUN_FIRST, None, ()),
+        "active": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
     }
 
     def __init__(self, device, index, name=None):
@@ -417,10 +490,54 @@ class Profile(Feature):
         self.buttons = {}
         self.resolutions = {}
         self.leds = {}
+        self._active = False
+        self._enabled = True
 
-    def _cb_dirty(self, feature, dirty):
-        if dirty:
+    @GObject.Property
+    def enabled(self):
+        """
+        ``True`` if this profile is enabled.
+        """
+        return self._enabled
+
+    @enabled.setter
+    def enabled(self, enabled):
+        if self._enabled != enabled:
+            if self._active:
+                for p in self.device.profiles:
+                    if not p.active:
+                        p.set_active
+                        break
+            self._enabled = enabled
             self.dirty = True
+            self.notify("enabled")
+
+    @GObject.Property
+    def active(self):
+        """
+        ``True`` if this profile is active, ``False`` otherwise. This
+        property should be treated as read-only, use :meth:`set_active`
+        instead of writing directly.
+        """
+        return self._active
+
+    @active.setter
+    def active(self, active):
+        if self._active != active:
+            self._active = active
+            self.notify("active")
+
+    def set_active(self):
+        """
+        Set this profile to be the active profile.
+        """
+        if not self.active:
+            for p in self.device.profiles:
+                p.active = False
+            self.active = True
+
+    def _cb_dirty(self, feature, pspec):
+        self.dirty = self.dirty or feature.dirty
 
     def add_button(self, button):
         self.buttons[button.index] = button
@@ -435,31 +552,413 @@ class Profile(Feature):
         led.connect("notify::dirty", self._cb_dirty)
 
     def dump(self):
+        """
+        Return a human-readable description of this profile
+        """
         res = "    " + "\n    ".join([r.dump() for r in self.resolutions.values()])
-        return f"Profile {self.index}: {self.name}\n" f"{res}"
+        btns = "    " + "\n    ".join([b.dump() for b in self.buttons.values()])
+        return f"Profile {self.index}: {self.name}\n{res}\n{btns}"
 
 
 class Resolution(Feature):
-    __gsignals__ = {
-        "active": (GObject.SignalFlags.RUN_FIRST, None, ()),
-    }
+    """
+    A resolution within a profile. A device must have at least one profile, the
+    number of available proviles is device-specific.
 
-    def __init__(self, profile, index, resolution):
+    Only one resolution may be active at any time. When the active resolution
+    changes, the ``notify::active`` signal is emitted for the previously
+    active resolution with a boolean false value, then the ``notify::active``
+    signal is emitted on the newly active resolution.
+
+    """
+
+    class Capability(enum.Enum):
+        SEPARATE_XY_RESOLUTION = enum.auto()
+
+    def __init__(self, profile, index, dpi, *, capabilities=[], dpi_list=[]):
         super().__init__(profile.device, index)
         self.profile = profile
-        self.resolution = resolution
+        self._dpi = dpi
+        self._dpi_list = dpi_list
+        self._capabilities = capabilities
+        self._active = False
+        self._default = False
+
+    @property
+    def capabilities(self):
+        """
+        Return the list of supported :class:`Resolution.Capability`
+        """
+        return self._capabilities
+
+    @GObject.Property
+    def active(self):
+        """
+        ``True`` if this resolution is active, ``False`` otherwise. This
+        property should be treated as read-only, use :meth:`set_active`
+        instead of writing directly.
+        """
+        return self._active
+
+    @active.setter
+    def active(self, active):
+        if self._active != active:
+            self._active = active
+            self.notify("active")
+            self.dirty = True
+
+    def set_active(self):
+        """
+        Set this resolution to be the active resolution.
+        """
+        if not self.active:
+            for r in self.profile.resolutions:
+                r.active = False
+            self.active = True
+
+    @GObject.Property
+    def default(self):
+        """
+        ``True`` if this resolution is default, ``False`` otherwise. This
+        property should be treated as read-only, use :meth:`set_default`
+        instead of writing directly.
+        """
+        return self._default
+
+    @default.setter
+    def default(self, default):
+        if self._default != default:
+            self._default = default
+            self.notify("default")
+            self.dirty = True
+
+    def set_default(self):
+        if not self.default:
+            for r in self.profile.resolutions:
+                r.default = False
+            self.default = True
+
+    @GObject.Property
+    def dpi(self):
+        """
+        A tuple of `(x, y)` resolution values. If this device does not have
+        :meth:`Resolution.Capability.SEPARATE_XY_RESOLUTION`, the tuple always
+        has two identical values.
+        """
+        return self._dpi
+
+    @dpi.setter
+    def dpi(self, new_dpi):
+        try:
+            x, y = new_dpi
+            if y not in self._dpi_list:
+                raise ConfigError(f"{y} is not a supported resolution")
+        except TypeError:
+            x = new_dpi
+            y = new_dpi
+        if x not in self._dpi_list:
+            raise ConfigError(f"{x} is not a supported resolution")
+        if (x, y) != self._dpi:
+            self._dpi = (x, y)
+            self.dirty = True
+            self.notify("dpi")
+
+    @property
+    def dpi_list(self):
+        """
+        Return a list of possible resolution values on this device
+        """
+        return self._dpi_list
 
     def dump(self):
-        return f"Resolution {self.index}: {self.resolution}"
+        """
+        Return a human-readable description of this Resolution
+        """
+        dpis = self.dpi_list
+        if len(dpis) > 8:
+            dpis = dpis[:3] + ["..."] + dpis[-3:]
+
+        return f"Resolution {self.index}: {self.dpi} of {dpis}, active: {self.active}, default: {self.default}"
+
+
+class Action(GObject.Object):
+    class Type(enum.Enum):
+        NONE = enum.auto()
+        BUTTON = enum.auto()
+        MACRO = enum.auto()
+        SPECIAL = enum.auto()
+        UNKNOWN = enum.auto()
+
+    def __init__(self, parent):
+        GObject.Object.__init__(self)
+        self._parent = parent
+        self.type = Action.Type.UNKNOWN
+
+    def __str__(self):
+        return "Unknown"
+
+
+class ActionNone(Action):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.type = Action.Type.NONE
+
+    def __str__(self):
+        return "None"
+
+
+class ActionButton(Action):
+    def __init__(self, parent, button):
+        super().__init__(parent)
+        self._button = button
+        self.type = Action.Type.BUTTON
+
+    @property
+    def button(self):
+        return self._button
+
+    def __str__(self):
+        return f"Button {self.button}"
+
+
+class ActionSpecial(Action):
+    class Special(enum.Enum):
+        UNKNOWN = enum.auto()
+        DOUBLECLICK = enum.auto()
+
+        WHEEL_LEFT = enum.auto()
+        WHEEL_RIGHT = enum.auto()
+        WHEEL_UP = enum.auto()
+        WHEEL_DOWN = enum.auto()
+        RATCHET_MODE_SWITCH = enum.auto()
+
+        RESOLUTION_UP = enum.auto()
+        RESOLUTION_DOWN = enum.auto()
+        RESOLUTION_CYCLE_UP = enum.auto()
+        RESOLUTION_CYCLE_DOWN = enum.auto()
+        RESOLUTION_ALTERNATE = enum.auto()
+        RESOLUTION_DEFAULT = enum.auto()
+
+        PROFILE_CYCLE_UP = enum.auto()
+        PROFILE_CYCLE_DOWN = enum.auto()
+        PROFILE_UP = enum.auto()
+        PROFILE_DOWN = enum.auto()
+
+        SECOND_MODE = enum.auto()
+        BATTERY_LEVEL = enum.auto()
+
+    def __init__(self, parent, special):
+        super().__init__(parent)
+        self.type = Action.Type.SPECIAL
+        self._special = special
+
+    @property
+    def special(self):
+        return self._special
+
+    def __str__(self):
+        return f"Special {self.special.name}"
+
+
+class ActionMacro(Action):
+    def __init__(self, parent, macro):
+        super().__init__(parent)
+        self.type = Action.Type.MACRO
+        self._macro = macro
+        macro.assign(self)
+
+    def __str__(self):
+        return f"Macro: {str(self.macro)}"
+
+    @property
+    def macro(self):
+        return self._macro
+
+
+class Macro(GObject.Object):
+    """
+    A macro assigned to a button via :class:`ActionMacro`. Macros are created
+    independent of a parent button, use :meth:`assign` to assign this macro to
+    a button.
+
+    .. attribute:: parent
+
+        The object this macro is assigned to
+    """
+
+    class Event(enum.Enum):
+        INVALID = enum.auto()
+        NONE = enum.auto()
+        KEY_PRESS = enum.auto()
+        KEY_RELEASE = enum.auto()
+        WAIT_MS = enum.auto()
+
+    def __init__(self, name, events=[(Event.INVALID,)]):
+        GObject.Object.__init__(self)
+        self.name = name
+        self._events = events
+        self._parent = None
+
+    @property
+    def parent(self):
+        return self._parent
+
+    def assign(self, parent):
+        """
+        Assign this macro to the given object.
+        """
+        assert self._parent is None
+        assert parent is not None
+        self._parent = parent
+
+    @property
+    def events(self):
+        """
+        A list of tuples that describe the sequence of this macro. Each tuple
+        is of type ``(Macro.Event.KEY_PRESS, 34)`` or ``(Macro.Event.WAIT_MS, 500)``,
+        i.e. the first entry is a :class:`Macro.Event` enum and the remaining
+        entries are the type-specific values.
+
+        The length of each tuple is type-specific, clients must be able to
+        handle tuples with lengths other than 2.
+
+        This property is read-only. To change a macro, create a new one with
+        the desired event sequence and assign it to the button.
+        """
+        return self._events
+
+    def __str__(self):
+        prefix = {
+            Macro.Event.INVALID: "x",
+            Macro.Event.KEY_PRESS: "+",
+            Macro.Event.KEY_RELEASE: "-",
+            Macro.Event.WAIT_MS: "t",
+        }
+        str = " ".join([f"{prefix[t]}{v}" for t, v in self.events])
+        return f"{self.name}: {str}"
 
 
 class Button(Feature):
-    def __init__(self, profile, index):
+    def __init__(
+        self,
+        profile,
+        index,
+        *,
+        types=[Action.Type.BUTTON],
+        action=None,
+    ):
         super().__init__(profile.device, index)
         self.profile = profile
+        self._types = types
+        self._action = action
+
+    @property
+    def types(self):
+        """
+        The list of supported :class:`Action.Type` for this button
+        """
+        return self._types
+
+    @GObject.Property
+    def action(self):
+        return self._action
+
+    @action.setter
+    def action(self, new_action):
+        if not isinstance(new_action, Action):
+            raise ConfigError(f"Invalid button action of type {type(new_action)}")
+        self._action = new_action
+        self.notify("action")
+        self.dirty = True
+
+    def dump(self):
+        return f"Button {self.index}: {str(self.action)}"
 
 
 class Led(Feature):
-    def __init__(self, profile, index):
+    class Colordepth(enum.Enum):
+        MONOCHROME = enum.auto()
+        RGB_111 = enum.auto()
+        RGB_888 = enum.auto()
+
+    class Mode(enum.Enum):
+        OFF = enum.auto()
+        ON = enum.auto()
+        CYCLE = enum.auto()
+        BREATHING = enum.auto()
+
+    def __init__(
+        self,
+        profile,
+        index,
+        *,
+        color=(0, 0, 0),
+        colordepth=Colordepth.RGB_888,
+        modes=[Mode.OFF],
+    ):
         super().__init__(profile.device, index)
         self.profile = profile
+        self._color = color
+        self._colordepth = colordepth
+        self._effect_duration = 0
+        self._mode = Led.Mode.OFF
+        self._modes = modes
+
+    @GObject.Property
+    def color(self):
+        return self._color
+
+    @color.setter
+    def color(self, rgb):
+        try:
+            if len(rgb) != 3:
+                raise ConfigError("Invalid color, must be (r, g, b)")
+        except TypeError:
+            raise ConfigError("Invalid color, must be (r, g, b)")
+        if self._color != rgb:
+            self._color = rgb
+            self.notify("color")
+            self.dirty = True
+
+    def colordepth(self):
+        return self._colordepth
+
+    @GObject.Property
+    def brightness(self):
+        return self._brightness
+
+    @brightness.setter
+    def brightness(self, brightness):
+        if brightness != self._brightness:
+            self._brightness = brightness
+            self.dirty = True
+
+    @GObject.Property
+    def effect_duration(self):
+        return self._effect_duration
+
+    @effect_duration.setter
+    def effect_duration(self, effect_duration):
+        if effect_duration != self._effect_duration:
+            self._effect_duration = effect_duration
+            self.notify("effect_duration")
+            self.dirty = True
+
+    @GObject.Property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, mode):
+        if mode not in self.modes:
+            raise ConfigError(f"Unsupported LED mode {str(mode)}")
+        if mode != self._mode:
+            self._mode = mode
+            self.notify("mode")
+            self.dirty = True
+
+    def modes(self):
+        """
+        Return the list of :class:`Led.Mode` available for this LED
+        """
+        return self._modes

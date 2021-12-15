@@ -85,17 +85,22 @@ class ProtocolError(Exception):
 
        The device name that failed
 
+    .. attribute:: message
+
+       An explanatory message
+
     .. attribute:: conversation
 
        A list of byte arrays with the context of the failed conversation with
-       the device.
+       the device, if any.
 
     """
 
-    def __init__(self, name, path):
+    def __init__(self, message=None, name=None, path=None):
         self.name = name
         self.path = path
-        self.conversation = None
+        self.message = message
+        self.conversation = []
 
 
 class Ratbag(GObject.Object):
@@ -201,6 +206,10 @@ class Ratbag(GObject.Object):
             logger.info(f"Skipping unsupported device {e.name} ({e.path})")
         except SomethingIsMissingError as e:
             logger.info(f"Skipping device {e.name} ({e.path}): missing {e.thing}")
+        except ProtocolError as e:
+            logger.info(
+                f"Skipping device {e.name} ({e.path}): protocol error: {e.message}"
+            )
         except PermissionError as e:
             logger.error(f"Unable to open device at {path}: {e}")
 

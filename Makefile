@@ -22,7 +22,7 @@ help:
 
 .PHONY: help Makefile
 
-html: Makefile data
+html: Makefile
 	mkdir -p $(BUILDDIR)
 	cp -r $(SOURCEDIR)/* $(BUILDDIR)/
 	@$(SPHINXBUILD) -M $@ "$(BUILDDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

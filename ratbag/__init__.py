@@ -123,11 +123,10 @@ class Ratbag(GObject.Object):
 
 
 
-
     GObject Signals:
 
-    - ``device-added`` Notifcation that a new :class:`ratbag.Device` was added
-    - ``device-removed`` Notifcation that the :class:`ratbag.Device` was removed
+    - ``device-added`` Notification that a new :class:`ratbag.Device` was added
+    - ``device-removed`` Notification that the :class:`ratbag.Device` was removed
 
     """
 
@@ -356,8 +355,12 @@ class Feature(GObject.Object):
     Base class for all device features, including profiles. This is a
     convenience class only to avoid re-implementation of common properties.
 
-    :attr device: The device associated with this feature
-    :attr index: the 0-based index of this feature (e.g. button 0, profile 1, etc.)
+    :param device: the device this feature belongs to
+    :param index: the 0-based feature index
+
+    .. attribute:: device
+
+        The device associated with this feature
     """
 
     def __init__(self, device, index):

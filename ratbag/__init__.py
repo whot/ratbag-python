@@ -10,6 +10,8 @@ import os
 import pyudev
 import select
 
+from pathlib import Path
+
 import gi
 from gi.repository import GObject
 
@@ -228,7 +230,14 @@ class Ratbag(GObject.Object):
         match = f"{bus}:{vid:04x}:{pid:04x}"
 
         # FIXME: this needs to use the install path
-        datafiles = util.load_data_files("data")
+        path = Path("data")
+        if not path.exists():
+            path = "/usr/share/libratbag/"
+            if not path("data"):
+                raise NotImplementedError(
+                    "Missing data files: none in /usr/share/libratbag, none in $PWD/data"
+                )
+        datafiles = util.load_data_files(path)
         try:
             datafile = datafiles[match]
         except KeyError:

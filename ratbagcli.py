@@ -258,7 +258,7 @@ def _init_emulators(infile):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("A ratbag daemon")
+    parser = argparse.ArgumentParser("A ratbag commandline tool")
     parser.add_argument(
         "--verbose", help="Enable debug logging", action="store_true", default=False
     )

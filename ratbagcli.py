@@ -43,8 +43,10 @@ def _init_logger(conf=None, verbose=False):
 def _init_recorders(outfile):
     return [ratbag.recorder.YamlDeviceRecorder({"logfile": outfile})]
 
+
 def _init_emulators(infile):
     return [ratbag.emulator.YamlDevice(infile)]
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("A ratbag daemon")
@@ -69,7 +71,7 @@ if __name__ == "__main__":
     if ns.devices:
         config["device-paths"] = ns.devices
     if ns.replay:
-        config["emulators"]  = _init_emulators(ns.replay)
+        config["emulators"] = _init_emulators(ns.replay)
     if ns.record:
         config["recorders"] = _init_recorders(ns.record)
 

@@ -221,15 +221,11 @@ class Driver(GObject.Object):
     contain at least the following code: ::
 
         class MyDriver(ratbag.Driver):
-            ... implementation of the driver
+            def probe(self, device, info, config):
+                pass
 
-        def load_driver(driver_name="", device_info={}, driver_config={}):
-            # checks and balances
+        def load_driver(driver_name=""):
             return myDriver()
-
-    The ``device_info`` and ``driver_config`` arguments are static information
-    about the device to be probed later, i.e. it comes from a data file, not
-    the device itself.
 
     GObject Signals:
 
@@ -257,7 +253,7 @@ class Driver(GObject.Object):
             f"Recorder {cls.__name__} requested but driver does not implement this functionality"
         )
 
-    def probe(self, device):
+    def probe(self, device, device_info={}, config={}):
         """
         Probe the device for information. On success, the driver will create a
         :class:`ratbag.Device` with at least one profile and the appropriate
@@ -276,6 +272,9 @@ class Driver(GObject.Object):
 
         :param device: The path to the device or a fully initialized instance
                        representing a device
+        :param device_info: Static information about the device from external
+                            sources (system, data files, etc).
+        :param config: Driver-specific device configuration (e.g. quirks).
         """
         raise NotImplementedError("This function must be implemented by the driver")
 

@@ -159,8 +159,8 @@ class Ratbag(GObject.Object):
             self._add_device(path=path)
 
         for emulator in self._config.get("emulators", []):
-            driver = self._load_driver_by_name(emulator.driver, {}, {})
-            driver.probe(emulator)
+            driver = self._load_driver_by_name(emulator.driver)
+            driver.probe(emulator, {}, {})
 
     def _install_udev_monitor(self):
         context = pyudev.Context()
@@ -181,6 +181,8 @@ class Ratbag(GObject.Object):
 
     def _add_device(self, path):
         try:
+            info = ratbag.util.load_device_info(path)
+            driver, config = self._find_driver(path, info)
 
             def cb_device_disconnected(device, ratbag):
                 logger.info(f"disconnected {device.name}")
@@ -192,8 +194,6 @@ class Ratbag(GObject.Object):
                 device.connect("disconnected", cb_device_disconnected)
                 self.emit("device-added", device)
 
-            driver = self._find_driver(path)
-
             # If we're recording, tell the driver about the logger. Eventually
             # we may have multiple loggers depending on what we need to know
             # but for now we just have a simple YAML logger for all data
@@ -202,7 +202,7 @@ class Ratbag(GObject.Object):
                 driver.add_recorder(rec)
 
             driver.connect("device-added", cb_device_added)
-            driver.probe(path)
+            driver.probe(path, info, config)
         except UnsupportedDeviceError as e:
             logger.info(f"Skipping unsupported device {e.name} ({e.path})")
         except SomethingIsMissingError as e:
@@ -214,21 +214,22 @@ class Ratbag(GObject.Object):
         except PermissionError as e:
             logger.error(f"Unable to open device at {path}: {e}")
 
-    def _find_driver(self, device_path):
+    def _find_driver(self, device_path, info):
         """
         Load the driver assigned to the bus/VID/PID match. If a matching
         driver is found, that driver's :func:`LOAD_DRIVER_FUNC` is called with
         the *static* information about the device.
 
+        :param device_path: the path to the device node
+        :param info: a dict of various info collected for this device
         :return: a instance of :class:`ratbag.drivers.Driver`
         """
-        info = util.load_device_info(device_path)
         name = info.get("name", None)
         bus = info.get("bus", None)
         vid = info.get("vid", None)
         pid = info.get("pid", None)
-        match = f"{bus}:{vid:04x}:{pid:04x}"
 
+        match = f"{bus}:{vid:04x}:{pid:04x}"
         # FIXME: this needs to use the install path
         path = Path("data")
         if not path.exists():
@@ -246,9 +247,10 @@ class Ratbag(GObject.Object):
         # Flatten the config file to a dict of device info and
         # a dict of driver-specific configurations
         driver_name = datafile["Device"]["Driver"]
-        device_info = {k: v for k, v in datafile["Device"].items()}
-        del device_info["Driver"]
-        del device_info["DeviceMatch"]
+        # Append any extra information to the info dict
+        for k, v in datafile["Device"].items():
+            if k not in ["Driver", "DeviceMatch"]:
+                info[k] = v
         try:
             driver_config = {k: v for k, v in datafile[f"Driver/{driver_name}"].items()}
         except KeyError:
@@ -256,9 +258,9 @@ class Ratbag(GObject.Object):
             driver_config = {}
 
         logger.debug(f"Loading driver {driver_name} for {match} ({device_path})")
-        return self._load_driver_by_name(driver_name, device_info, driver_config)
+        return self._load_driver_by_name(driver_name), driver_config
 
-    def _load_driver_by_name(self, driver_name, device_info, driver_config):
+    def _load_driver_by_name(self, driver_name):
         # Import ratbag.drivers.foo and call load_driver() to instantiate the
         # driver.
         try:
@@ -271,12 +273,12 @@ class Ratbag(GObject.Object):
 
         try:
             load_driver_func = getattr(module, ratbag.drivers.Driver.DRIVER_LOAD_FUNC)
-        except AttributeError as e:
+        except AttributeError:
             logger.error(
                 f"Bug: driver {driver_name} does not have '{ratbag.drivers.Driver.DRIVER_LOAD_FUNC}()'"
             )
             return None
-        return load_driver_func(driver_name, device_info, driver_config)
+        return load_driver_func(driver_name)
 
 
 class Recorder(GObject.Object):

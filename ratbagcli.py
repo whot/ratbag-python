@@ -8,6 +8,8 @@ import argparse
 import logging
 import logging.config
 import os
+import re
+import sys
 import yaml
 
 from pathlib import Path
@@ -19,6 +21,213 @@ import ratbag.recorder
 from gi.repository import GLib
 
 logger = None
+
+
+class Config(object):
+    class Error(Exception):
+        pass
+
+    def __init__(self, filename, nocommit=False):
+        # An empty config object so we don't have to ifdef the caller
+        self.empty = filename is None
+        if self.empty:
+            return
+
+        self.nocommit = nocommit
+
+        with open(filename) as fd:
+            yml = yaml.safe_load(fd)
+        self._parse(yml)
+
+    def _parse(self, yml):
+        self.matches = yml.get("matches", [])
+        self.profiles = yml.get("profiles", [])
+        if not self.profiles:
+            raise Config.Error("Missing 'profiles' array")
+
+        # verify the config and switch a few things to be more useful:
+        # - index is converted to int
+        # - button special are converted to the ratbag.ActionSpecial type
+        # - resolution dpi is converted to an int tuple
+        for pidx, p in enumerate(self.profiles):
+            if "index" not in p:
+                raise Config.Error(f"Profile entry {pidx+1} has no 'index'")
+            p["index"] = int(p["index"])
+            pidx = p["index"]
+            if not p.get("disable", True):
+                raise Config.Error(f"Profile {pidx}: disable must be 'true'")
+
+            # Buttons
+            for bidx, b in enumerate(p.get("buttons", [])):
+                if "index" not in b:
+                    raise Config.Error(
+                        f"Button entry {bidx+1}, profile {pidx} has no 'index'"
+                    )
+                b["index"] = int(b["index"])
+                bidx = b["index"]
+                if not b.get("disable", True):
+                    raise Config.Error(f"Button {pidx}.{bidx}: disable must be 'true'")
+
+                button = b.get("button", None)
+                if button:
+                    try:
+                        b["button"] = int(button)
+                    except ValueError:
+                        raise Config.Error(
+                            f"Button {pidx}.{bidx}: invalid button number {button}"
+                        )
+
+                special = b.get("special", None)
+                if special:
+                    name = special.replace("-", "_").upper()
+                    try:
+                        b["special"] = ratbag.ActionSpecial.Special[name]
+                    except KeyError:
+                        raise Config.Error(
+                            f"Button {pidx}.{bidx}: unknown special action {special}"
+                        )
+
+                macro = b.get("macro", {})
+                if macro and "entries" not in macro:
+                    raise Config.Error(f"Button {pidx}.{bidx}: macro needs 'entries'")
+                for entry in macro.get("entries", []):
+                    if not re.match("[+-t][0-9]+", entry):
+                        raise Config.Error(
+                            f"Button {pidx}.{bidx}: invalid macro entry {entry}"
+                        )
+
+                if list(map(bool, [button, special, macro])).count(True) > 1:
+                    raise Config.Error(
+                        f"Button {pidx}.{bidx}: only one of button, special or macro allowed"
+                    )
+
+            # Resolutions
+            for ridx, r in enumerate(p.get("resolutions", [])):
+                if "index" not in r:
+                    raise Config.Error(
+                        f"Resolution entry {ridx+1}, profile {pidx} has no 'index'"
+                    )
+                r["index"] = int(r["index"])
+                ridx = r["index"]
+                if not r.get("disable", True):
+                    raise Config.Error(
+                        f"Resolution {pidx}.{ridx}: disable must be 'true'"
+                    )
+                dpis = r.get("dpis", None)
+                if dpis is not None:
+                    if len(dpis) != 2:
+                        raise Config.Error(
+                            f"Resolution {pidx}.{ridx}: dpi must an (x, y) tuple"
+                        )
+                    else:
+                        try:
+                            map(int, dpis)
+                        except ValueError:
+                            raise Config.Error(
+                                f"Resolution {pidx}.{ridx}: dpi must an (x, y) tuple"
+                            )
+
+    def _matches(self, device):
+        if not self.matches:
+            return True
+
+        for m in self.matches:
+            if m["name"] and device.name == m["name"]:
+                return True
+
+        return False
+
+    def apply(self, device):
+        if self.empty or not self._matches(device):
+            return
+
+        for pconf in self.profiles:
+            pidx = pconf["index"]
+            if pidx not in device.profiles:
+                logger.warning("Config references nonexisting profile {pdix}. Skipping")
+                continue
+            profile = device.profiles[pidx]
+            logger.info(f"Config found for profile {profile.index}")
+
+            # Disabling is handled first, it discards all other config for that
+            # profile
+            if pconf.get("disable", False):
+                logger.info(f"Disabling profile {profile.index}")
+                profile.enabled = False
+                continue
+
+            # Resolutions
+            for rconf in pconf.get("resolutions", []):
+                ridx = rconf["index"]
+                if ridx not in profile.resolutions:
+                    logger.warning(
+                        "Config references nonexisting resolution {pdix}.{ridx}. Skipping"
+                    )
+                    continue
+                resolution = profile.resolutions[ridx]
+                logger.info(
+                    f"Config found for resolution {profile.index}.{resolution.index}"
+                )
+                dpis = rconf.get("dpi", None)
+                if dpis:
+                    resolution.dpi = dpis
+
+            # Buttons
+            for bconf in pconf.get("buttons", []):
+                bidx = bconf["index"]
+                if bidx not in profile.buttons:
+                    logger.warning(
+                        "Config references nonexisting button {pdix}.{bidx}. Skipping"
+                    )
+                    continue
+                button = profile.buttons[bidx]
+                logger.info(f"Config found for button {profile.index}.{button.index}")
+
+                # Disabling is handled first, it discards all other config for that
+                # button
+                if bconf.get("disable", False):
+                    logger.info(f"Disabling button {profile.index}.{button.index}")
+                    button.action = ratbag.ActionNone(button)
+                    continue
+
+                # Button numbers
+                bnumber = bconf.get("button", 0)
+                if bnumber > 0:
+                    logger.info(
+                        f"Button {profile.index}.{button.index} sends button {bnumber}"
+                    )
+                    button.action = ratbag.ActionButton(button, bnumber)
+                    continue
+
+                # Button special
+                special = bconf.get("special", None)
+                if special:
+                    logger.info(
+                        f"Button {profile.index}.{button.index} sends special {special.name}"
+                    )
+                    button.action = ratbag.ActionSpecial(button, special)
+                    continue
+
+                # Button macro
+                macro = bconf.get("macro", {})
+                if macro:
+                    lut = {
+                        "t": ratbag.Macro.Event.WAIT_MS,
+                        "+": ratbag.Macro.Event.KEY_PRESS,
+                        "-": ratbag.Macro.Event.KEY_RELEASE,
+                    }
+                    events = [
+                        (lut[entry[0]], int(entry[1:])) for entry in macro["entries"]
+                    ]
+                    name = macro.get("name", "macro {profile.index}.{button.index}")
+                    m = ratbag.Macro(name, events)
+                    logger.info(f"Button {profile.index}.{button.index} macro {str(m)}")
+                    button.action = ratbag.ActionMacro(button, m)
+                    continue
+
+        if not self.nocommit:
+            device.commit()
+
 
 def _init_logger(conf=None, verbose=False):
     if conf is None:
@@ -62,6 +271,19 @@ if __name__ == "__main__":
     parser.add_argument(
         "--replay", help="Path to a device recording", type=str, default=None
     )
+    parser.add_argument(
+        "--apply-config",
+        help="Apply the given config to all matching devices",
+        type=str,
+        default=None,
+    )
+    parser.add_argument(
+        "--nocommit",
+        help="Never invoke commit() on the device",
+        action="store_true",
+        default=False,
+    )
+
     parser.add_argument("devices", nargs="*", default=[])
     ns = parser.parse_args()
 
@@ -77,11 +299,18 @@ if __name__ == "__main__":
         config["recorders"] = _init_recorders(ns.record)
 
     try:
+        user_config = Config(ns.apply_config, ns.nocommit)
+    except Config.Error as e:
+        print(f"Config error in {ns.apply_config}: {str(e)}. Aborting")
+        sys.exit(1)
+
+    try:
         mainloop = GLib.MainLoop()
         ratbagd = ratbag.Ratbag(config)
 
-        def cb_device_added(ratbagd, device):
+        def cb_device_added(ratbagcli, device):
             print(device.dump())
+            user_config.apply(device)
 
         ratbagd.connect("device-added", cb_device_added)
         ratbagd.start()

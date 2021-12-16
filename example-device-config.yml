@@ -1,0 +1,36 @@
+# Example configuration file to change a ratbag-supported device
+
+# The match array is optional. Where it exists, the configuration is only
+# applied to devices that match ANY entry
+matches:
+  - name: "ROCCAT ROCCAT Kone XTD"  # exact match on device name
+  - name: "Some Device"
+# The profiles array is required. Profiles not listed in the configuration
+# file are untouched
+profiles:
+  - index: 0
+    resolutions:
+      # Set the resolution to the given x/y dpi tuple. If the device does not
+      # support separate x/y resolution, both values must be the same
+      - index: 0
+        dpi: [500, 500]
+    buttons:
+      # Set this button to send button code 1 (left)
+      - index: 0
+        button: 1
+      # Set this button to trigger the profile-up special action
+      - index: 1
+        special: profile-up
+      # Set this button to send the evdev keycode 32 down and up. Between the
+      # two keycodes is a 50ms wait.
+      - index: 3
+        macro:
+          entries: [ "+32", "t50", "-32"]
+          name: "custom macro"
+      # Disable the button with this index
+      - index: 5
+        disable: true
+  # Disable the profile with this index, ignoring all other configurations for
+  # this profile
+  - index: 1
+    disable: true

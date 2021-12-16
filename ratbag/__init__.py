@@ -214,7 +214,7 @@ class Ratbag(GObject.Object):
         except PermissionError as e:
             logger.error(f"Unable to open device at {path}: {e}")
 
-    def _find_driver(self, path):
+    def _find_driver(self, device_path):
         """
         Load the driver assigned to the bus/VID/PID match. If a matching
         driver is found, that driver's :func:`LOAD_DRIVER_FUNC` is called with
@@ -222,7 +222,7 @@ class Ratbag(GObject.Object):
 
         :return: a instance of :class:`ratbag.drivers.Driver`
         """
-        info = util.load_device_info(path)
+        info = util.load_device_info(device_path)
         name = info.get("name", None)
         bus = info.get("bus", None)
         vid = info.get("vid", None)
@@ -255,6 +255,7 @@ class Ratbag(GObject.Object):
             # not all drivers have custom options
             driver_config = {}
 
+        logger.debug(f"Loading driver {driver_name} for {match} ({device_path})")
         return self._load_driver_by_name(driver_name, device_info, driver_config)
 
     def _load_driver_by_name(self, driver_name, device_info, driver_config):
@@ -263,7 +264,6 @@ class Ratbag(GObject.Object):
         try:
             import importlib
 
-            logger.debug(f"Loading driver {driver_name}")
             module = importlib.import_module(f"ratbag.drivers.{driver_name}")
         except ImportError as e:
             logger.error(f"Driver {driver_name} failed to load: {e}")

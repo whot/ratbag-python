@@ -182,3 +182,71 @@ def attr_from_data(obj, fmt_tuples, data, offset=0):
             offset += sz
 
     return offset
+
+
+def attr_to_data(obj, fmt_tuples):
+    """
+    The inverse of :func:`attr_from_data`.
+    ``fmt_tuples`` is a list of tuples that represent attributes on
+    ``obj``. Each entry is a tuple in the form ``(format, fieldname)`` where
+    ``format`` is a `struct`` parsing format and fieldname is the
+    attribute name. Each attribute is packed into a binary struct according to
+    the format specification.
+
+    :return: the bytes representing the objects, given the format tuples
+    """
+    data = bytearray(4096)
+    offset = 0
+    endian = ">"  # default to BE
+
+    for fmt, name in fmt_tuples:
+        # endianess is handled as a toggle, one field with different
+        # endianness changes the rest
+        if fmt[0] in [">", "<"]:
+            endian = fmt[0]
+            fmt = fmt[1:]
+
+        groupcount = 1
+        if fmt[0].isdigit():
+            groupcount, fmt = fmt.split("*")
+            groupcount = int(groupcount)
+            assert groupcount > 1
+
+        count = len(fmt)
+        for idx in range(groupcount):
+            # Padding bytes and unknown are always zero
+            # If the device doesn't support writing unknown bytes to zero, map
+            # it to a property
+            if name in ["_", "?"]:
+                if len(fmt) > 1:
+                    val = [0] * len(fmt)
+                    if groupcount > 1:
+                        val = groupcount * [val]
+                else:
+                    val = 0
+                    if groupcount > 1:
+                        val = groupcount * [val]
+            else:
+                val = getattr(obj, name)
+            if groupcount > 1:
+                val = val[idx]
+            sz = struct.calcsize(fmt)
+            if offset + sz >= len(data):
+                data.extend([0] * 4096)
+            if count > 1:
+                struct.pack_into(endian + fmt, data, offset, *val)
+            else:
+                struct.pack_into(endian + fmt, data, offset, val)
+            if name == "_":
+                debugstr = "<pad bytes>"
+            elif name == "?":
+                debugstr = "<unknown>"
+            else:
+                debugstr = f"self.{name}"
+            valstr = f"{val}"
+            logger_autoparse.debug(
+                f"offset {offset:02d}: {debugstr:30s} is {valstr:8s} → {as_hex(data[offset:offset+sz]):5s}"
+            )
+            offset += sz
+
+    return bytes(data[:offset])

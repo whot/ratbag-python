@@ -20,6 +20,14 @@ ratbag.emulator module
    :undoc-members:
    :show-inheritance:
 
+ratbag.hid module
+-----------------
+
+.. automodule:: ratbag.hid
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 ratbag.recorder module
 ----------------------
 

@@ -678,7 +678,9 @@ class Resolution(Feature):
         """
         dpis = self.dpi_list
         if len(dpis) > 8:
-            dpis = dpis[:3] + ["..."] + dpis[-3:]
+            dpis = (
+                f"[{', '.join(map(str, dpis[:3]))}, … {', '.join(map(str, dpis[-3:]))}]"
+            )
 
         return f"Resolution {self.index}: {self.dpi} of {dpis}, active: {self.active}, default: {self.default}"
 

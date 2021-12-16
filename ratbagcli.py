@@ -18,6 +18,7 @@ import ratbag.recorder
 
 from gi.repository import GLib
 
+logger = None
 
 def _init_logger(conf=None, verbose=False):
     if conf is None:
@@ -34,7 +35,6 @@ def _init_logger(conf=None, verbose=False):
     else:
         lvl = logging.DEBUG if verbose else logging.INFO
         logging.basicConfig(format="%(levelname)s: %(name)s: %(message)s", level=lvl)
-        filter = logging.Filter(name="ratbag")
     # hidtools uses parse which spams at debug level, so as soon as we
     # import hidtools, we get logspam.
     logging.getLogger("parse").setLevel(logging.CRITICAL)
@@ -66,6 +66,7 @@ if __name__ == "__main__":
     ns = parser.parse_args()
 
     _init_logger(ns.logger_config, ns.verbose)
+    logger = logging.getLogger("ratbagcli")
 
     config = {}
     if ns.devices:

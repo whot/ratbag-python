@@ -353,6 +353,15 @@ class Device(GObject.Object):
         self._dirty = False
 
     def commit(self):
+        """
+        Write the current changes to the driver. This function emits the
+        ``commit`` signal to notify the respective driver that the current
+        state of the device is to be committed. Calling this method resets
+        :attr:`dirty` to `False` for all features of this device.
+
+        If an error occurs, the driver emits the ``resync`` signal. A caller
+        receiving that signal should synchronize its own state of the device.
+        """
         if not self.dirty:
             # well, that was easy
             return

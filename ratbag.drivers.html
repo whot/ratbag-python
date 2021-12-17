@@ -43,6 +43,7 @@
 <li class="toctree-l2 current"><a class="reference internal" href="ratbag.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">ratbag.drivers package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ratbag-drivers-example-driver-module">ratbag.drivers.example_driver module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-ratbag.drivers.hidpp10">ratbag.drivers.hidpp10 module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-ratbag.drivers.hidpp20">ratbag.drivers.hidpp20 module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ratbag-drivers-roccat-module">ratbag.drivers.roccat module</a></li>
@@ -106,6 +107,9 @@
 <h1>ratbag.drivers package<a class="headerlink" href="#ratbag-drivers-package" title="Permalink to this headline"></a></h1>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="ratbag-drivers-example-driver-module">
+<h2>ratbag.drivers.example_driver module<a class="headerlink" href="#ratbag-drivers-example-driver-module" title="Permalink to this headline"></a></h2>
 </section>
 <section id="module-ratbag.drivers.hidpp10">
 <span id="ratbag-drivers-hidpp10-module"></span><h2>ratbag.drivers.hidpp10 module<a class="headerlink" href="#module-ratbag.drivers.hidpp10" title="Permalink to this headline"></a></h2>
@@ -954,6 +958,15 @@ is a hidraw device, otherwise <code class="docutils literal notranslate"><span c
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.Rodent.from_device">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent.from_device" title="Permalink to this definition"></a></dt>
+<dd><p>A simplification for drivers. If the given device is already a
+pre-setup device (from a recorder), this function returns that device.
+Otherwise, this function returns a <a class="reference internal" href="#ratbag.drivers.Rodent" title="ratbag.drivers.Rodent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.Rodent</span></code></a>
+instance for the given device path.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ratbag.drivers.Rodent.start">
 <span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent.start" title="Permalink to this definition"></a></dt>
 <dd><p>Start parsing data from the device.</p>
@@ -980,6 +993,13 @@ is a hidraw device, otherwise <code class="docutils literal notranslate"><span c
 <dt class="sig sig-object py" id="ratbag.drivers.Rodent.hid_set_feature">
 <span class="sig-name descname"><span class="pre">hid_set_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent.hid_set_feature" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.Rodent.connect_to_recorder">
+<span class="sig-name descname"><span class="pre">connect_to_recorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recorder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent.connect_to_recorder" title="Permalink to this definition"></a></dt>
+<dd><p>Connect this device to the given recorder. This is a convenience
+method to simplify drivers.</p>
+</dd></dl>
 
 </dd></dl>
 

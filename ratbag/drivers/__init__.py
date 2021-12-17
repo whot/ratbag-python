@@ -13,12 +13,12 @@ import os
 
 import hidtools.hid
 
-import gi
 from gi.repository import GObject
 
 import ratbag
 
 logger = logging.getLogger(__name__)
+
 
 class Message(GObject.Object):
     """
@@ -155,7 +155,9 @@ class Rodent(GObject.Object):
         self.name = info["name"] or "Unnamed device"
         self.report_descriptor = info.get("report_descriptor", None)
         if self.report_descriptor is not None:
-            self._rdesc = hidtools.hid.ReportDescriptor.from_bytes(self.report_descriptor)
+            self._rdesc = hidtools.hid.ReportDescriptor.from_bytes(
+                self.report_descriptor
+            )
 
         self._fd = open(path, "r+b", buffering=0)
         os.set_blocking(self._fd.fileno(), False)
@@ -196,7 +198,7 @@ class Rodent(GObject.Object):
     def hid_get_feature(self, report_id):
         report = self._rdesc.feature_reports[report_id]
         rsize = report.size
-        buf = bytearray([report_id & 0xff]) + bytearray(rsize - 1)
+        buf = bytearray([report_id & 0xFF]) + bytearray(rsize - 1)
         logger.debug(Rodent.IoctlCommand("HIDIOCGFEATURE", buf))
         self.emit("ioctl-command", "HIDIOCGFEATURE", buf)
 
@@ -204,7 +206,6 @@ class Rodent(GObject.Object):
         logger.debug(Rodent.IoctlReply("HIDIOCGFEATURE", buf))
         self.emit("ioctl-reply", "HIDIOCGFEATURE", buf)
         return list(buf)  # Note: first byte is report ID
-
 
     def hid_set_feature(self, report_id, data):
         report = self._rdesc.feature_reports[report_id]
@@ -216,7 +217,7 @@ class Rodent(GObject.Object):
 
         sz = fcntl.ioctl(self._fd.fileno(), _IOC_HIDIOCSFEATURE(None, len(buf)), buf)
         if sz != len(data):
-            raise OSError('Failed to write data: {data} - bytes written: {sz}')
+            raise OSError("Failed to write data: {data} - bytes written: {sz}")
 
     def connect_to_recorder(self, recorder):
         """
@@ -315,15 +316,13 @@ class Driver(GObject.Object):
         raise NotImplementedError("This function must be implemented by the driver")
 
 
-
-
 # ioctl handling is copied from hid-tools
 # We only need a small subset of it but we do need to hook into the transport
 # later, so copying it was easier than modifying hidtools
 def _ioctl(fd, EVIOC, code, return_type, buf=None):
     size = struct.calcsize(return_type)
     if buf is None:
-        buf = size * '\x00'
+        buf = size * "\x00"
     abs = fcntl.ioctl(fd, EVIOC(code, size), buf)
     return struct.unpack(return_type, abs)
 
@@ -349,10 +348,12 @@ _IOC_DIRSHIFT = _IOC_SIZESHIFT + _IOC_SIZEBITS
 # 	 ((nr)   << _IOC_NRSHIFT) | \
 # 	 ((size) << _IOC_SIZESHIFT))
 def _IOC(dir, type, nr, size):
-    return ((dir << _IOC_DIRSHIFT) |
-            (ord(type) << _IOC_TYPESHIFT) |
-            (nr << _IOC_NRSHIFT) |
-            (size << _IOC_SIZESHIFT))
+    return (
+        (dir << _IOC_DIRSHIFT)
+        | (ord(type) << _IOC_TYPESHIFT)
+        | (nr << _IOC_NRSHIFT)
+        | (size << _IOC_SIZESHIFT)
+    )
 
 
 # define _IOR(type,nr,size)	_IOC(_IOC_READ,(type),(nr),(_IOC_TYPECHECK(size)))
@@ -367,26 +368,26 @@ def _IOW(type, nr, size):
 
 # define HIDIOCGFEATURE(len) _IOC(_IOC_WRITE|_IOC_READ, 'H', 0x07, len)
 def _IOC_HIDIOCGFEATURE(none, len):
-    return _IOC(_IOC_WRITE | _IOC_READ, 'H', 0x07, len)
+    return _IOC(_IOC_WRITE | _IOC_READ, "H", 0x07, len)
 
 
 def _HIDIOCGFEATURE(fd, report_id, rsize):
-    """ get feature report """
+    """get feature report"""
     assert report_id <= 255 and report_id > -1
 
     # rsize has the report length in it
-    buf = bytearray([report_id & 0xff]) + bytearray(rsize - 1)
+    buf = bytearray([report_id & 0xFF]) + bytearray(rsize - 1)
     fcntl.ioctl(fd, _IOC_HIDIOCGFEATURE(None, len(buf)), buf)
     return list(buf)  # Note: first byte is report ID
 
 
 # define HIDIOCSFEATURE(len) _IOC(_IOC_WRITE|_IOC_READ, 'H', 0x06, len)
 def _IOC_HIDIOCSFEATURE(none, len):
-    return _IOC(_IOC_WRITE | _IOC_READ, 'H', 0x06, len)
+    return _IOC(_IOC_WRITE | _IOC_READ, "H", 0x06, len)
 
 
 def _HIDIOCSFEATURE(fd, data):
-    """ set feature report """
+    """set feature report"""
 
     buf = bytearray(data)
     sz = fcntl.ioctl(fd, _IOC_HIDIOCSFEATURE(None, len(buf)), buf)

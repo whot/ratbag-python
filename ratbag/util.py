@@ -184,7 +184,7 @@ def attr_from_data(obj, fmt_tuples, data, offset=0):
     return offset
 
 
-def attr_to_data(obj, fmt_tuples):
+def attr_to_data(obj, fmt_tuples, maps={}):
     """
     The inverse of :func:`attr_from_data`.
     ``fmt_tuples`` is a list of tuples that represent attributes on
@@ -192,6 +192,11 @@ def attr_to_data(obj, fmt_tuples):
     ``format`` is a `struct`` parsing format and fieldname is the
     attribute name. Each attribute is packed into a binary struct according to
     the format specification.
+
+    :param maps: a dictionary of ``{ name: func(bytes) }`` where for each attribute with the
+        name, the matching function is called to produce that value instead. The argument to the
+        function is the list of already written bytes, the return value must match the attribute it
+        would otherwise have.
 
     :return: the bytes representing the objects, given the format tuples
     """
@@ -227,12 +232,17 @@ def attr_to_data(obj, fmt_tuples):
                     if groupcount > 1:
                         val = groupcount * [val]
             else:
-                val = getattr(obj, name)
+                # If this element has a mapping, use that.
+                if name in maps:
+                    val = maps[name](data[:offset])
+                else:
+                    val = getattr(obj, name)
             if groupcount > 1:
                 val = val[idx]
             sz = struct.calcsize(fmt)
             if offset + sz >= len(data):
                 data.extend([0] * 4096)
+
             if count > 1:
                 struct.pack_into(endian + fmt, data, offset, *val)
             else:

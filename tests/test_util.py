@@ -77,3 +77,11 @@ def test_attr_from_data():
     assert offset == 11
     reverse = ratbag.util.attr_to_data(obj, format)
     assert reverse == bytes([0] * 11)
+
+    bs = bytes(range(16))
+    obj = Foo()
+    format = [("H", "something"), ("3*BBB", "other"), ("H", "map_me")]
+    offset = ratbag.util.attr_from_data(obj, format, bs, offset=0)
+    assert offset == 13
+    reverse = ratbag.util.attr_to_data(obj, format, maps={"map_me": lambda x: sum(x)})
+    assert reverse[-2] << 8 | reverse[-1] == sum(range(11))

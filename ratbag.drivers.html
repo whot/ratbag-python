@@ -45,7 +45,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-ratbag.drivers.hidpp10">ratbag.drivers.hidpp10 module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-ratbag.drivers.hidpp20">ratbag.drivers.hidpp20 module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-ratbag.drivers.roccat">ratbag.drivers.roccat module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ratbag-drivers-roccat-module">ratbag.drivers.roccat module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-ratbag.drivers">Module contents</a></li>
 </ul>
 </li>
@@ -53,7 +53,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.html#module-ratbag.emulator">ratbag.emulator module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ratbag.html#module-ratbag.hid">ratbag.hid module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ratbag.html#ratbag-hid-module">ratbag.hid module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.html#module-ratbag.recorder">ratbag.recorder module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.html#module-ratbag.util">ratbag.util module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.html#module-ratbag">Module contents</a></li>
@@ -67,7 +67,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="ratbag.html#submodules">Submodules</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ratbag.html#module-ratbag.emulator">ratbag.emulator module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ratbag.html#module-ratbag.hid">ratbag.hid module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ratbag.html#ratbag-hid-module">ratbag.hid module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ratbag.html#module-ratbag.recorder">ratbag.recorder module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ratbag.html#module-ratbag.util">ratbag.util module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ratbag.html#module-ratbag">Module contents</a></li>
@@ -134,8 +134,13 @@ differ between drivers.</p>
 <p>Completion of this function without an exception counts as success.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>device</strong> – The path to the device or a fully initialized instance
-representing a device</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>device</strong> – The path to the device or a fully initialized instance
+representing a device</p></li>
+<li><p><strong>device_info</strong> – Static information about the device from external
+sources (system, data files, etc).</p></li>
+<li><p><strong>config</strong> – Driver-specific device configuration (e.g. quirks).</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -565,8 +570,13 @@ differ between drivers.</p>
 <p>Completion of this function without an exception counts as success.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>device</strong> – The path to the device or a fully initialized instance
-representing a device</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>device</strong> – The path to the device or a fully initialized instance
+representing a device</p></li>
+<li><p><strong>device_info</strong> – Static information about the device from external
+sources (system, data files, etc).</p></li>
+<li><p><strong>config</strong> – Driver-specific device configuration (e.g. quirks).</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -868,293 +878,8 @@ same command is issued again once <code class="docutils literal notranslate"><sp
 </dd></dl>
 
 </section>
-<section id="module-ratbag.drivers.roccat">
-<span id="ratbag-drivers-roccat-module"></span><h2>ratbag.drivers.roccat module<a class="headerlink" href="#module-ratbag.drivers.roccat" title="Permalink to this headline"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.crc">
-<span class="sig-prename descclassname"><span class="pre">ratbag.drivers.roccat.</span></span><span class="sig-name descname"><span class="pre">crc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.crc" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.ConfigureCommand">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.roccat.</span></span><span class="sig-name descname"><span class="pre">ConfigureCommand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.ConfigureCommand" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
-<p>Third byte in the SetFeature request, specifies what we’re trying to
-retrieve from the feature next.</p>
-<p>First byte is the <a class="reference internal" href="#ratbag.drivers.roccat.ReportID" title="ratbag.drivers.roccat.ReportID"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReportID</span></code></a>, second byte is the profile id.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.ConfigureCommand.ZERO">
-<span class="sig-name descname"><span class="pre">ZERO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#ratbag.drivers.roccat.ConfigureCommand.ZERO" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.ConfigureCommand.SETTINGS">
-<span class="sig-name descname"><span class="pre">SETTINGS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">128</span></em><a class="headerlink" href="#ratbag.drivers.roccat.ConfigureCommand.SETTINGS" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.ConfigureCommand.KEY_MAPPING">
-<span class="sig-name descname"><span class="pre">KEY_MAPPING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">144</span></em><a class="headerlink" href="#ratbag.drivers.roccat.ConfigureCommand.KEY_MAPPING" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.ReportID">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.roccat.</span></span><span class="sig-name descname"><span class="pre">ReportID</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.ReportID" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
-<p>Feature Report IDs used for various settings</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.ReportID.CONFIGURE_PROFILE">
-<span class="sig-name descname"><span class="pre">CONFIGURE_PROFILE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#ratbag.drivers.roccat.ReportID.CONFIGURE_PROFILE" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.ReportID.PROFILE">
-<span class="sig-name descname"><span class="pre">PROFILE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#ratbag.drivers.roccat.ReportID.PROFILE" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.ReportID.SETTINGS">
-<span class="sig-name descname"><span class="pre">SETTINGS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></em><a class="headerlink" href="#ratbag.drivers.roccat.ReportID.SETTINGS" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.ReportID.KEY_MAPPING">
-<span class="sig-name descname"><span class="pre">KEY_MAPPING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">7</span></em><a class="headerlink" href="#ratbag.drivers.roccat.ReportID.KEY_MAPPING" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.ReportID.MACRO">
-<span class="sig-name descname"><span class="pre">MACRO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8</span></em><a class="headerlink" href="#ratbag.drivers.roccat.ReportID.MACRO" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Setting">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.roccat.</span></span><span class="sig-name descname"><span class="pre">Setting</span></span><a class="headerlink" href="#ratbag.drivers.roccat.Setting" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Represents the reply from the <a class="reference internal" href="#ratbag.drivers.roccat.ReportID.SETTINGS" title="ratbag.drivers.roccat.ReportID.SETTINGS"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ReportID.SETTINGS</span></code></a> feature request.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Setting.data">
-<span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#ratbag.drivers.roccat.Setting.data" title="Permalink to this definition"></a></dt>
-<dd><p>The raw bytes representing this record</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Setting.dpi">
-<span class="sig-name descname"><span class="pre">dpi</span></span><a class="headerlink" href="#ratbag.drivers.roccat.Setting.dpi" title="Permalink to this definition"></a></dt>
-<dd><p>A list of <cite>(x, y)</cite> resolution tuples. This list has a constant length
-of the supported resolutions, a resolution that is disabled is <code class="docutils literal notranslate"><span class="pre">(0,</span> <span class="pre">0)</span></code>.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Setting.checksum_valid">
-<span class="sig-name descname"><span class="pre">checksum_valid</span></span><a class="headerlink" href="#ratbag.drivers.roccat.Setting.checksum_valid" title="Permalink to this definition"></a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the data matches the checksum</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Setting.SIZE">
-<span class="sig-name descname"><span class="pre">SIZE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">43</span></em><a class="headerlink" href="#ratbag.drivers.roccat.Setting.SIZE" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Setting.format">
-<span class="sig-name descname"><span class="pre">format</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('B',</span> <span class="pre">'report_id'),</span> <span class="pre">('B',</span> <span class="pre">'two_b'),</span> <span class="pre">('B',</span> <span class="pre">'profile_id'),</span> <span class="pre">('B',</span> <span class="pre">'xy_linked'),</span> <span class="pre">('B',</span> <span class="pre">'x_sensitivity'),</span> <span class="pre">('B',</span> <span class="pre">'y_sensitivity'),</span> <span class="pre">('B',</span> <span class="pre">'dpi_mask'),</span> <span class="pre">('BBBBB',</span> <span class="pre">'xres'),</span> <span class="pre">('B',</span> <span class="pre">'current_dpi'),</span> <span class="pre">('BBBBB',</span> <span class="pre">'yres'),</span> <span class="pre">('B',</span> <span class="pre">'_'),</span> <span class="pre">('B',</span> <span class="pre">'report_rate'),</span> <span class="pre">('BBBBBBBBBBBBBBBBBBBBB',</span> <span class="pre">'_'),</span> <span class="pre">('&lt;H',</span> <span class="pre">'checksum')]</span></em><a class="headerlink" href="#ratbag.drivers.roccat.Setting.format" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Setting.from_data">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.Setting.from_data" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Setting.update_dpi">
-<span class="sig-name descname"><span class="pre">update_dpi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.Setting.update_dpi" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Setting.to_data">
-<span class="sig-name descname"><span class="pre">to_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.Setting.to_data" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Macro">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.roccat.</span></span><span class="sig-name descname"><span class="pre">Macro</span></span><a class="headerlink" href="#ratbag.drivers.roccat.Macro" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Represents the reply from the <a class="reference internal" href="#ratbag.drivers.roccat.ReportID.MACRO" title="ratbag.drivers.roccat.ReportID.MACRO"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ReportID.MACRO</span></code></a> feature request.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Macro.checksum_valid">
-<span class="sig-name descname"><span class="pre">checksum_valid</span></span><a class="headerlink" href="#ratbag.drivers.roccat.Macro.checksum_valid" title="Permalink to this definition"></a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the data matches the checksum</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Macro.SIZE">
-<span class="sig-name descname"><span class="pre">SIZE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2082</span></em><a class="headerlink" href="#ratbag.drivers.roccat.Macro.SIZE" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Macro.to_ratbag">
-<span class="sig-name descname"><span class="pre">to_ratbag</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.Macro.to_ratbag" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Macro.from_data">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.Macro.from_data" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.KeyMapping">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.roccat.</span></span><span class="sig-name descname"><span class="pre">KeyMapping</span></span><a class="headerlink" href="#ratbag.drivers.roccat.KeyMapping" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Represents the reply from the <a class="reference internal" href="#ratbag.drivers.roccat.ReportID.KEY_MAPPING" title="ratbag.drivers.roccat.ReportID.KEY_MAPPING"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ReportID.KEY_MAPPING</span></code></a> feature request.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.KeyMapping.checksum_valid">
-<span class="sig-name descname"><span class="pre">checksum_valid</span></span><a class="headerlink" href="#ratbag.drivers.roccat.KeyMapping.checksum_valid" title="Permalink to this definition"></a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the data matches the checksum</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.KeyMapping.SIZE">
-<span class="sig-name descname"><span class="pre">SIZE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">77</span></em><a class="headerlink" href="#ratbag.drivers.roccat.KeyMapping.SIZE" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.KeyMapping.from_data">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.KeyMapping.from_data" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Button">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.roccat.</span></span><span class="sig-name descname"><span class="pre">Button</span></span><a class="headerlink" href="#ratbag.drivers.roccat.Button" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py property">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Button.macro">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">macro</span></span><a class="headerlink" href="#ratbag.drivers.roccat.Button.macro" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Button.is_macro">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_macro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.Button.is_macro" title="Permalink to this definition"></a></dt>
-<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the raw data indicates this is a macro</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Button.from_data">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">macro</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.Button.from_data" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Profile">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.roccat.</span></span><span class="sig-name descname"><span class="pre">Profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.Profile" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py property">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Profile.dpi">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dpi</span></span><a class="headerlink" href="#ratbag.drivers.roccat.Profile.dpi" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.Profile.update_dpi">
-<span class="sig-name descname"><span class="pre">update_dpi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.Profile.update_dpi" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.RoccatDevice">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.roccat.</span></span><span class="sig-name descname"><span class="pre">RoccatDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.RoccatDevice" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gi.overrides.GObject.Object</span></code></p>
-<dl class="py property">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.RoccatDevice.name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#ratbag.drivers.roccat.RoccatDevice.name" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.RoccatDevice.path">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">path</span></span><a class="headerlink" href="#ratbag.drivers.roccat.RoccatDevice.path" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.RoccatDevice.start">
-<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.RoccatDevice.start" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.RoccatDevice.set_config_profile">
-<span class="sig-name descname"><span class="pre">set_config_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.RoccatDevice.set_config_profile" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.RoccatDevice.wait">
-<span class="sig-name descname"><span class="pre">wait</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.RoccatDevice.wait" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.RoccatDevice.ready">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ready</span></span><a class="headerlink" href="#ratbag.drivers.roccat.RoccatDevice.ready" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.RoccatDriver">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.roccat.</span></span><span class="sig-name descname"><span class="pre">RoccatDriver</span></span><a class="headerlink" href="#ratbag.drivers.roccat.RoccatDriver" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.Driver" title="ratbag.drivers.Driver"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.Driver</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.RoccatDriver.add_recorder">
-<span class="sig-name descname"><span class="pre">add_recorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recorder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.RoccatDriver.add_recorder" title="Permalink to this definition"></a></dt>
-<dd><p>Instruct the driver to add <code class="docutils literal notranslate"><span class="pre">recorder</span></code> to log driver communication to
-the device. It is up to the driver to determine what communication is
-notable enough to be recorder for later replay.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.RoccatDriver.probe">
-<span class="sig-name descname"><span class="pre">probe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.RoccatDriver.probe" title="Permalink to this definition"></a></dt>
-<dd><p>Probe the device for information. On success, the driver will create a
-<a class="reference internal" href="ratbag.html#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a> with at least one profile and the appropriate
-number of buttons/leds/resolutions.</p>
-<p>A caller should subscribe to the <code class="docutils literal notranslate"><span class="pre">device-added</span></code> signal before
-calling this function.</p>
-<p>If <code class="docutils literal notranslate"><span class="pre">device</span></code> is a string or a <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> object, the driver
-creates initializes for the device at that path. Otherwise, <code class="docutils literal notranslate"><span class="pre">device</span></code>
-is used as-is as backing device instance. This is used when emulating
-devices - note that the exact requirements on the device behavior may
-differ between drivers.</p>
-<p>Completion of this function without an exception counts as success.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>device</strong> – The path to the device or a fully initialized instance
-representing a device</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.RoccatDriver.cb_commit">
-<span class="sig-name descname"><span class="pre">cb_commit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ratbag_device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.RoccatDriver.cb_commit" title="Permalink to this definition"></a></dt>
-<dd><p>Called when the user wants to write changes to the driver (and there
-are changes).</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ratbag.drivers.roccat.load_driver">
-<span class="sig-prename descclassname"><span class="pre">ratbag.drivers.roccat.</span></span><span class="sig-name descname"><span class="pre">load_driver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver_config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.roccat.load_driver" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
+<section id="ratbag-drivers-roccat-module">
+<h2>ratbag.drivers.roccat module<a class="headerlink" href="#ratbag-drivers-roccat-module" title="Permalink to this headline"></a></h2>
 </section>
 <section id="module-ratbag.drivers">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ratbag.drivers" title="Permalink to this headline"></a></h2>
@@ -1273,16 +998,13 @@ the entry point for ratbag to instantiate the driver for the device.</p>
 <dd><p>The name of the function to instantiate a driver. A driver file must
 contain at least the following code:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyDriver</span><span class="p">(</span><span class="n">ratbag</span><span class="o">.</span><span class="n">Driver</span><span class="p">):</span>
-    <span class="o">...</span> <span class="n">implementation</span> <span class="n">of</span> <span class="n">the</span> <span class="n">driver</span>
+    <span class="k">def</span> <span class="nf">probe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="k">pass</span>
 
-<span class="k">def</span> <span class="nf">load_driver</span><span class="p">(</span><span class="n">driver_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">device_info</span><span class="o">=</span><span class="p">{},</span> <span class="n">driver_config</span><span class="o">=</span><span class="p">{}):</span>
-    <span class="c1"># checks and balances</span>
+<span class="k">def</span> <span class="nf">load_driver</span><span class="p">(</span><span class="n">driver_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">myDriver</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">device_info</span></code> and <code class="docutils literal notranslate"><span class="pre">driver_config</span></code> arguments are static information
-about the device to be probed later, i.e. it comes from a data file, not
-the device itself.</p>
 <p>GObject Signals:</p>
 <blockquote>
 <div><ul class="simple">
@@ -1302,7 +1024,7 @@ notable enough to be recorder for later replay.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.drivers.Driver.probe">
-<span class="sig-name descname"><span class="pre">probe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Driver.probe" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">probe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Driver.probe" title="Permalink to this definition"></a></dt>
 <dd><p>Probe the device for information. On success, the driver will create a
 <a class="reference internal" href="ratbag.html#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a> with at least one profile and the appropriate
 number of buttons/leds/resolutions.</p>
@@ -1316,8 +1038,13 @@ differ between drivers.</p>
 <p>Completion of this function without an exception counts as success.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>device</strong> – The path to the device or a fully initialized instance
-representing a device</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>device</strong> – The path to the device or a fully initialized instance
+representing a device</p></li>
+<li><p><strong>device_info</strong> – Static information about the device from external
+sources (system, data files, etc).</p></li>
+<li><p><strong>config</strong> – Driver-specific device configuration (e.g. quirks).</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

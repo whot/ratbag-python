@@ -8,6 +8,7 @@
 import enum
 import fcntl
 import logging
+import pathlib
 import os
 
 import hidtools.hid
@@ -133,6 +134,19 @@ class Rodent(GObject.Object):
             super().__init__(bytes, direction=Message.Direction.RX)
             self.subtype = name
 
+    @classmethod
+    def from_device(cls, device):
+        """
+        A simplification for drivers. If the given device is already a
+        pre-setup device (from a recorder), this function returns that device.
+        Otherwise, this function returns a :class:`ratbag.drivers.Rodent`
+        instance for the given device path.
+        """
+        if isinstance(device, str) or isinstance(device, pathlib.Path):
+            return Rodent(device)
+        else:
+            return device
+
     def __init__(self, path):
         GObject.Object.__init__(self)
         self.path = path
@@ -204,6 +218,29 @@ class Rodent(GObject.Object):
         if sz != len(data):
             raise OSError('Failed to write data: {data} - bytes written: {sz}')
 
+    def connect_to_recorder(self, recorder):
+        """
+        Connect this device to the given recorder. This is a convenience
+        method to simplify drivers.
+        """
+
+        def cb_logtx(device, data):
+            recorder.log_tx(data)
+
+        def cb_logrx(device, data):
+            recorder.log_rx(data)
+
+        def cb_ioctl_tx(device, ioctl_name, bytes):
+            recorder.log_ioctl_tx(ioctl_name, bytes)
+
+        def cb_ioctl_rx(device, ioctl_name, bytes):
+            recorder.log_ioctl_rx(ioctl_name, bytes)
+
+        self.connect("data-from-device", cb_logrx)
+        self.connect("data-to-device", cb_logtx)
+        self.connect("ioctl-command", cb_ioctl_tx)
+        self.connect("ioctl-reply", cb_ioctl_rx)
+
 
 class Driver(GObject.Object):
     """
@@ -242,6 +279,7 @@ class Driver(GObject.Object):
     def __init__(self):
         GObject.Object.__init__(self)
         self.name = None
+        self.recorders = []
 
     def add_recorder(self, recorder):
         """
@@ -249,9 +287,7 @@ class Driver(GObject.Object):
         the device. It is up to the driver to determine what communication is
         notable enough to be recorder for later replay.
         """
-        logger.warning(
-            f"Recorder {cls.__name__} requested but driver does not implement this functionality"
-        )
+        self.recorders.append(recorder)
 
     def probe(self, device, device_info={}, config={}):
         """

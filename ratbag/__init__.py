@@ -406,13 +406,16 @@ class Device(GObject.Object):
             if self._dirty:
                 logger.debug(f"Device {self.name} has uncommited changes")
 
-    def dump(self):
-        p = "  " + "\n  ".join([p.dump() for p in self.profiles.values()])
-        return (
-            f"Device: {self.name} {self.path}\n"
-            f"  Profiles: {len(self.profiles)}\n"
-            f"{p}"
-        )
+    def as_dict(self):
+        """
+        Returns this device as a dictionary that can e.g. be printed as YAML
+        or JSON.
+        """
+        return {
+            "name": self.name,
+            "path": self.path,
+            "profiles": [p.as_dict() for p in self.profiles.values()],
+        }
 
 
 class Feature(GObject.Object):
@@ -562,13 +565,17 @@ class Profile(Feature):
         self.leds[led.index] = led
         led.connect("notify::dirty", self._cb_dirty)
 
-    def dump(self):
+    def as_dict(self):
         """
-        Return a human-readable description of this profile
+        Returns this profile as a dictionary that can e.g. be printed as YAML
+        or JSON.
         """
-        res = "    " + "\n    ".join([r.dump() for r in self.resolutions.values()])
-        btns = "    " + "\n    ".join([b.dump() for b in self.buttons.values()])
-        return f"Profile {self.index}: {self.name}\n{res}\n{btns}"
+        return {
+            "index": self.index,
+            "name": self.name,
+            "resolutions": [r.as_dict() for r in self.resolutions.values()],
+            "buttons": [b.as_dict() for b in self.buttons.values()],
+        }
 
 
 class Resolution(Feature):
@@ -681,17 +688,18 @@ class Resolution(Feature):
         """
         return self._dpi_list
 
-    def dump(self):
+    def as_dict(self):
         """
-        Return a human-readable description of this Resolution
+        Returns this resolution as a dictionary that can e.g. be printed as YAML
+        or JSON.
         """
-        dpis = self.dpi_list
-        if len(dpis) > 8:
-            dpis = (
-                f"[{', '.join(map(str, dpis[:3]))}, … {', '.join(map(str, dpis[-3:]))}]"
-            )
-
-        return f"Resolution {self.index}: {self.dpi} of {dpis}, active: {self.active}, default: {self.default}"
+        return {
+            "index": self.index,
+            "dpi": list(self.dpi),
+            "dpi_list": self.dpi_list,
+            "active": self.active,
+            "default": self.default,
+        }
 
 
 class Action(GObject.Object):
@@ -709,6 +717,9 @@ class Action(GObject.Object):
 
     def __str__(self):
         return "Unknown"
+
+    def as_dict(self):
+        return {"type": self.type.name}
 
 
 class ActionNone(Action):
@@ -732,6 +743,14 @@ class ActionButton(Action):
 
     def __str__(self):
         return f"Button {self.button}"
+
+    def as_dict(self):
+        return {
+            **super().as_dict(),
+            **{
+                "button": self.button,
+            },
+        }
 
 
 class ActionSpecial(Action):
@@ -772,6 +791,14 @@ class ActionSpecial(Action):
     def __str__(self):
         return f"Special {self.special.name}"
 
+    def as_dict(self):
+        return {
+            **super().as_dict(),
+            **{
+                "special": self.special.name,
+            },
+        }
+
 
 class ActionMacro(Action):
     def __init__(self, parent, macro):
@@ -786,6 +813,14 @@ class ActionMacro(Action):
     @property
     def macro(self):
         return self._macro
+
+    def as_dict(self):
+        return {
+            **super().as_dict(),
+            **{
+                "macro": self.macro.as_dict(),
+            },
+        }
 
 
 class Macro(GObject.Object):
@@ -840,15 +875,24 @@ class Macro(GObject.Object):
         """
         return self._events
 
-    def __str__(self):
+    def _events_as_strlist(self):
         prefix = {
             Macro.Event.INVALID: "x",
             Macro.Event.KEY_PRESS: "+",
             Macro.Event.KEY_RELEASE: "-",
             Macro.Event.WAIT_MS: "t",
         }
-        str = " ".join([f"{prefix[t]}{v}" for t, v in self.events])
+        return [f"{prefix[t]}{v}" for t, v in self.events]
+
+    def __str__(self):
+        str = " ".join(self._events_as_strlist())
         return f"{self.name}: {str}"
+
+    def as_dict(self):
+        return {
+            "name": self.name,
+            "events": self._events_as_strlist(),
+        }
 
 
 class Button(Feature):
@@ -884,8 +928,15 @@ class Button(Feature):
         self.notify("action")
         self.dirty = True
 
-    def dump(self):
-        return f"Button {self.index}: {str(self.action)}"
+    def as_dict(self):
+        """
+        Returns this button as a dictionary that can e.g. be printed as YAML
+        or JSON.
+        """
+        return {
+            "index": self.index,
+            "action": self.action.as_dict(),
+        }
 
 
 class Led(Feature):

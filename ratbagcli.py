@@ -309,7 +309,7 @@ if __name__ == "__main__":
         ratbagd = ratbag.Ratbag(config)
 
         def cb_device_added(ratbagcli, device):
-            print(device.dump())
+            print(yaml.dump(device.as_dict()))
             user_config.apply(device)
 
         ratbagd.connect("device-added", cb_device_added)

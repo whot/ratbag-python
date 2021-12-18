@@ -564,7 +564,13 @@ is used by drivers.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.Device.commit">
 <span class="sig-name descname"><span class="pre">commit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Device.commit" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Write the current changes to the driver. This function emits the
+<code class="docutils literal notranslate"><span class="pre">commit</span></code> signal to notify the respective driver that the current
+state of the device is to be committed. Calling this method resets
+<a class="reference internal" href="#ratbag.Device.dirty" title="ratbag.Device.dirty"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dirty</span></code></a> to <cite>False</cite> for all features of this device.</p>
+<p>If an error occurs, the driver emits the <code class="docutils literal notranslate"><span class="pre">resync</span></code> signal. A caller
+receiving that signal should synchronize its own state of the device.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.Device.add_profile">
@@ -579,9 +585,11 @@ is used by drivers.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ratbag.Device.dump">
-<span class="sig-name descname"><span class="pre">dump</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Device.dump" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="ratbag.Device.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Device.as_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Returns this device as a dictionary that can e.g. be printed as YAML
+or JSON.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.Device.do_get_property">
@@ -712,9 +720,10 @@ instead of writing directly.</p>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ratbag.Profile.dump">
-<span class="sig-name descname"><span class="pre">dump</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Profile.dump" title="Permalink to this definition"></a></dt>
-<dd><p>Return a human-readable description of this profile</p>
+<dt class="sig sig-object py" id="ratbag.Profile.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Profile.as_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Returns this profile as a dictionary that can e.g. be printed as YAML
+or JSON.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -799,9 +808,10 @@ has two identical values.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ratbag.Resolution.dump">
-<span class="sig-name descname"><span class="pre">dump</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Resolution.dump" title="Permalink to this definition"></a></dt>
-<dd><p>Return a human-readable description of this Resolution</p>
+<dt class="sig sig-object py" id="ratbag.Resolution.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Resolution.as_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Returns this resolution as a dictionary that can e.g. be printed as YAML
+or JSON.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -852,6 +862,11 @@ has two identical values.</p>
 
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Action.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Action.as_dict" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -867,6 +882,11 @@ has two identical values.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.ActionButton.button">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">button</span></span><a class="headerlink" href="#ratbag.ActionButton.button" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.ActionButton.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.ActionButton.as_dict" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -982,6 +1002,11 @@ has two identical values.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">special</span></span><a class="headerlink" href="#ratbag.ActionSpecial.special" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.ActionSpecial.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.ActionSpecial.as_dict" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -991,6 +1016,11 @@ has two identical values.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.ActionMacro.macro">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">macro</span></span><a class="headerlink" href="#ratbag.ActionMacro.macro" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.ActionMacro.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.ActionMacro.as_dict" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1064,6 +1094,11 @@ handle tuples with lengths other than 2.</p>
 the desired event sequence and assign it to the button.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Macro.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Macro.as_dict" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1082,9 +1117,11 @@ the desired event sequence and assign it to the button.</p>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ratbag.Button.dump">
-<span class="sig-name descname"><span class="pre">dump</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Button.dump" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="ratbag.Button.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Button.as_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Returns this button as a dictionary that can e.g. be printed as YAML
+or JSON.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.Button.do_get_property">

@@ -7,7 +7,6 @@
 
 import enum
 import logging
-import pathlib
 import struct
 import time
 import traceback
@@ -138,22 +137,20 @@ class RoccatProfile(object):
     def init_ratbag_profile(self, ratbag_device):
         assert self.ratbag_profile is None
         p = ratbag.Profile(ratbag_device, self.idx, name=self.name)
-        for (
-            dpi_idx,
-            dpi,
-        ) in enumerate(self.dpi):
+        for (dpi_idx, dpi) in enumerate(self.dpi):
             dpi_list = list(range(200, 8200 + 1, 50))
             caps = [ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION]
             r = ratbag.Resolution(p, dpi_idx, dpi, capabilities=caps, dpi_list=dpi_list)
             p.add_resolution(r)
 
-        for btn_idx, button in enumerate(self.buttons):
+        for btn_idx in range(self.key_mapping.num_buttons):
             caps = [
                 ratbag.Action.Type.BUTTON,
                 ratbag.Action.Type.SPECIAL,
                 ratbag.Action.Type.MACRO,
             ]
-            button = ratbag.Button(p, btn_idx, types=caps, action=button.action)
+            action = self.key_mapping.button_to_ratbag(btn_idx)
+            button = ratbag.Button(p, btn_idx, types=caps, action=action)
             p.add_button(button)
 
         self.ratbag_profile = p
@@ -168,7 +165,7 @@ class RoccatProfile(object):
     def update_button(self, index, action):
         self.key_mapping.actions[index] = (action, 0, 0)
 
-    def to_data(self):
+    def __bytes__(self):
         # need to do this twice, once to fill in the data, the second time so
         # the checksum is correct
         return ratbag.util.attr_to_data(
@@ -197,11 +194,13 @@ class RoccatMacro(object):
         ("<H", "checksum"),
     ]
 
-    def __init__(self, button):
-        self.button = button
-        self.name = f"macro on {button.idx}"
+    def __init__(self, mapping, button_idx):
+        self.mapping = mapping
+        self.button = button_idx
+        self.name = f"macro on {button_idx}"
         self.keys = 500 * [(0, 0, 0)]  # A triple of keycode, flags, wait_time
         self.length = 0
+        self._macro_exists_on_device = False
 
     def to_ratbag(self):
         events = []
@@ -280,6 +279,7 @@ class RoccatMacro(object):
 
         self.length = offset
         self.keys = self.keys[: self.length]
+        self._macro_exists_on_device = True
 
     def from_data(self, data):
         if len(data) != RoccatMacro.SIZE:
@@ -298,14 +298,12 @@ class RoccatMacro(object):
 
         return self  # to allow for chaining
 
-    def to_data(self):
-        # If we don't have twentytwo, this macro doesn't hve a fw representation yet
-        if not getattr(self, "twenty_two", None):
+    def __bytes__(self):
+        if not self._macro_exists_on_device:
             self.report_id = int(ReportID.MACRO)
-            self.twenty_two = 0x22
-            self.height = 0x8
+            self.report_length = 0x0822
             self.profile = self.button.profile.idx
-            self.button_index = self.button.idx
+            self.button_index = self.button_idx
             self.active = 0x01
             self.checksum = 0x00
             group = bytearray("g0".encode("utf-8"))
@@ -326,8 +324,6 @@ class RoccatMacro(object):
 class RoccatKeyMapping(object):
     """
     Represents the reply from the :attr:`ReportID.KEY_MAPPING` feature request.
-
-
     """
 
     SIZE = 77
@@ -340,31 +336,7 @@ class RoccatKeyMapping(object):
         ("<H", "checksum"),
     ]
 
-    def __init__(self, profile):
-        self.profile = profile
-
-    def from_data(self, data):
-        if len(data) != RoccatKeyMapping.SIZE:
-            raise ratbag.ProtocolError(
-                message=f"Invalid size {len(data)} for KeyMapping"
-            )
-
-        self.bytes = data
-        ratbag.util.attr_from_data(self, RoccatKeyMapping.format, data, offset=0)
-        if crc(data) != self.checksum:
-            raise ratbag.ProtocolError(
-                f"CRC validation failed for mapping on {self.profile.idx}"
-            )
-
-        return self  # to allow for chaining
-
-    def to_data(self):
-        return ratbag.util.attr_to_data(
-            self, RoccatKeyMapping.format, maps={"checksum": lambda x: crc(x)}
-        )
-
-
-class RoccatButton:
+    # firmware action value vs ratbag value
     specials = {
         9: ratbag.ActionSpecial.Special.WHEEL_LEFT,
         10: ratbag.ActionSpecial.Special.WHEEL_RIGHT,
@@ -381,6 +353,7 @@ class RoccatButton:
         65: ratbag.ActionSpecial.Special.SECOND_MODE,
     }
 
+    # firmware key value vs ratbag value
     keycodes = {
         26: ratbag.hid.Key.KEY_LEFT_GUI,
         32: ratbag.hid.ConsumerControl.CC_AL_CONSUMER_CONTROL_CONFIG,
@@ -393,57 +366,77 @@ class RoccatButton:
         39: ratbag.hid.ConsumerControl.CC_VOLUME_DOWN,
     }
 
-    def __init__(self, idx, profile):
-        self.idx = idx
+    def __init__(self, profile):
         self.profile = profile
-        self.macro = None
+        self.macros = {}  # button index: RoccatMacro
+        self.num_buttons = MAX_BUTTONS
 
-    @classmethod
-    def is_macro(self, data):
-        """
-        Return ``True`` if the raw data indicates this is a macro
-        """
-        return data[0] == 48
+    def from_data(self, data):
+        if len(data) != RoccatKeyMapping.SIZE:
+            raise ratbag.ProtocolError(
+                message=f"Invalid size {len(data)} for KeyMapping"
+            )
 
-    def from_data(self, data, macro=None):
-        action = data[0]
+        self.bytes = data
+        ratbag.util.attr_from_data(self, RoccatKeyMapping.format, data, offset=0)
+        if crc(data) != self.checksum:
+            raise ratbag.ProtocolError(
+                f"CRC validation failed for mapping on {self.profile.idx}"
+            )
+        return self  # to allow for chaining
+
+    def button_is_macro(self, index):
+        """
+        :return: True if the mapping at ``index`` is a macro
+        """
+        return self.actions[index][0] == 48
+
+    @property
+    def buttons_with_macros(self):
+        """
+        :return: the list of button indices that are set to macro
+        """
+        return [idx for idx in range(MAX_BUTTONS) if self.button_is_macro(idx)]
+
+    def button_to_ratbag(self, idx):
+        ratbag_action = None
+        action = self.actions[idx][0]
+        macro = self.macros.get(idx, None)
         if action == 0:
-            self.action = ratbag.ActionNone(self)
+            ratbag_action = ratbag.ActionNone(self)
         elif action in [1, 2, 3]:
-            self.action = ratbag.ActionButton(self, action)
+            ratbag_action = ratbag.ActionButton(self, action)
         # 5 is shortcut (modifier + key)
         elif action == 6:
-            self.action = ratbag.ActionNone(self)
+            ratbag_action = ratbag.ActionNone(self)
         elif action in [7, 8]:
-            self.action = ratbag.ActionButton(self, action - 3)
-        elif action in RoccatButton.specials:
-            self.action = ratbag.ActionSpecial(self, RoccatButton.specials[action])
+            ratbag_action = ratbag.ActionButton(self, action - 3)
+        elif action in RoccatKeyMapping.specials:
+            ratbag_action = ratbag.ActionSpecial(
+                self, RoccatKeyMapping.specials[action]
+            )
         elif action == 48:
             assert macro is not None
-            self.macro = macro
-            self.action = ratbag.ActionMacro(self, macro.to_ratbag())
+            ratbag_action = ratbag.ActionMacro(self, macro.to_ratbag())
         else:
             # For keycodes we pretend it's a macro
             assert macro is None
             try:
-                macro = RoccatMacro(self)
-                keycode = RoccatButton.keycodes[action]
+                macro = RoccatMacro(self, idx)
+                keycode = RoccatKeyMapping.keycodes[action]
                 macro.name = "keycode"
                 macro.keys = [
                     (keycode, 0x1, 1),
                     (keycode, 0x0, 1),
                 ]
                 macro.length = 2
-                self.action = ratbag.ActionMacro(self, macro.to_ratbag())
+                ratbag_action = ratbag.ActionMacro(self, macro.to_ratbag())
             except KeyError:
                 logger.info(f"Unsupported action type {action}")
-                self.action = ratbag.Action(self)
-        return self  # to allow for chaining
+                ratbag_action = ratbag.Action(self)
+        return ratbag_action
 
-    def update_from_ratbag(self, ratbag_button):
-        self.action = ratbag_button.action
-
-    def to_data(self):
+    def button_update_from_ratbag(self, idx, ratbag_action):
         """
         Convert this button back to a driver-specific action. This is the
         invers to :meth:`from_data`.
@@ -451,41 +444,45 @@ class RoccatButton:
         :return: a tuple of ``(action, macro)`` where macro may be ``None``
         """
         action = None
-        if self.action.type == ratbag.Action.Type.NONE:
+        if ratbag_action.type == ratbag.Action.Type.NONE:
             action = 0
-        elif self.action.type == ratbag.Action.Type.BUTTON:
-            action = self.action.button
+        elif ratbag_action.type == ratbag.Action.Type.BUTTON:
+            action = ratbag_action.button
             if action > 3:
                 action += 3  # buttons 4, 5 are 7, 8
-        elif self.action.type == ratbag.Action.Type.SPECIAL:
-            inv_specials = {v: k for k, v in RoccatButton.specials.items()}
+        elif ratbag_action.type == ratbag.Action.Type.SPECIAL:
+            inv_specials = {v: k for k, v in RoccatKeyMapping.specials.items()}
             try:
-                action = inv_specials[self.action.special]
+                action = inv_specials[ratbag_action.special]
             except KeyError:
                 logger.error(
-                    f"Unsupported special action {self.action.special}. Setting to NONE"
+                    f"Unsupported special action {ratbag_action.special}. Setting to NONE"
                 )
                 action = 0
-        elif self.action.type == ratbag.Action.Type.MACRO:
-            if not self.macro:
-                self.macro = RoccatMacro(self)
-            self.macro.update_from_ratbag(self.action.macro)
-            if self.macro.length != 2:
+        elif ratbag_action.type == ratbag.Action.Type.MACRO:
+            macro = self.macros.get(idx, RoccatMacro(self, idx))
+            macro.update_from_ratbag(ratbag_action.macro)
+            if macro.length != 2:
                 # This is definitely a macro, not a key sequence converted to
                 # a macro
                 action = 48
             else:
                 # Events is [(keycode, flags, wait), ...]
-                events = self.macro.keys[:2]
+                events = macro.keys[:2]
                 keycode1, flags, wait = events[0]
                 keycode2, _, _ = events[1]
                 # 2 events with the same keycode?
                 if keycode1 == keycode2:
-                    lut = {v.value: k for k, v in RoccatButton.keycodes.items()}
+                    lut = {v.value: k for k, v in RoccatKeyMapping.keycodes.items()}
                     action = lut.get(keycode1, 48)  # it not present, it's a macro
                 else:
                     action = 48  # it's a macro
-        return action, None if action != 48 else self.macro.to_data()
+            self.macros[idx] = macro
+
+    def __bytes__(self):
+        return ratbag.util.attr_to_data(
+            self, RoccatKeyMapping.format, maps={"checksum": lambda x: crc(x)}
+        )
 
 
 class RoccatDevice(GObject.Object):
@@ -544,23 +541,17 @@ class RoccatDevice(GObject.Object):
             mapping = RoccatKeyMapping(profile).from_data(bytes(bs))
             profile.key_mapping = mapping
 
-            for bidx in range(MAX_BUTTONS):
-                action = mapping.actions[bidx]
-                button = RoccatButton(bidx, profile)
-                # If we have a macro button, we need to fetch that macro's
-                # data so we can set up the button
-                if RoccatButton.is_macro(action):
-                    self.set_config_profile(idx, ConfigureCommand.ZERO)
-                    self.set_config_profile(idx, bidx)
+            # Macros are in a separate HID Report, fetch those and store them
+            # in the KeyMapping class
+            for bidx in mapping.buttons_with_macros:
+                self.set_config_profile(idx, ConfigureCommand.ZERO)
+                self.set_config_profile(idx, bidx)
 
-                    logger.debug(f"ioctl {ReportID.MACRO.name} for button {idx}.{bidx}")
-                    bs = self.hidraw_device.hid_get_feature(ReportID.MACRO)
-                    macro = RoccatMacro(button).from_data(bytes(bs))
-                else:
-                    macro = None
+                logger.debug(f"ioctl {ReportID.MACRO.name} for button {idx}.{bidx}")
+                bs = self.hidraw_device.hid_get_feature(ReportID.MACRO)
+                macro = RoccatMacro(mapping, bidx).from_data(bytes(bs))
+                mapping.macros[bidx] = macro
 
-                button.from_data(action, macro=macro)
-                profile.buttons.append(button)
             self.profiles.append(profile)
 
         # We should all be nicely set up, let's init the ratbag side of it
@@ -623,21 +614,23 @@ class RoccatDevice(GObject.Object):
                 for ratbag_button in [
                     b for b in ratbag_profile.buttons.values() if b.dirty
                 ]:
-                    button = profile.buttons[ratbag_button.index]
-                    button.update_from_ratbag(ratbag_button)
-                    action, macro_bytes = button.to_data()
                     logger.debug(
-                        f"Button {profile.idx}.{ratbag_button.index} has changed to {action}"
+                        f"Button {profile.idx}.{ratbag_button.index} has changed to {ratbag_button.action}"
                     )
-                    profile.update_button(button.idx, action)
-                    if macro_bytes:
+                    profile.key_mapping.button_update_from_ratbag(
+                        ratbag_button.index, ratbag_button.action
+                    )
+                    if profile.key_mapping.button_is_macro(ratbag_button.index):
+                        macro_bytes = bytes(
+                            profile.key_mapping.macros[ratbag_button.index]
+                        )
                         logger.debug(f"Updating macro with {as_hex(macro_bytes)}")
                         self.write(ReportID.MACRO, macro_bytes)
 
-                keymap_bytes = profile.key_mapping.to_data()
+                keymap_bytes = bytes(profile.key_mapping)
                 logger.debug(f"Updating keymapping with {as_hex(keymap_bytes)}")
                 self.write(ReportID.KEY_MAPPING, keymap_bytes)
-                profile_bytes = profile.to_data()
+                profile_bytes = bytes(profile)
                 logger.debug(f"Updating profile with {as_hex(profile_bytes)}")
                 self.write(ReportID.SETTINGS, profile_bytes)
         except Exception as e:

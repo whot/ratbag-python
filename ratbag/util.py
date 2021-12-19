@@ -140,7 +140,7 @@ def attr_from_data(obj, fmt_tuples, data, offset=0):
     :returns: the new offset after parsing all tuples
     """
 
-    logger_autoparse.debug(f"parsing: {as_hex(data)}")
+    logger_autoparse.debug(f"parsing {type(obj).__name__}: {as_hex(data)}")
 
     endian = ">"  # default to BE
 
@@ -203,6 +203,8 @@ def attr_to_data(obj, fmt_tuples, maps={}):
     data = bytearray(4096)
     offset = 0
     endian = ">"  # default to BE
+
+    logger_autoparse.debug(f"deparsing {type(obj).__name__}")
 
     for fmt, name in fmt_tuples:
         # endianess is handled as a toggle, one field with different

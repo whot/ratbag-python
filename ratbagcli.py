@@ -309,7 +309,16 @@ if __name__ == "__main__":
         ratbagd = ratbag.Ratbag(config)
 
         def cb_device_added(ratbagcli, device):
-            print(yaml.dump(device.as_dict()))
+            device_dict = device.as_dict()
+            # dpi_list is too long, spams the output, let's replace it
+            for p in device_dict["profiles"]:
+                for r in p["resolutions"]:
+                    if len(r.get("dpi_list", [])) > 6:
+                        dpis = r["dpi_list"]
+                        dpis = dpis[:3] + dpis[-3:]
+                        r["dpi_list"] = dpis
+
+            print(yaml.dump(device_dict))
             user_config.apply(device)
 
         ratbagd.connect("device-added", cb_device_added)

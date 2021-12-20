@@ -823,37 +823,10 @@ class ActionSpecial(Action):
 
 
 class ActionMacro(Action):
-    def __init__(self, parent, macro):
-        super().__init__(parent)
-        self.type = Action.Type.MACRO
-        self._macro = macro
-        macro.assign(self)
-
-    def __str__(self):
-        return f"Macro: {str(self.macro)}"
-
-    @property
-    def macro(self):
-        return self._macro
-
-    def as_dict(self):
-        return {
-            **super().as_dict(),
-            **{
-                "macro": self.macro.as_dict(),
-            },
-        }
-
-
-class Macro(GObject.Object):
     """
-    A macro assigned to a button via :class:`ActionMacro`. Macros are created
-    independent of a parent button, use :meth:`assign` to assign this macro to
-    a button.
-
-    .. attribute:: parent
-
-        The object this macro is assigned to
+    A macro assigned to a button. The macro may consist of key presses,
+    releases and timeouts (see :class:`ActionMacro.Event`), the length of the
+    macro and limitations on what keys can be used are device-specific.
     """
 
     class Event(enum.Enum):
@@ -863,23 +836,11 @@ class Macro(GObject.Object):
         KEY_RELEASE = enum.auto()
         WAIT_MS = enum.auto()
 
-    def __init__(self, name, events=[(Event.INVALID,)]):
-        GObject.Object.__init__(self)
+    def __init__(self, parent, name="Unnamed macro", events=[(Event.INVALID,)]):
+        super().__init__(parent)
+        self.type = Action.Type.MACRO
         self.name = name
         self._events = events
-        self._parent = None
-
-    @property
-    def parent(self):
-        return self._parent
-
-    def assign(self, parent):
-        """
-        Assign this macro to the given object.
-        """
-        assert self._parent is None
-        assert parent is not None
-        self._parent = parent
 
     @property
     def events(self):
@@ -899,21 +860,26 @@ class Macro(GObject.Object):
 
     def _events_as_strlist(self):
         prefix = {
-            Macro.Event.INVALID: "x",
-            Macro.Event.KEY_PRESS: "+",
-            Macro.Event.KEY_RELEASE: "-",
-            Macro.Event.WAIT_MS: "t",
+            ActionMacro.Event.INVALID: "x",
+            ActionMacro.Event.KEY_PRESS: "+",
+            ActionMacro.Event.KEY_RELEASE: "-",
+            ActionMacro.Event.WAIT_MS: "t",
         }
         return [f"{prefix[t]}{v}" for t, v in self.events]
 
     def __str__(self):
         str = " ".join(self._events_as_strlist())
-        return f"{self.name}: {str}"
+        return f"Macro: {self.name}: {str}"
 
     def as_dict(self):
         return {
-            "name": self.name,
-            "events": self._events_as_strlist(),
+            **super().as_dict(),
+            **{
+                "macro": {
+                    "name": self.name,
+                    "events": self._events_as_strlist(),
+                }
+            },
         }
 
 

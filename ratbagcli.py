@@ -212,17 +212,18 @@ class Config(object):
                 macro = bconf.get("macro", {})
                 if macro:
                     lut = {
-                        "t": ratbag.Macro.Event.WAIT_MS,
-                        "+": ratbag.Macro.Event.KEY_PRESS,
-                        "-": ratbag.Macro.Event.KEY_RELEASE,
+                        "t": ratbag.ActionMacro.Event.WAIT_MS,
+                        "+": ratbag.ActionMacro.Event.KEY_PRESS,
+                        "-": ratbag.ActionMacro.Event.KEY_RELEASE,
                     }
                     events = [
                         (lut[entry[0]], int(entry[1:])) for entry in macro["entries"]
                     ]
                     name = macro.get("name", "macro {profile.index}.{button.index}")
-                    m = ratbag.Macro(name, events)
-                    logger.info(f"Button {profile.index}.{button.index} macro {str(m)}")
-                    button.action = ratbag.ActionMacro(button, m)
+                    logger.info(
+                        f"Button {profile.index}.{button.index} macro {str(events)}"
+                    )
+                    button.action = ratbag.ActionMacro(button, name, events)
                     continue
 
         if not self.nocommit:

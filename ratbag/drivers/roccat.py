@@ -214,9 +214,9 @@ class RoccatMacro(object):
                     logger.error(f"Keycode {keycode} unsupported by ratbag")
                     evdev = 0
             type = (
-                ratbag.Macro.Event.KEY_PRESS
+                ratbag.ActionMacro.Event.KEY_PRESS
                 if flag & 0x01
-                else ratbag.Macro.Event.KEY_RELEASE
+                else ratbag.ActionMacro.Event.KEY_RELEASE
             )
             events.append((type, evdev))
             # Always insert a wait period of 10ms (after press) or 50ms (after release)
@@ -225,8 +225,9 @@ class RoccatMacro(object):
                     wait_time = 10
                 else:
                     wait_time = 50
-            events.append((ratbag.Macro.Event.WAIT_MS, wait_time))
-        return ratbag.Macro(self.name, events)
+            events.append((ratbag.ActionMacro.Event.WAIT_MS, wait_time))
+
+        return self.name, events
 
     def update_from_ratbag(self, ratbag_macro):
         """
@@ -237,7 +238,7 @@ class RoccatMacro(object):
         for type, value in ratbag_macro.events:
             # The device stores the wait time with the keycode, so we only
             # push an event if we have one of the key events
-            if type == ratbag.Macro.Event.WAIT_MS:
+            if type == ratbag.ActionMacro.Event.WAIT_MS:
                 wait_time = value
                 continue
 
@@ -250,20 +251,20 @@ class RoccatMacro(object):
                 return keycode
 
             if keycode and type in [
-                ratbag.Macro.Event.KEY_PRESS,
-                ratbag.Macro.Event.KEY_RELEASE,
+                ratbag.ActionMacro.Event.KEY_PRESS,
+                ratbag.ActionMacro.Event.KEY_RELEASE,
             ]:
                 self.keys[offset] = (keycode, flag, wait_time)
                 offset += 1
                 keycode, flag = 0, 0
 
-            if type == ratbag.Macro.Event.KEY_PRESS:
+            if type == ratbag.ActionMacro.Event.KEY_PRESS:
                 keycode = map_key(value)
                 if keycode is not None:
                     keycode = keycode.value
                     flag = 0x01
                     wait_time = 0
-            elif type == ratbag.Macro.Event.KEY_RELEASE:
+            elif type == ratbag.ActionMacro.Event.KEY_RELEASE:
                 keycode = map_key(value)
                 if keycode is not None:
                     keycode = keycode.value
@@ -417,7 +418,8 @@ class RoccatKeyMapping(object):
             )
         elif action == 48:
             assert macro is not None
-            ratbag_action = ratbag.ActionMacro(self, macro.to_ratbag())
+            name, events = macro.to_ratbag()
+            ratbag_action = ratbag.ActionMacro(self, name, events)
         else:
             # For keycodes we pretend it's a macro
             assert macro is None
@@ -430,7 +432,8 @@ class RoccatKeyMapping(object):
                     (keycode, 0x0, 1),
                 ]
                 macro.length = 2
-                ratbag_action = ratbag.ActionMacro(self, macro.to_ratbag())
+                name, events = macro.to_ratbag()
+                ratbag_action = ratbag.ActionMacro(self, name, events)
             except KeyError:
                 logger.info(f"Unsupported action type {action}")
                 ratbag_action = ratbag.Action(self)
@@ -461,7 +464,7 @@ class RoccatKeyMapping(object):
                 action = 0
         elif ratbag_action.type == ratbag.Action.Type.MACRO:
             macro = self.macros.get(idx, RoccatMacro(self, idx))
-            macro.update_from_ratbag(ratbag_action.macro)
+            macro.update_from_ratbag(ratbag_action)
             if macro.length != 2:
                 # This is definitely a macro, not a key sequence converted to
                 # a macro

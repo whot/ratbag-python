@@ -770,6 +770,19 @@ only one profile at a time can be active. See <a class="reference internal" href
 <dd><p>Set this profile to be the active profile.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.Profile.default">
+<span class="sig-name descname"><span class="pre">default</span></span><a class="headerlink" href="#ratbag.Profile.default" title="Permalink to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if this profile is the default profile, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.
+Note that only one profile at a time can be the default. See
+<a class="reference internal" href="#ratbag.Profile.set_default" title="ratbag.Profile.set_default"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_default()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Profile.set_default">
+<span class="sig-name descname"><span class="pre">set_default</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Profile.set_default" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.Profile.as_dict">
 <span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Profile.as_dict" title="Permalink to this definition"></a></dt>
@@ -839,9 +852,9 @@ instead of writing directly.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.Resolution.default">
 <span class="sig-name descname"><span class="pre">default</span></span><a class="headerlink" href="#ratbag.Resolution.default" title="Permalink to this definition"></a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if this resolution is default, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise. This
-property should be treated as read-only, use <a class="reference internal" href="#ratbag.Resolution.set_default" title="ratbag.Resolution.set_default"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_default()</span></code></a>
-instead of writing directly.</p>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if this resolution is the default resolution, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.
+Note that only one resolution at a time can be the default. See
+<a class="reference internal" href="#ratbag.Resolution.set_default" title="ratbag.Resolution.set_default"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_default()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">

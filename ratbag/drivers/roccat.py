@@ -163,7 +163,6 @@ class RoccatProfile(object):
                 capabilities=caps,
                 dpi_list=dpi_list,
             )
-            p.add_resolution(r)
 
         for btn_idx in range(self.key_mapping.num_buttons):
             caps = [
@@ -173,7 +172,6 @@ class RoccatProfile(object):
             ]
             action = self.key_mapping.button_to_ratbag(btn_idx)
             button = ratbag.Button(p, btn_idx, types=caps, action=action)
-            p.add_button(button)
 
         self.ratbag_profile = p
         return p
@@ -592,8 +590,7 @@ class RoccatDevice(GObject.Object):
 
         # We should all be nicely set up, let's init the ratbag side of it
         for p in self.profiles:
-            ratbag_profile = p.init_ratbag_profile(self.ratbag_device)
-            self.ratbag_device.add_profile(ratbag_profile)
+            p.init_ratbag_profile(self.ratbag_device)
         return self.ratbag_device
 
     def set_config_profile(self, profile, type):

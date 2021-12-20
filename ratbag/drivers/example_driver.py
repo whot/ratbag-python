@@ -62,7 +62,6 @@ class ExampleDriver(ratbag.drivers.Driver):
 
         for profile_idx in range(3):  # three profiles
             profile = ratbag.Profile(device, profile_idx, name="unnamed profile")
-            device.add_profile(profile)
 
             for dpi_idx in range(5):
                 # Init all profiles to 800 dpi (x and y)
@@ -70,10 +69,9 @@ class ExampleDriver(ratbag.drivers.Driver):
                 # Let's say we support 400, 500, 600, ... 2000
                 supported_dpi = list(range(400, 2000 + 1, 100))
                 caps = [ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION]
-                res = ratbag.Resolution(
-                    profile, dpi_idx, 500, capabilities=caps, dpi_list=supported_dpi
+                ratbag.Resolution(
+                    profile, dpi_idx, dpi, capabilities=caps, dpi_list=supported_dpi
                 )
-                profile.add_resolution(res)
 
             for btn_idx in range(8):
                 caps = [
@@ -86,15 +84,14 @@ class ExampleDriver(ratbag.drivers.Driver):
                 action = ratbag.ActionButton(
                     None, btn_idx + 1
                 )  # button events are 1 indexed
-                button = ratbag.Button(profile, btn_idx, types=caps, action=action)
-                p.add_button(button)
+                ratbag.Button(profile, btn_idx, types=caps, action=action)
 
         # Notify the caller that we have a new device available. The next
         # interaction with this device will be the _on_commit callback
         self.emit("device-added", device)
 
     def _on_commit(self, device):
-        for p in ratbag_device.profiles.values():
+        for p in device.profiles.values():
             if not p.dirty:
                 continue
 

@@ -380,10 +380,11 @@ class Device(GObject.Object):
             p.dirty = False
         self.dirty = False
 
-    def add_profile(self, profile):
+    def _add_profile(self, profile):
         """
         Add the profile to the device.
         """
+        assert profile.index not in self.profiles
 
         def cb_dirty(profile, pspec):
             self.dirty = self.dirty or profile.dirty
@@ -560,6 +561,7 @@ class Profile(Feature):
         self._report_rate = report_rate
         self._report_rates = report_rates
         self._capabilities = capabilities
+        self.device._add_profile(self)
 
     @GObject.Property
     def report_rate(self):
@@ -632,15 +634,18 @@ class Profile(Feature):
     def _cb_dirty(self, feature, pspec):
         self.dirty = self.dirty or feature.dirty
 
-    def add_button(self, button):
+    def _add_button(self, button):
+        assert button.index not in self.buttons
         self.buttons[button.index] = button
         button.connect("notify::dirty", self._cb_dirty)
 
-    def add_resolution(self, resolution):
+    def _add_resolution(self, resolution):
+        assert resolution.index not in self.resolutions
         self.resolutions[resolution.index] = resolution
         resolution.connect("notify::dirty", self._cb_dirty)
 
-    def add_led(self, led):
+    def _add_led(self, led):
+        assert led.index not in self.leds
         self.leds[led.index] = led
         led.connect("notify::dirty", self._cb_dirty)
 
@@ -686,6 +691,7 @@ class Resolution(Feature):
         self._active = False
         self._default = False
         self._enabled = enabled
+        self.profile._add_resolution(self)
 
     @property
     def capabilities(self):
@@ -1007,6 +1013,7 @@ class Button(Feature):
         self.profile = profile
         self._types = types
         self._action = action
+        self.profile._add_button(self)
 
     @property
     def types(self):
@@ -1070,6 +1077,7 @@ class Led(Feature):
         self._effect_duration = 0
         self._mode = Led.Mode.OFF
         self._modes = modes
+        self.profile._add_led(self)
 
     @GObject.Property
     def color(self):

@@ -683,6 +683,18 @@ class Resolution(Feature):
     def __init__(
         self, profile, index, dpi, *, enabled=True, capabilities=[], dpi_list=[]
     ):
+        try:
+            assert index >= 0
+            assert len(dpi) == 2, "dpi must be a tuple"
+            assert all([int(v) >= 0 for v in dpi]), "dpi must be positive"
+            assert all(
+                [int(v) > 0 for v in dpi_list]
+            ), "all in dpi_list must be positive"
+            assert all([x in Resolution.Capability for x in capabilities])
+            assert index not in profile.resolutions, "duplicate resolution index"
+        except (TypeError, ValueError) as e:
+            assert e is None
+
         super().__init__(profile.device, index)
         self.profile = profile
         self._dpi = dpi

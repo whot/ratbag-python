@@ -598,11 +598,6 @@ class Profile(Feature):
     @enabled.setter
     def enabled(self, enabled):
         if self._enabled != enabled:
-            if self._active:
-                for p in self.device.profiles:
-                    if not p.active:
-                        p.set_active
-                        break
             self._enabled = enabled
             self.dirty = True
             self.notify("enabled")

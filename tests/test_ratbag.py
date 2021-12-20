@@ -65,3 +65,29 @@ def test_resolution():
         capabilities=[ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION],
     )
     assert r.capabilities == [ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION]
+
+
+def test_profile_set_active():
+    device = ratbag.Device(object(), "test device", "nopath")
+    for i in range(5):
+        ratbag.Profile(device, i)
+
+    p1 = device.profiles[1]
+    p3 = device.profiles[3]
+
+    # None are active by default
+    assert [p.active for p in device.profiles.values()].count(True) == 0
+
+    p1.set_active()
+    assert p1.active
+    assert p1.dirty
+    assert [p.active for p in device.profiles.values()].count(True) == 1
+    assert [p.dirty for p in device.profiles.values()].count(True) == 1
+
+    p3.set_active()
+    assert not p1.active
+    assert p1.dirty
+    assert p3.active
+    assert p3.dirty
+    assert [p.active for p in device.profiles.values()].count(True) == 1
+    assert [p.dirty for p in device.profiles.values()].count(True) == 2

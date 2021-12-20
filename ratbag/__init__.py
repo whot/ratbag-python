@@ -610,26 +610,22 @@ class Profile(Feature):
     @GObject.Property
     def active(self):
         """
-        ``True`` if this profile is active, ``False`` otherwise. This
-        property should be treated as read-only, use :meth:`set_active`
-        instead of writing directly.
+        ``True`` if this profile is active, ``False`` otherwise. Note that
+        only one profile at a time can be active. See :meth:`set_active`.
         """
         return self._active
-
-    @active.setter
-    def active(self, active):
-        if self._active != active:
-            self._active = active
-            self.notify("active")
 
     def set_active(self):
         """
         Set this profile to be the active profile.
         """
         if not self.active:
-            for p in self.device.profiles:
-                p.active = False
-            self.active = True
+            for p in [p for p in self.device.profiles.values() if p.active]:
+                p._active = False
+                p.notify("active")
+            self._active = True
+            self.notify("active")
+            self.dirty = True
 
     def _cb_dirty(self, feature, pspec):
         self.dirty = self.dirty or feature.dirty

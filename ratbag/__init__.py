@@ -556,6 +556,7 @@ class Profile(Feature):
         self.buttons = {}
         self.resolutions = {}
         self.leds = {}
+        self._default = False
         self._active = False
         self._enabled = True
         self._report_rate = report_rate
@@ -620,6 +621,26 @@ class Profile(Feature):
                 p.notify("active")
             self._active = True
             self.notify("active")
+            self.dirty = True
+
+    @GObject.Property
+    def default(self):
+        """
+        ``True`` if this profile is the default profile, ``False`` otherwise.
+        Note that only one profile at a time can be the default. See
+        :meth:`set_default`.
+        """
+        return self._default
+
+    def set_default(self):
+        if Profile.Capability.SET_DEFAULT not in self.capabilities:
+            raise ConfigError("Profiles set-default capability not supported")
+        if not self.default:
+            for p in [p for p in self.device.profiles.values() if p.default]:
+                p._default = False
+                p.notify("default")
+            self._default = True
+            self.notify("default")
             self.dirty = True
 
     def _cb_dirty(self, feature, pspec):
@@ -742,24 +763,20 @@ class Resolution(Feature):
     @GObject.Property
     def default(self):
         """
-        ``True`` if this resolution is default, ``False`` otherwise. This
-        property should be treated as read-only, use :meth:`set_default`
-        instead of writing directly.
+        ``True`` if this resolution is the default resolution, ``False`` otherwise.
+        Note that only one resolution at a time can be the default. See
+        :meth:`set_default`.
         """
         return self._default
 
-    @default.setter
-    def default(self, default):
-        if self._default != default:
-            self._default = default
-            self.notify("default")
-            self.dirty = True
-
     def set_default(self):
         if not self.default:
-            for r in self.profile.resolutions:
-                r.default = False
-            self.default = True
+            for r in [r for r in self.profile.resolutions.values() if r.default]:
+                r._default = False
+                r.notify("default")
+            self._default = True
+            self.notify("default")
+            self.dirty = True
 
     @GObject.Property
     def dpi(self):

@@ -115,3 +115,29 @@ def test_profile_set_enabled():
     assert p3.dirty
     assert [p.enabled for p in device.profiles.values()].count(False) == 2
     assert [p.dirty for p in device.profiles.values()].count(True) == 2
+
+
+def test_profile_set_default():
+    device = ratbag.Device(object(), "test device", "nopath")
+    for i in range(5):
+        ratbag.Profile(device, i, capabilities=[ratbag.Profile.Capability.SET_DEFAULT])
+
+    p1 = device.profiles[1]
+    p3 = device.profiles[3]
+
+    # None are active by default
+    assert [p.default for p in device.profiles.values()].count(True) == 0
+
+    p1.set_default()
+    assert p1.default
+    assert p1.dirty
+    assert [p.default for p in device.profiles.values()].count(True) == 1
+    assert [p.dirty for p in device.profiles.values()].count(True) == 1
+
+    p3.set_default()
+    assert not p1.default
+    assert p1.dirty
+    assert p3.default
+    assert p3.dirty
+    assert [p.default for p in device.profiles.values()].count(True) == 1
+    assert [p.dirty for p in device.profiles.values()].count(True) == 2

@@ -281,6 +281,7 @@ class Driver(GObject.Object):
         GObject.Object.__init__(self)
         self.name = None
         self.recorders = []
+        self.connect("device-added", self._device_sanity_check)
 
     def add_recorder(self, recorder):
         """
@@ -314,6 +315,25 @@ class Driver(GObject.Object):
         :param config: Driver-specific device configuration (e.g. quirks).
         """
         raise NotImplementedError("This function must be implemented by the driver")
+
+    def _device_sanity_check(self, driver, device):
+        # Let the parent class do some basic sanity checks
+        assert device.name is not None
+        assert device.driver is not None
+        assert len(device.profiles) >= 1
+        # We must not skip an index
+        assert sorted(device.profiles) == list(range(len(device.profiles)))
+        nbuttons = len(device.profiles[0].buttons)
+        nres = len(device.profiles[0].resolutions)
+        nleds = len(device.profiles[0].leds)
+        # We must have at least *something* to configure
+        assert any([count > 0 for count in [nbuttons, nres, nleds]])
+        # We don't support different numbers of features on profiles, they all
+        # must have the same count
+        for p in device.profiles.values():
+            assert nbuttons == len(p.buttons)
+            assert nres == len(p.resolutions)
+            assert nleds == len(p.leds)
 
 
 # ioctl handling is copied from hid-tools

@@ -4,12 +4,8 @@
 #
 # This file is formatted with Python Black
 
-import datetime
 import logging
 import yaml
-
-import gi
-from gi.repository import GObject
 
 import ratbag
 import ratbag.drivers

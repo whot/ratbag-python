@@ -5,10 +5,6 @@
 # This file is formatted with Python Black
 
 import datetime
-import yaml
-
-import gi
-from gi.repository import GObject
 
 import ratbag
 

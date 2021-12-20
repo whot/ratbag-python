@@ -6,13 +6,10 @@
 
 import enum
 import logging
-import os
 import pyudev
-import select
 
 from pathlib import Path
 
-import gi
 from gi.repository import GObject
 
 import ratbag.util

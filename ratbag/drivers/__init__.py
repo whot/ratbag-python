@@ -10,6 +10,8 @@ import fcntl
 import logging
 import pathlib
 import os
+import select
+import struct
 
 import hidtools.hid
 

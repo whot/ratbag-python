@@ -212,7 +212,7 @@ class RoccatMacro(object):
 
     format = [
         ("B", "report_id"),
-        ("<BB", "report_length"),
+        ("<H", "report_length"),
         ("B", "profile"),
         ("B", "button_index"),
         ("B", "active"),
@@ -332,7 +332,7 @@ class RoccatMacro(object):
     def __bytes__(self):
         if not self._macro_exists_on_device:
             self.report_id = int(ReportID.MACRO)
-            self.report_length = 0x0822
+            self.report_length = RoccatMacro.SIZE
             self.profile = self.button.profile.idx
             self.button_index = self.button_idx
             self.active = 0x01
@@ -513,6 +513,9 @@ class RoccatKeyMapping(object):
             self.macros[idx] = macro
 
     def __bytes__(self):
+        # Weirdly enough, our first KeyMapping reply has a length of zero
+        if self.report_length == 0:
+            self.report_length = RoccatKeyMapping.SIZE
         return ratbag.util.attr_to_data(
             self, RoccatKeyMapping.format, maps={"checksum": lambda x: crc(x)}
         )

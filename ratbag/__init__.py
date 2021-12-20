@@ -561,7 +561,7 @@ class Profile(Feature):
         self._report_rates = report_rates
         self._capabilities = capabilities
 
-    @GObject.property
+    @GObject.Property
     def report_rate(self):
         """The report rate in Hz. If the profile does not support configurable
         (or queryable) report rates, the report rate is always ``None``"""

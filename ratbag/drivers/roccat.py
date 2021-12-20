@@ -98,10 +98,12 @@ class RoccatProfile(object):
         ("B", "current_dpi"),
         ("BBBBB", "yres"),
         ("B", "_"),
-        ("B", "report_rate"),
+        ("B", "_report_rate_idx"),
         ("B" * 21, "_"),  # 21 bytes padding
         ("<H", "checksum"),
     ]
+
+    report_rates = [125, 250, 500, 1000]
 
     def __init__(self, idx):
         self.idx = idx
@@ -132,11 +134,21 @@ class RoccatProfile(object):
             if (self.dpi_mask & mask) == 0:
                 self.dpi[idx] = (0, 0)
 
+        self.report_rate = RoccatProfile.report_rates[self._report_rate_idx]
+
         return self  # just to allow for chaining
 
     def init_ratbag_profile(self, ratbag_device):
         assert self.ratbag_profile is None
-        p = ratbag.Profile(ratbag_device, self.idx, name=self.name)
+        caps = [ratbag.Profile.Capability.INDIVIDUAL_REPORT_RATE]
+        p = ratbag.Profile(
+            ratbag_device,
+            self.idx,
+            name=self.name,
+            capabilities=caps,
+            report_rate=self.report_rate,
+            report_rates=[125, 250, 500, 1000],  # Not sure we can query this
+        )
         for (dpi_idx, dpi) in enumerate(self.dpi):
             dpi_list = list(range(200, 8200 + 1, 50))
             caps = [ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION]
@@ -164,6 +176,9 @@ class RoccatProfile(object):
 
     def update_button(self, index, action):
         self.key_mapping.actions[index] = (action, 0, 0)
+
+    def update_report_rate(self, rate):
+        self._report_rate_idx = RoccatProfile.report_rates.index(rate)
 
     def __bytes__(self):
         # need to do this twice, once to fill in the data, the second time so
@@ -605,6 +620,7 @@ class RoccatDevice(GObject.Object):
             ]:
                 profile = self.profiles[ratbag_profile.index]
                 logger.debug(f"Profile {profile.idx} has changes")
+                profile.update_report_rate(ratbag_profile.report_rate)
 
                 for ratbag_resolution in [
                     r for r in ratbag_profile.resolutions.values() if r.dirty

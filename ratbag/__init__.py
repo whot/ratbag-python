@@ -153,7 +153,7 @@ class Ratbag(GObject.Object):
         if not paths:
             logger.debug("Installing udev monitor")
             self._install_udev_monitor()
-            paths = util.find_hidraw_devices()
+            paths = ratbag.util.find_hidraw_devices()
         for path in paths:
             self._add_device(path=path)
 
@@ -237,7 +237,7 @@ class Ratbag(GObject.Object):
                 raise NotImplementedError(
                     "Missing data files: none in /usr/share/libratbag, none in $PWD/data"
                 )
-        datafiles = util.load_data_files(path)
+        datafiles = ratbag.util.load_data_files(path)
         try:
             datafile = datafiles[match]
         except KeyError:

@@ -10,6 +10,7 @@ import ratbag
 
 logger = logging.getLogger(__name__)
 
+
 class Hidpp10Driver(ratbag.drivers.Driver):
     NAME = "Logitech HID++1.0"
 
@@ -31,4 +32,3 @@ def load_driver(driver_name, device_info, driver_config):
     logger.debug(device_info)
     logger.debug(driver_config)
     return Hidpp10Driver()
-

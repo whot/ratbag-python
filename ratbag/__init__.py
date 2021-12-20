@@ -723,6 +723,11 @@ class Action(GObject.Object):
 
 
 class ActionNone(Action):
+    """
+    A "none" action to signal the button is disabled and does not send an
+    event when physically presed down.
+    """
+
     def __init__(self, parent):
         super().__init__(parent)
         self.type = Action.Type.NONE
@@ -732,6 +737,13 @@ class ActionNone(Action):
 
 
 class ActionButton(Action):
+    """
+    A button action triggered by a button. This is the simplest case of an
+    action where a button triggers... a button event! Note that while
+    :class:`Button` uses indices starting at zero, button actions start
+    at button 1 (left mouse button).
+    """
+
     def __init__(self, parent, button):
         super().__init__(parent)
         self._button = button
@@ -739,6 +751,7 @@ class ActionButton(Action):
 
     @property
     def button(self):
+        """The 1-indexed mouse button"""
         return self._button
 
     def __str__(self):
@@ -754,6 +767,15 @@ class ActionButton(Action):
 
 
 class ActionSpecial(Action):
+    """
+    A special action triggered by a button. These actions are fixed
+    events supported by devices, see :class:`ActionSpecial.Special` for the
+    list of known actions.
+
+    Note that not all devices support all special actions and buttons on a
+    given device may not support all special events.
+    """
+
     class Special(enum.Enum):
         UNKNOWN = enum.auto()
         DOUBLECLICK = enum.auto()
@@ -896,6 +918,20 @@ class Macro(GObject.Object):
 
 
 class Button(Feature):
+    """
+    A physical button on the device as represented in a profile. A button has
+    an :class:`Action` assigned to it, be that to generate a button click, a
+    special event or even a full sequence of key strokes (:class:`Macro`).
+
+    Note that each :class:`Button` represents one profile only so the same
+    physical button will have multiple :class:`Button` instances.
+
+    .. attribute:: profile
+
+        The profile this button belongs to
+
+    """
+
     def __init__(
         self,
         profile,
@@ -918,6 +954,10 @@ class Button(Feature):
 
     @GObject.Property
     def action(self):
+        """
+        The currently assigned action. This action is guaranteed to be of
+        type :class:`Action` or one of its subclasses.
+        """
         return self._action
 
     @action.setter

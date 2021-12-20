@@ -168,8 +168,15 @@ class Config(object):
                 logger.info(
                     f"Config found for resolution {profile.index}.{resolution.index}"
                 )
+                if rconf.get("disable", False):
+                    logger.info(
+                        f"Disabling resolution {profile.index}.{resolution.index}"
+                    )
+                    resolution.enabled = False
+                    continue
                 dpis = rconf.get("dpi", None)
                 if dpis:
+                    resolution.enabled = True
                     resolution.dpi = dpis
 
             # Buttons

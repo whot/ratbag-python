@@ -675,7 +675,9 @@ class Resolution(Feature):
     class Capability(enum.Enum):
         SEPARATE_XY_RESOLUTION = enum.auto()
 
-    def __init__(self, profile, index, dpi, *, capabilities=[], dpi_list=[]):
+    def __init__(
+        self, profile, index, dpi, *, enabled=True, capabilities=[], dpi_list=[]
+    ):
         super().__init__(profile.device, index)
         self.profile = profile
         self._dpi = dpi
@@ -683,6 +685,7 @@ class Resolution(Feature):
         self._capabilities = capabilities
         self._active = False
         self._default = False
+        self._enabled = enabled
 
     @property
     def capabilities(self):
@@ -690,6 +693,17 @@ class Resolution(Feature):
         Return the list of supported :class:`Resolution.Capability`
         """
         return self._capabilities
+
+    @GObject.Property
+    def enabled(self):
+        return self._enabled
+
+    @enabled.setter
+    def enabled(self, enabled):
+        if self._enabled != enabled:
+            self._enabled = enabled
+            self.notify("enabled")
+            self.dirty = True
 
     @GObject.Property
     def active(self):
@@ -780,6 +794,7 @@ class Resolution(Feature):
             "dpi": list(self.dpi),
             "dpi_list": self.dpi_list,
             "active": self.active,
+            "enabled": self.enabled,
             "default": self.default,
         }
 

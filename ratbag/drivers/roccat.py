@@ -138,6 +138,9 @@ class RoccatProfile(object):
 
         return self  # just to allow for chaining
 
+    def dpi_is_enabled(self, idx):
+        return self.dpi_mask & (1 << idx) != 0
+
     def init_ratbag_profile(self, ratbag_device):
         assert self.ratbag_profile is None
         caps = [ratbag.Profile.Capability.INDIVIDUAL_REPORT_RATE]
@@ -152,7 +155,14 @@ class RoccatProfile(object):
         for (dpi_idx, dpi) in enumerate(self.dpi):
             dpi_list = list(range(200, 8200 + 1, 50))
             caps = [ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION]
-            r = ratbag.Resolution(p, dpi_idx, dpi, capabilities=caps, dpi_list=dpi_list)
+            r = ratbag.Resolution(
+                p,
+                dpi_idx,
+                dpi,
+                enabled=self.dpi_is_enabled(dpi_idx),
+                capabilities=caps,
+                dpi_list=dpi_list,
+            )
             p.add_resolution(r)
 
         for btn_idx in range(self.key_mapping.num_buttons):
@@ -168,11 +178,16 @@ class RoccatProfile(object):
         self.ratbag_profile = p
         return p
 
-    def update_dpi(self, index, values):
+    def update_dpi(self, index, values, is_enabled):
         assert len(values) == 2
         self.dpi[index] = values
         self.xres = [v[0] // 50 for v in self.dpi]
         self.yres = [v[1] // 50 for v in self.dpi]
+        mask = 1 << index
+        if is_enabled:
+            self.dpi_mask |= mask
+        else:
+            self.dpi_mask &= ~mask
 
     def update_button(self, index, action):
         self.key_mapping.actions[index] = (action, 0, 0)
@@ -628,7 +643,11 @@ class RoccatDevice(GObject.Object):
                     logger.debug(
                         f"Resolution {profile.idx}.{ratbag_resolution.index} has changed to {ratbag_resolution.dpi}"
                     )
-                    profile.update_dpi(ratbag_resolution.index, ratbag_resolution.dpi)
+                    profile.update_dpi(
+                        ratbag_resolution.index,
+                        ratbag_resolution.dpi,
+                        ratbag_resolution.enabled,
+                    )
 
                 for ratbag_button in [
                     b for b in ratbag_profile.buttons.values() if b.dirty

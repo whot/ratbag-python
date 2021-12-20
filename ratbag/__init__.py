@@ -119,8 +119,10 @@ class Ratbag(GObject.Object):
     Configuration items:
 
     - ``device-paths``: a list of device paths to initialize (if any)
-
-
+    - ``emulators``: a list of :class:`ratbag.emulator.YamlDevice` or similar
+      to emulate a device
+    - ``recorders``: a list of :class:`ratbag.recorder.SimpleRecorder` or
+      similar to record device interactions
 
     GObject Signals:
 

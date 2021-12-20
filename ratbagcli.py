@@ -177,7 +177,7 @@ class Config(object):
                 dpis = rconf.get("dpi", None)
                 if dpis:
                     resolution.enabled = True
-                    resolution.dpi = dpis
+                    resolution.set_dpi(dpis)
 
             # Buttons
             for bconf in pconf.get("buttons", []):
@@ -194,7 +194,7 @@ class Config(object):
                 # button
                 if bconf.get("disable", False):
                     logger.info(f"Disabling button {profile.index}.{button.index}")
-                    button.action = ratbag.ActionNone(button)
+                    button.set_action(ratbag.ActionNone(button))
                     continue
 
                 # Button numbers
@@ -203,7 +203,7 @@ class Config(object):
                     logger.info(
                         f"Button {profile.index}.{button.index} sends button {bnumber}"
                     )
-                    button.action = ratbag.ActionButton(button, bnumber)
+                    button.set_action(ratbag.ActionButton(button, bnumber))
                     continue
 
                 # Button special
@@ -212,7 +212,7 @@ class Config(object):
                     logger.info(
                         f"Button {profile.index}.{button.index} sends special {special.name}"
                     )
-                    button.action = ratbag.ActionSpecial(button, special)
+                    button.set_action(ratbag.ActionSpecial(button, special))
                     continue
 
                 # Button macro
@@ -230,7 +230,7 @@ class Config(object):
                     logger.info(
                         f"Button {profile.index}.{button.index} macro {str(events)}"
                     )
-                    button.action = ratbag.ActionMacro(button, name, events)
+                    button.set_action(ratbag.ActionMacro(button, name, events))
                     continue
 
         if not self.nocommit:

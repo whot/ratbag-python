@@ -569,8 +569,12 @@ class Profile(Feature):
         (or queryable) report rates, the report rate is always ``None``"""
         return self._report_rate
 
-    @report_rate.setter
-    def report_rate(self, rate):
+    def set_report_rate(self, rate):
+        """
+        Set the report rate for this profile.
+
+        :raises: ConfigError
+        """
         if rate not in self._report_rates:
             raise ConfigError(f"{rate} is not a supported report rate")
         if rate != self._report_rate:
@@ -786,8 +790,12 @@ class Resolution(Feature):
         """
         return self._dpi
 
-    @dpi.setter
-    def dpi(self, new_dpi):
+    def set_dpi(self, new_dpi):
+        """
+        Change the dpi of this device.
+
+        :raises: ConfigError
+        """
         try:
             x, y = new_dpi
             if y not in self._dpi_list:
@@ -1049,8 +1057,12 @@ class Button(Feature):
         """
         return self._action
 
-    @action.setter
-    def action(self, new_action):
+    def set_action(self, new_action):
+        """
+        Set the action rate for this button.
+
+        :raises: ConfigError
+        """
         if not isinstance(new_action, Action):
             raise ConfigError(f"Invalid button action of type {type(new_action)}")
         self._action = new_action
@@ -1102,8 +1114,7 @@ class Led(Feature):
     def color(self):
         return self._color
 
-    @color.setter
-    def color(self, rgb):
+    def set_color(self, rgb):
         try:
             if len(rgb) != 3:
                 raise ConfigError("Invalid color, must be (r, g, b)")
@@ -1121,8 +1132,7 @@ class Led(Feature):
     def brightness(self):
         return self._brightness
 
-    @brightness.setter
-    def brightness(self, brightness):
+    def set_brightness(self, brightness):
         if brightness != self._brightness:
             self._brightness = brightness
             self.dirty = True
@@ -1131,8 +1141,7 @@ class Led(Feature):
     def effect_duration(self):
         return self._effect_duration
 
-    @effect_duration.setter
-    def effect_duration(self, effect_duration):
+    def set_effect_duration(self, effect_duration):
         if effect_duration != self._effect_duration:
             self._effect_duration = effect_duration
             self.notify("effect_duration")
@@ -1142,8 +1151,7 @@ class Led(Feature):
     def mode(self):
         return self._mode
 
-    @mode.setter
-    def mode(self, mode):
+    def set_mode(self, mode):
         if mode not in self.modes:
             raise ConfigError(f"Unsupported LED mode {str(mode)}")
         if mode != self._mode:

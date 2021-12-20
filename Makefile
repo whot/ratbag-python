@@ -11,7 +11,7 @@ all: data black pytest html data
 data:
 	@if ! [[ -e data ]]; then echo "ERROR: symlink libratbag.git/data to this directory first" && exit 1; fi
 
-black: data
+black: **/*.py *.py
 	black *.py **/*.py
 
 pytest: data

@@ -67,6 +67,112 @@ def test_resolution():
     assert r.capabilities == [ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION]
 
 
+def test_resolution_set_default():
+    device = ratbag.Device(object(), "test device", "nopath")
+    for i in range(5):
+        profile = ratbag.Profile(device, i)
+        for j in range(5):
+            ratbag.Resolution(profile, j, (j * 100, j * 100))
+
+    r11 = device.profiles[1].resolutions[1]
+    r13 = device.profiles[1].resolutions[3]
+    r22 = device.profiles[2].resolutions[2]
+    r24 = device.profiles[2].resolutions[4]
+    # we start with no default resolution
+    assert [r.default for r in device.profiles[1].resolutions.values()].count(True) == 0
+
+    r13.set_default()
+    assert r13.default
+    assert r13.dirty
+    assert [r.default for r in device.profiles[1].resolutions.values()].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 1
+    r11.set_default()
+    assert r11.default
+    assert r11.dirty
+    assert not r13.default
+    assert r13.dirty
+    assert [r.default for r in device.profiles[1].resolutions.values()].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 2
+    # different profile, shouldn't affect r11/r13
+    r22.set_default()
+    assert r22.default
+    assert r22.dirty
+    assert r11.default
+    assert r11.dirty
+    assert not r13.default
+    assert r13.dirty
+    assert [r.default for r in device.profiles[1].resolutions.values()].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 2
+    assert [r.default for r in device.profiles[2].resolutions.values()].count(True) == 1
+    assert [r.dirty for r in device.profiles[2].resolutions.values()].count(True) == 1
+    r24.set_default()
+    assert r24.default
+    assert r24.dirty
+    assert not r22.default
+    assert r22.dirty
+    assert r11.default
+    assert r11.dirty
+    assert not r13.default
+    assert r13.dirty
+    assert [r.default for r in device.profiles[1].resolutions.values()].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 2
+    assert [r.default for r in device.profiles[2].resolutions.values()].count(True) == 1
+    assert [r.dirty for r in device.profiles[2].resolutions.values()].count(True) == 2
+
+
+def test_resolution_set_active():
+    device = ratbag.Device(object(), "test device", "nopath")
+    for i in range(5):
+        profile = ratbag.Profile(device, i)
+        for j in range(5):
+            ratbag.Resolution(profile, j, (j * 100, j * 100))
+
+    r11 = device.profiles[1].resolutions[1]
+    r13 = device.profiles[1].resolutions[3]
+    r22 = device.profiles[2].resolutions[2]
+    r24 = device.profiles[2].resolutions[4]
+    # we start with no active resolution
+    assert [r.active for r in device.profiles[1].resolutions.values()].count(True) == 0
+
+    r13.set_active()
+    assert r13.active
+    assert r13.dirty
+    assert [r.active for r in device.profiles[1].resolutions.values()].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 1
+    r11.set_active()
+    assert r11.active
+    assert r11.dirty
+    assert not r13.active
+    assert r13.dirty
+    assert [r.active for r in device.profiles[1].resolutions.values()].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 2
+    # different profile, shouldn't affect r11/r13
+    r22.set_active()
+    assert r22.active
+    assert r22.dirty
+    assert r11.active
+    assert r11.dirty
+    assert not r13.active
+    assert r13.dirty
+    assert [r.active for r in device.profiles[1].resolutions.values()].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 2
+    assert [r.active for r in device.profiles[2].resolutions.values()].count(True) == 1
+    assert [r.dirty for r in device.profiles[2].resolutions.values()].count(True) == 1
+    r24.set_active()
+    assert r24.active
+    assert r24.dirty
+    assert not r22.active
+    assert r22.dirty
+    assert r11.active
+    assert r11.dirty
+    assert not r13.active
+    assert r13.dirty
+    assert [r.active for r in device.profiles[1].resolutions.values()].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 2
+    assert [r.active for r in device.profiles[2].resolutions.values()].count(True) == 1
+    assert [r.dirty for r in device.profiles[2].resolutions.values()].count(True) == 2
+
+
 def test_profile_set_active():
     device = ratbag.Device(object(), "test device", "nopath")
     for i in range(5):

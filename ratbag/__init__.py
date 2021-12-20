@@ -756,7 +756,7 @@ class Resolution(Feature):
         Set this resolution to be the active resolution.
         """
         if not self.active:
-            for r in self.profile.resolutions:
+            for r in self.profile.resolutions.values():
                 r.active = False
             self.active = True
 

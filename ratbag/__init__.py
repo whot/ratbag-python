@@ -494,11 +494,62 @@ class Profile(Feature):
 
     """
 
+    class Capability(enum.Enum):
+        SET_DEFAULT = enum.auto()
+        """
+        This profile can be set as the default profile. The default profile is
+        the one used immediately after the device has been plugged in. If this
+        capability is missing, the device typically picks either the last-used
+        profile or the first available profile.
+        """
+        DISABLE = enum.auto()
+        """
+        The profile can be disabled and enabled. Profiles are not
+        immediately deleted after being disabled, it is not guaranteed
+        that the device will remember any disabled profiles the next time
+        ratbag runs. Furthermore, the order of profiles may get changed
+        the next time ratbag runs if profiles are disabled.
+
+        Note that this capability only notes the general capability. A
+        specific profile may still fail to be disabled, e.g. when it is
+        the last enabled profile on the device.
+        """
+        WRITE_ONLY = enum.auto()
+        """
+        The profile information cannot be queried from the hardware.
+        Where this capability is present, libratbag cannot
+        query the device for its current configuration and the
+        configured resolutions and button mappings are unknown.
+        libratbag will still provide information about the structure of
+        the device such as the number of buttons and resolutions.
+        Clients that encounter a device without this resolution are
+        encouraged to upload a configuration stored on-disk to the
+        device to reset the device to a known state.
+
+        Any changes uploaded to the device will be cached in libratbag,
+        once a client has sent a full configuration to the device
+        libratbag can be used to query the device as normal.
+        """
+        INDIVIDUAL_REPORT_RATE = enum.auto()
+        """
+        The report rate applies per-profile. On devices without this
+        capability changing the report rate on one profile also changes it on
+        all other profiles.
+        """
+
     __gsignals__ = {
         "active": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
     }
 
-    def __init__(self, device, index, name=None):
+    def __init__(
+        self,
+        device,
+        index,
+        name=None,
+        capabilities=[],
+        report_rate=None,
+        report_rates=[],
+    ):
         super().__init__(device, index)
         self.name = f"Unnamed {index}" if name is None else name
         self.buttons = {}
@@ -506,6 +557,34 @@ class Profile(Feature):
         self.leds = {}
         self._active = False
         self._enabled = True
+        self._report_rate = report_rate
+        self._report_rates = report_rates
+        self._capabilities = capabilities
+
+    @GObject.property
+    def report_rate(self):
+        """The report rate in Hz. If the profile does not support configurable
+        (or queryable) report rates, the report rate is always ``None``"""
+        return self._report_rate
+
+    @report_rate.setter
+    def report_rate(self, rate):
+        if rate not in self._report_rates:
+            raise ConfigError(f"{rate} is not a supported report rate")
+        if rate != self._report_rate:
+            self._report_rate = rate
+            self.dirty = True
+            self.notify("report-rate")
+
+    @property
+    def report_rates(self):
+        """The list of supported report rates in Hz. If the device does not
+        support configurable report rates, the list is the empty list"""
+        return self._report_rates
+
+    @property
+    def capabilities(self):
+        return self._capabilities
 
     @GObject.Property
     def enabled(self):
@@ -573,8 +652,11 @@ class Profile(Feature):
         return {
             "index": self.index,
             "name": self.name,
+            "capabilities": [c.name for c in self.capabilities],
             "resolutions": [r.as_dict() for r in self.resolutions.values()],
             "buttons": [b.as_dict() for b in self.buttons.values()],
+            "report_rates": [r for r in self.report_rates],
+            "report_rate": self.report_rate or 0,
         }
 
 

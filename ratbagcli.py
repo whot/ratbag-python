@@ -12,13 +12,21 @@ import re
 import sys
 import yaml
 
+try:
+    from gi.repository import GLib
+except ImportError:
+    print(
+        "GObject introspection packages missing. See https://pygobject.readthedocs.io/en/latest/getting_started.html",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
 from pathlib import Path
+
 
 import ratbag
 import ratbag.emulator
 import ratbag.recorder
-
-from gi.repository import GLib
 
 logger = None
 

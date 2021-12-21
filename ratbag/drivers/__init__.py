@@ -89,6 +89,7 @@ class Rodent(GObject.Object):
         The bytes for this hidraw device's report descriptor (if this device
         is a hidraw device, otherwise ``None``)
 
+
     GObject Signals:
         - ``data-to-device``, ``data-from-device``: the ``bytes`` that have
           been written to or read from the device.
@@ -186,6 +187,20 @@ class Rodent(GObject.Object):
 
         self._fd = open(path, "r+b", buffering=0)
         os.set_blocking(self._fd.fileno(), False)
+
+    @property
+    def report_ids(self):
+        """
+        A dictionary containg the list each of "feature", "input" and "output"
+        report IDs. For devices without a report descriptor, each list is
+        empty.
+        """
+        ids = {"input": [], "output": [], "feature": []}
+        if self.report_descriptor is not None:
+            ids["input"] = self._rdesc.input_reports
+            ids["output"] = self._rdesc.output_reports
+            ids["feature"] = self._rdesc.feature_reports
+        return ids
 
     def start(self):
         """

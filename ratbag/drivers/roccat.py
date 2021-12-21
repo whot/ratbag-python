@@ -11,10 +11,6 @@ import struct
 import time
 import traceback
 
-import hidtools
-import hidtools.hidraw
-import hidtools.hid
-
 from gi.repository import GObject
 
 import ratbag
@@ -538,14 +534,12 @@ class RoccatDevice(GObject.Object):
         return self.hidraw_device.path
 
     def start(self):
-        rdesc = hidtools.hid.ReportDescriptor.from_bytes(
-            self.hidraw_device.report_descriptor
-        )
-        if ReportID.KEY_MAPPING not in rdesc.feature_reports:
+        feature_reports = self.hidraw_device.report_ids["feature"]
+        if ReportID.KEY_MAPPING not in feature_reports:
             raise ratbag.SomethingIsMissingError(
                 self.name, self.path, "KeyMapping Report ID"
             )
-        if ReportID.CONFIGURE_PROFILE not in rdesc.feature_reports:
+        if ReportID.CONFIGURE_PROFILE not in feature_reports:
             raise ratbag.SomethingIsMissingError(
                 self.name, self.path, "ConfigureProfile Report ID"
             )

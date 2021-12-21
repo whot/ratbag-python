@@ -1,7 +1,15 @@
 # ratbag-python
 
-A Python implementation of libratbag, possibly replacing the actual libratbag
-eventually.
+A Python implementation of libratbag, intended to replace libratbag
+eventually. Some of the motivation is discussed in
+https://github.com/libratbag/libratbag/issues/1247
+
+## Setup
+
+This repository needs the libratbag data files to work, usually in
+/usr/share/libratbag after installing libratbag. Alternatively, symlink to the
+`data/` directory in the libratbag git tree in the root directory of this
+repository.
 
 ## Architecture
 
@@ -24,3 +32,13 @@ the status back to the frontend API.
 
 Start at the `ratbag.Ratbag` documentation here:
 https://whot.github.io/ratbag-python/ratbag.html#ratbag.Ratbag
+
+
+### Usage of GObject
+
+We're using GObject/GLib for convenience, however this has some notable
+effects on the implementation:
+
+- a ``GLib.MainLoop`` is required
+- the API uses `set_foo` instead of `@property.setter` because we cannot throw
+  exceptions in a GObject property setter.

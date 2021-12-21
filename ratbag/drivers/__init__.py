@@ -24,17 +24,28 @@ logger = logging.getLogger(__name__)
 
 class Message(GObject.Object):
     """
-    A message sent to the device or received from the device.
+    A message sent to the device or received from the device. This object
+    exists to standardize logging attempts. Drivers should, where possible,
+    re-use the existing messages.
+
+    Messages are usually logged as ``type subtype direction data``
     """
 
     SUBTYPE = ""
+    """
+    The subtype of this message. Used e.g. by ioctls to specify which ioctl
+    was invoked.
+    """
 
     class Direction(enum.Enum):
         """Message direction"""
 
         RX = enum.auto()
+        """Message received from the device"""
         TX = enum.auto()
+        """Message sent to the device"""
         IOC = enum.auto()
+        """An ioctl invocation on the device"""
 
     def __init__(self, bytes, direction=Direction.TX):
         self.direction = direction
@@ -58,6 +69,9 @@ class Rodent(GObject.Object):
     communicating with the device that we can hook into for logging and
     others.
 
+    See :meth:`from_device` for the most convenient way to create a new Rodent
+    object.
+
     :param path: the path to the physical device
 
     .. note:: The name Rodent was chosen to avoid confusion with :class:`ratbag.Device`.
@@ -68,13 +82,22 @@ class Rodent(GObject.Object):
 
     .. attribute:: path
 
-        The device's path we're reading to/writing from
+        The device's path
 
     .. attribute:: report_descriptor
 
         The bytes for this hidraw device's report descriptor (if this device
         is a hidraw device, otherwise ``None``)
 
+    GObject Signals:
+        - ``data-to-device``, ``data-from-device``: the ``bytes`` that have
+          been written to or read from the device.
+        - ``ioctl-command``: an ioctl has been called on the device with the
+          given ioctl name and the data in ``bytes``
+        - ``ioctl-reply``: an ioctl has returned data in ``bytes``
+
+    These signals are primarily used by recorders, there should be no need to
+    handle those signals in other parts of the implementation.
     """
 
     __gsignals__ = {
@@ -180,7 +203,7 @@ class Rodent(GObject.Object):
 
     def recv(self):
         """
-        Receive data from the device
+        Receive data from the device. This method waits synchronously for the data.
         """
         poll = select.poll()
         poll.register(self._fd, select.POLLIN)
@@ -198,6 +221,9 @@ class Rodent(GObject.Object):
         return None
 
     def hid_get_feature(self, report_id):
+        """
+        Return a list of bytes as returned by this HID GetFeature request
+        """
         report = self._rdesc.feature_reports[report_id]
         rsize = report.size
         buf = bytearray([report_id & 0xFF]) + bytearray(rsize - 1)
@@ -210,7 +236,13 @@ class Rodent(GObject.Object):
         return list(buf)  # Note: first byte is report ID
 
     def hid_set_feature(self, report_id, data):
-        report = self._rdesc.feature_reports[report_id]
+        """
+        Issue a HID SetFeature request for the given report ID with the given
+        data.
+
+        .. note:: the first element of data must be the report_id
+        """
+        assert report_id in self._rdesc.feature_reports
         assert data[0] == report_id
         buf = bytearray(data)
 
@@ -297,7 +329,8 @@ class Driver(GObject.Object):
         """
         Probe the device for information. On success, the driver will create a
         :class:`ratbag.Device` with at least one profile and the appropriate
-        number of buttons/leds/resolutions.
+        number of buttons/leds/resolutions and emit the ``device-added``
+        signal for that device.
 
         A caller should subscribe to the ``device-added`` signal before
         calling this function.

@@ -550,7 +550,7 @@ class RoccatDevice(GObject.Object):
                 self.name, self.path, "ConfigureProfile Report ID"
             )
 
-        # Featch current profile index
+        # Fetch current profile index
         logger.debug(f"ioctl {ReportID.CURRENT_PROFILE.name}")
         bs = self.hidraw_device.hid_get_feature(ReportID.CURRENT_PROFILE)
         current_profile_idx = bs[2]

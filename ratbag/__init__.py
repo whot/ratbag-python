@@ -572,9 +572,9 @@ class Profile(Feature):
         device,
         index,
         name=None,
-        capabilities=[],
+        capabilities=(),
         report_rate=None,
-        report_rates=[],
+        report_rates=(),
     ):
         super().__init__(device, index)
         self.name = f"Unnamed {index}" if name is None else name
@@ -585,8 +585,8 @@ class Profile(Feature):
         self._active = False
         self._enabled = True
         self._report_rate = report_rate
-        self._report_rates = report_rates
-        self._capabilities = capabilities
+        self._report_rates = tuple(set(report_rates))
+        self._capabilities = tuple(set(capabilities))
         self.device._add_profile(self)
 
     @GObject.Property
@@ -610,14 +610,14 @@ class Profile(Feature):
 
     @property
     def report_rates(self):
-        """The list of supported report rates in Hz. If the device does not
-        support configurable report rates, the list is the empty list"""
+        """The tuple of supported report rates in Hz. If the device does not
+        support configurable report rates, the tuple is the empty tuple"""
         return self._report_rates
 
     @property
     def capabilities(self):
         """
-        Return the list of supported :class:`Profile.Capability`
+        Return the tuple of supported :class:`Profile.Capability`
         """
         return self._capabilities
 
@@ -756,8 +756,8 @@ class Resolution(Feature):
         super().__init__(profile.device, index)
         self.profile = profile
         self._dpi = dpi
-        self._dpi_list = dpi_list
-        self._capabilities = capabilities
+        self._dpi_list = tuple(set(dpi_list))
+        self._capabilities = tuple(set(capabilities))
         self._active = False
         self._default = False
         self._enabled = enabled
@@ -766,7 +766,7 @@ class Resolution(Feature):
     @property
     def capabilities(self):
         """
-        Return the list of supported :class:`Resolution.Capability`
+        Return the tuple of supported :class:`Resolution.Capability`
         """
         return self._capabilities
 
@@ -861,7 +861,7 @@ class Resolution(Feature):
     @property
     def dpi_list(self):
         """
-        Return a list of possible resolution values on this device
+        Return a tuple of possible resolution values on this device
         """
         return self._dpi_list
 

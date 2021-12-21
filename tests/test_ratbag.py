@@ -44,7 +44,7 @@ def test_resolution():
 
     # default values
     r = ratbag.Resolution(profile, 0, (200, 200))
-    assert r.capabilities == []
+    assert r.capabilities == ()
     assert not r.active
     assert not r.default
     assert r.enabled
@@ -64,7 +64,7 @@ def test_resolution():
         (200, 200),
         capabilities=[ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION],
     )
-    assert r.capabilities == [ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION]
+    assert r.capabilities == (ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION,)
 
 
 def test_resolution_set_default():

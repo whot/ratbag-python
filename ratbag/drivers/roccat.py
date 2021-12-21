@@ -681,7 +681,6 @@ class RoccatDevice(GObject.Object):
 class RoccatDriver(ratbag.drivers.Driver):
     def __init__(self):
         super().__init__()
-        self.device = None  # the roccat device
 
     def probe(self, device, info, config):
         hidraw_device = ratbag.drivers.Rodent.from_device(device)
@@ -696,9 +695,9 @@ class RoccatDriver(ratbag.drivers.Driver):
             hidraw_device.connect_to_recorder(rec)
             rec.init(
                 {
-                    "name": self.device.name,
+                    "name": device.name,
                     "driver": "roccat",
-                    "path": self.device.path,
+                    "path": device.path,
                     "report_descriptor": self.hidraw_device.report_descriptor,
                 }
             )

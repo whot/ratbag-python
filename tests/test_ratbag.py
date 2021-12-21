@@ -52,6 +52,10 @@ def test_resolution():
     assert r in profile.resolutions
     assert r.dpi == (200, 200)
 
+    # individual x/y res not supported
+    with pytest.raises(ratbag.ConfigError):
+        r.set_dpi((100, 200))
+
     # duplicate index
     with pytest.raises(AssertionError):
         ratbag.Resolution(profile, 0, (200, 200))
@@ -62,8 +66,12 @@ def test_resolution():
         1,
         (200, 200),
         capabilities=[ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION],
+        dpi_list=[100, 200],
     )
     assert r.capabilities == (ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION,)
+
+    r.set_dpi((100, 200))
+    assert r.dpi == (100, 200)
 
 
 def test_resolution_set_default():

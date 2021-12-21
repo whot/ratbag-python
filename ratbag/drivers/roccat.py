@@ -147,6 +147,7 @@ class RoccatProfile(object):
             capabilities=caps,
             report_rate=self.report_rate,
             report_rates=[125, 250, 500, 1000],  # Not sure we can query this
+            active=self.active,
         )
         for (dpi_idx, dpi) in enumerate(self.dpi):
             dpi_list = list(range(200, 8200 + 1, 50))

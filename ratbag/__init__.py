@@ -574,6 +574,7 @@ class Profile(Feature):
         capabilities=(),
         report_rate=None,
         report_rates=(),
+        active=False,
     ):
         super().__init__(device, index)
         self.name = f"Unnamed {index}" if name is None else name
@@ -581,7 +582,7 @@ class Profile(Feature):
         self._resolutions = ()
         self._leds = ()
         self._default = False
-        self._active = False
+        self._active = active
         self._enabled = True
         self._report_rate = report_rate
         self._report_rates = tuple(set(report_rates))

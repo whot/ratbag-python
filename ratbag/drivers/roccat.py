@@ -703,6 +703,7 @@ class RoccatDriver(ratbag.drivers.Driver):
         except ratbag.ProtocolError as e:
             e.name = roccat_device.name
             e.path = roccat_device.path
+            raise e
 
 
 def load_driver(driver_name):

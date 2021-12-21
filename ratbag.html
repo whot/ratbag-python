@@ -830,6 +830,11 @@ support configurable report rates, the tuple is the empty tuple</p>
 <dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if this profile is enabled.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Profile.set_enabled">
+<span class="sig-name descname"><span class="pre">set_enabled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Profile.set_enabled" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.Profile.active">
 <span class="sig-name descname"><span class="pre">active</span></span><a class="headerlink" href="#ratbag.Profile.active" title="Permalink to this definition"></a></dt>
@@ -915,6 +920,11 @@ be a tuple of identical values.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.Resolution.enabled">
 <span class="sig-name descname"><span class="pre">enabled</span></span><a class="headerlink" href="#ratbag.Resolution.enabled" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Resolution.set_enabled">
+<span class="sig-name descname"><span class="pre">set_enabled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Resolution.set_enabled" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1369,16 +1379,6 @@ always matches the last successful call to <a class="reference internal" href="#
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ratbag.Led.do_get_property">
-<span class="sig-name descname"><span class="pre">do_get_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pspec</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Led.do_get_property" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.Led.do_set_property">
-<span class="sig-name descname"><span class="pre">do_set_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pspec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Led.do_set_property" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="ratbag.Led.set_color">
 <span class="sig-name descname"><span class="pre">set_color</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rgb</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Led.set_color" title="Permalink to this definition"></a></dt>
 <dd><p>Set the color for this LED. The color provided has to be within the
@@ -1395,6 +1395,16 @@ caller’s responsibility to set the colors in a non-ambiguous way.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.Led.colordepth">
 <span class="sig-name descname"><span class="pre">colordepth</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Led.colordepth" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Led.do_get_property">
+<span class="sig-name descname"><span class="pre">do_get_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pspec</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Led.do_get_property" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Led.do_set_property">
+<span class="sig-name descname"><span class="pre">do_set_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pspec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Led.do_set_property" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">

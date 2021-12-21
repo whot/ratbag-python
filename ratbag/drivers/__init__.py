@@ -357,7 +357,7 @@ class Driver(GObject.Object):
         assert device.driver is not None
         assert len(device.profiles) >= 1
         # We must not skip an index
-        assert sorted(device.profiles) == list(range(len(device.profiles)))
+        assert None not in device.profiles
         nbuttons = len(device.profiles[0].buttons)
         nres = len(device.profiles[0].resolutions)
         nleds = len(device.profiles[0].leds)
@@ -365,7 +365,7 @@ class Driver(GObject.Object):
         assert any([count > 0 for count in [nbuttons, nres, nleds]])
         # We don't support different numbers of features on profiles, they all
         # must have the same count
-        for p in device.profiles.values():
+        for p in device.profiles:
             assert nbuttons == len(p.buttons)
             assert nres == len(p.resolutions)
             assert nleds == len(p.leds)

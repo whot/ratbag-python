@@ -49,8 +49,7 @@ def test_resolution():
     assert not r.default
     assert r.enabled
     # correctly added to the profile?
-    assert r in profile.resolutions.values()
-    assert r.index in profile.resolutions
+    assert r in profile.resolutions
     assert r.dpi == (200, 200)
 
     # duplicate index
@@ -79,20 +78,20 @@ def test_resolution_set_default():
     r22 = device.profiles[2].resolutions[2]
     r24 = device.profiles[2].resolutions[4]
     # we start with no default resolution
-    assert [r.default for r in device.profiles[1].resolutions.values()].count(True) == 0
+    assert [r.default for r in device.profiles[1].resolutions].count(True) == 0
 
     r13.set_default()
     assert r13.default
     assert r13.dirty
-    assert [r.default for r in device.profiles[1].resolutions.values()].count(True) == 1
-    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 1
+    assert [r.default for r in device.profiles[1].resolutions].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions].count(True) == 1
     r11.set_default()
     assert r11.default
     assert r11.dirty
     assert not r13.default
     assert r13.dirty
-    assert [r.default for r in device.profiles[1].resolutions.values()].count(True) == 1
-    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 2
+    assert [r.default for r in device.profiles[1].resolutions].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions].count(True) == 2
     # different profile, shouldn't affect r11/r13
     r22.set_default()
     assert r22.default
@@ -101,10 +100,10 @@ def test_resolution_set_default():
     assert r11.dirty
     assert not r13.default
     assert r13.dirty
-    assert [r.default for r in device.profiles[1].resolutions.values()].count(True) == 1
-    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 2
-    assert [r.default for r in device.profiles[2].resolutions.values()].count(True) == 1
-    assert [r.dirty for r in device.profiles[2].resolutions.values()].count(True) == 1
+    assert [r.default for r in device.profiles[1].resolutions].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions].count(True) == 2
+    assert [r.default for r in device.profiles[2].resolutions].count(True) == 1
+    assert [r.dirty for r in device.profiles[2].resolutions].count(True) == 1
     r24.set_default()
     assert r24.default
     assert r24.dirty
@@ -114,10 +113,10 @@ def test_resolution_set_default():
     assert r11.dirty
     assert not r13.default
     assert r13.dirty
-    assert [r.default for r in device.profiles[1].resolutions.values()].count(True) == 1
-    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 2
-    assert [r.default for r in device.profiles[2].resolutions.values()].count(True) == 1
-    assert [r.dirty for r in device.profiles[2].resolutions.values()].count(True) == 2
+    assert [r.default for r in device.profiles[1].resolutions].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions].count(True) == 2
+    assert [r.default for r in device.profiles[2].resolutions].count(True) == 1
+    assert [r.dirty for r in device.profiles[2].resolutions].count(True) == 2
 
 
 def test_resolution_set_active():
@@ -132,20 +131,20 @@ def test_resolution_set_active():
     r22 = device.profiles[2].resolutions[2]
     r24 = device.profiles[2].resolutions[4]
     # we start with no active resolution
-    assert [r.active for r in device.profiles[1].resolutions.values()].count(True) == 0
+    assert [r.active for r in device.profiles[1].resolutions].count(True) == 0
 
     r13.set_active()
     assert r13.active
     assert r13.dirty
-    assert [r.active for r in device.profiles[1].resolutions.values()].count(True) == 1
-    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 1
+    assert [r.active for r in device.profiles[1].resolutions].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions].count(True) == 1
     r11.set_active()
     assert r11.active
     assert r11.dirty
     assert not r13.active
     assert r13.dirty
-    assert [r.active for r in device.profiles[1].resolutions.values()].count(True) == 1
-    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 2
+    assert [r.active for r in device.profiles[1].resolutions].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions].count(True) == 2
     # different profile, shouldn't affect r11/r13
     r22.set_active()
     assert r22.active
@@ -154,10 +153,10 @@ def test_resolution_set_active():
     assert r11.dirty
     assert not r13.active
     assert r13.dirty
-    assert [r.active for r in device.profiles[1].resolutions.values()].count(True) == 1
-    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 2
-    assert [r.active for r in device.profiles[2].resolutions.values()].count(True) == 1
-    assert [r.dirty for r in device.profiles[2].resolutions.values()].count(True) == 1
+    assert [r.active for r in device.profiles[1].resolutions].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions].count(True) == 2
+    assert [r.active for r in device.profiles[2].resolutions].count(True) == 1
+    assert [r.dirty for r in device.profiles[2].resolutions].count(True) == 1
     r24.set_active()
     assert r24.active
     assert r24.dirty
@@ -167,10 +166,10 @@ def test_resolution_set_active():
     assert r11.dirty
     assert not r13.active
     assert r13.dirty
-    assert [r.active for r in device.profiles[1].resolutions.values()].count(True) == 1
-    assert [r.dirty for r in device.profiles[1].resolutions.values()].count(True) == 2
-    assert [r.active for r in device.profiles[2].resolutions.values()].count(True) == 1
-    assert [r.dirty for r in device.profiles[2].resolutions.values()].count(True) == 2
+    assert [r.active for r in device.profiles[1].resolutions].count(True) == 1
+    assert [r.dirty for r in device.profiles[1].resolutions].count(True) == 2
+    assert [r.active for r in device.profiles[2].resolutions].count(True) == 1
+    assert [r.dirty for r in device.profiles[2].resolutions].count(True) == 2
 
 
 def test_led():
@@ -250,21 +249,21 @@ def test_profile_set_active():
     p3 = device.profiles[3]
 
     # None are active by default
-    assert [p.active for p in device.profiles.values()].count(True) == 0
+    assert [p.active for p in device.profiles].count(True) == 0
 
     p1.set_active()
     assert p1.active
     assert p1.dirty
-    assert [p.active for p in device.profiles.values()].count(True) == 1
-    assert [p.dirty for p in device.profiles.values()].count(True) == 1
+    assert [p.active for p in device.profiles].count(True) == 1
+    assert [p.dirty for p in device.profiles].count(True) == 1
 
     p3.set_active()
     assert not p1.active
     assert p1.dirty
     assert p3.active
     assert p3.dirty
-    assert [p.active for p in device.profiles.values()].count(True) == 1
-    assert [p.dirty for p in device.profiles.values()].count(True) == 2
+    assert [p.active for p in device.profiles].count(True) == 1
+    assert [p.dirty for p in device.profiles].count(True) == 2
 
 
 def test_profile_set_enabled():
@@ -276,19 +275,19 @@ def test_profile_set_enabled():
     p3 = device.profiles[3]
 
     # All are enabled by default
-    assert [p.enabled for p in device.profiles.values()].count(False) == 0
+    assert [p.enabled for p in device.profiles].count(False) == 0
 
     p1.enabled = False
     assert not p1.enabled
     assert p1.dirty
-    assert [p.enabled for p in device.profiles.values()].count(False) == 1
-    assert [p.dirty for p in device.profiles.values()].count(True) == 1
+    assert [p.enabled for p in device.profiles].count(False) == 1
+    assert [p.dirty for p in device.profiles].count(True) == 1
 
     p3.enabled = False
     assert not p3.enabled
     assert p3.dirty
-    assert [p.enabled for p in device.profiles.values()].count(False) == 2
-    assert [p.dirty for p in device.profiles.values()].count(True) == 2
+    assert [p.enabled for p in device.profiles].count(False) == 2
+    assert [p.dirty for p in device.profiles].count(True) == 2
 
 
 def test_profile_set_default():
@@ -300,18 +299,30 @@ def test_profile_set_default():
     p3 = device.profiles[3]
 
     # None are active by default
-    assert [p.default for p in device.profiles.values()].count(True) == 0
+    assert [p.default for p in device.profiles].count(True) == 0
 
     p1.set_default()
     assert p1.default
     assert p1.dirty
-    assert [p.default for p in device.profiles.values()].count(True) == 1
-    assert [p.dirty for p in device.profiles.values()].count(True) == 1
+    assert [p.default for p in device.profiles].count(True) == 1
+    assert [p.dirty for p in device.profiles].count(True) == 1
 
     p3.set_default()
     assert not p1.default
     assert p1.dirty
     assert p3.default
     assert p3.dirty
-    assert [p.default for p in device.profiles.values()].count(True) == 1
-    assert [p.dirty for p in device.profiles.values()].count(True) == 2
+    assert [p.default for p in device.profiles].count(True) == 1
+    assert [p.dirty for p in device.profiles].count(True) == 2
+
+
+def test_profile_out_of_order():
+    device = ratbag.Device(object(), "test device", "nopath")
+    p3 = ratbag.Profile(device, 3)
+    p1 = ratbag.Profile(device, 1)
+
+    assert p1 in device.profiles
+    assert p3 in device.profiles
+    assert device.profiles[0] is None
+    assert device.profiles[2] is None
+    assert len(device.profiles) == 4

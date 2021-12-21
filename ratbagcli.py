@@ -143,10 +143,14 @@ class Config(object):
 
         for pconf in self.profiles:
             pidx = pconf["index"]
-            if pidx not in device.profiles:
-                logger.warning("Config references nonexisting profile {pdix}. Skipping")
+            try:
+                profile = device.profiles[pidx]
+            except IndexError:
+                logger.warning(
+                    f"Config references nonexisting profile {pidx}. Skipping"
+                )
                 continue
-            profile = device.profiles[pidx]
+
             logger.info(f"Config found for profile {profile.index}")
 
             # Disabling is handled first, it discards all other config for that
@@ -159,12 +163,13 @@ class Config(object):
             # Resolutions
             for rconf in pconf.get("resolutions", []):
                 ridx = rconf["index"]
-                if ridx not in profile.resolutions:
+                try:
+                    resolution = profile.resolutions[ridx]
+                except IndexError:
                     logger.warning(
-                        "Config references nonexisting resolution {pdix}.{ridx}. Skipping"
+                        f"Config references nonexisting resolution {pidx}.{ridx}. Skipping"
                     )
                     continue
-                resolution = profile.resolutions[ridx]
                 logger.info(
                     f"Config found for resolution {profile.index}.{resolution.index}"
                 )
@@ -182,12 +187,13 @@ class Config(object):
             # Buttons
             for bconf in pconf.get("buttons", []):
                 bidx = bconf["index"]
-                if bidx not in profile.buttons:
+                try:
+                    button = profile.buttons[bidx]
+                except IndexError:
                     logger.warning(
-                        "Config references nonexisting button {pdix}.{bidx}. Skipping"
+                        f"Config references nonexisting button {pidx}.{bidx}. Skipping"
                     )
                     continue
-                button = profile.buttons[bidx]
                 logger.info(f"Config found for button {profile.index}.{button.index}")
 
                 # Disabling is handled first, it discards all other config for that

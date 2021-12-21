@@ -369,9 +369,19 @@ class Device(GObject.Object):
         self.driver = driver
         self.path = path
         self.name = name
-        self.profiles = {}
+        self._profiles = ()
         self._driver = driver
         self._dirty = False
+
+    @property
+    def profiles(self):
+        """
+        The tuple of device profiles, in-order sorted by profile index.
+        """
+        # Internally profiles is a dict so we can create them out-of-order if
+        # need be but externally it's a tuple because we don't want anyone to
+        # modify it.
+        return self._profiles
 
     def commit(self):
         """
@@ -394,10 +404,10 @@ class Device(GObject.Object):
             x.dirty = False
 
         # Now reset all dirty values
-        for p in self.profiles.values():
-            map(clean, p.buttons.values())
-            map(clean, p.resolutions.values())
-            map(clean, p.leds.values())
+        for p in self.profiles:
+            map(clean, p.buttons)
+            map(clean, p.resolutions)
+            map(clean, p.leds)
             p.dirty = False
         self.dirty = False
 
@@ -405,12 +415,13 @@ class Device(GObject.Object):
         """
         Add the profile to the device.
         """
-        assert profile.index not in self.profiles
+        self._profiles = ratbag.util.add_to_sparse_tuple(
+            self._profiles, profile.index, profile
+        )
 
         def cb_dirty(profile, pspec):
             self.dirty = self.dirty or profile.dirty
 
-        self.profiles[profile.index] = profile
         profile.connect("notify::dirty", cb_dirty)
 
     @GObject.Property
@@ -436,7 +447,7 @@ class Device(GObject.Object):
         return {
             "name": self.name,
             "path": self.path,
-            "profiles": [p.as_dict() for p in self.profiles.values()],
+            "profiles": [p.as_dict() for p in self.profiles],
         }
 
 
@@ -502,18 +513,6 @@ class Profile(Feature):
 
         The profile name (may be software-assigned)
 
-    .. attribute:: buttons
-
-        The list of :class:`Button` that are available in this profile
-
-    .. attribute:: resolutions
-
-        The list of :class:`Resolution` that are available in this profile
-
-    .. attribute:: leds
-
-        The list of :class:`Led` that are available in this profile
-
     """
 
     class Capability(enum.Enum):
@@ -578,9 +577,9 @@ class Profile(Feature):
     ):
         super().__init__(device, index)
         self.name = f"Unnamed {index}" if name is None else name
-        self.buttons = {}
-        self.resolutions = {}
-        self.leds = {}
+        self._buttons = ()
+        self._resolutions = ()
+        self._leds = ()
         self._default = False
         self._active = False
         self._enabled = True
@@ -588,6 +587,27 @@ class Profile(Feature):
         self._report_rates = tuple(set(report_rates))
         self._capabilities = tuple(set(capabilities))
         self.device._add_profile(self)
+
+    @property
+    def buttons(self):
+        """
+        The tuple of :class:`Button` that are available in this profile
+        """
+        return self._buttons
+
+    @property
+    def resolutions(self):
+        """
+        The tuple of :class:`Resolution` that are available in this profile
+        """
+        return self._resolutions
+
+    @property
+    def leds(self):
+        """
+        The tuple of :class:`Led` that are available in this profile
+        """
+        return self._leds
 
     @GObject.Property
     def report_rate(self):
@@ -648,7 +668,7 @@ class Profile(Feature):
         Set this profile to be the active profile.
         """
         if not self.active:
-            for p in [p for p in self.device.profiles.values() if p.active]:
+            for p in [p for p in self.device.profiles if p.active]:
                 p._active = False
                 p.notify("active")
             self._active = True
@@ -673,7 +693,7 @@ class Profile(Feature):
         if Profile.Capability.SET_DEFAULT not in self.capabilities:
             raise ConfigError("Profiles set-default capability not supported")
         if not self.default:
-            for p in [p for p in self.device.profiles.values() if p.default]:
+            for p in [p for p in self.device.profiles if p.default]:
                 p._default = False
                 p.notify("default")
             self._default = True
@@ -684,18 +704,19 @@ class Profile(Feature):
         self.dirty = self.dirty or feature.dirty
 
     def _add_button(self, button):
-        assert button.index not in self.buttons
-        self.buttons[button.index] = button
+        self._buttons = ratbag.util.add_to_sparse_tuple(
+            self._buttons, button.index, button
+        )
         button.connect("notify::dirty", self._cb_dirty)
 
     def _add_resolution(self, resolution):
-        assert resolution.index not in self.resolutions
-        self.resolutions[resolution.index] = resolution
+        self._resolutions = ratbag.util.add_to_sparse_tuple(
+            self._resolutions, resolution.index, resolution
+        )
         resolution.connect("notify::dirty", self._cb_dirty)
 
     def _add_led(self, led):
-        assert led.index not in self.leds
-        self.leds[led.index] = led
+        self._leds = ratbag.util.add_to_sparse_tuple(self._leds, led.index, led)
         led.connect("notify::dirty", self._cb_dirty)
 
     def as_dict(self):
@@ -707,8 +728,8 @@ class Profile(Feature):
             "index": self.index,
             "name": self.name,
             "capabilities": [c.name for c in self.capabilities],
-            "resolutions": [r.as_dict() for r in self.resolutions.values()],
-            "buttons": [b.as_dict() for b in self.buttons.values()],
+            "resolutions": [r.as_dict() for r in self.resolutions],
+            "buttons": [b.as_dict() for b in self.buttons],
             "report_rates": [r for r in self.report_rates],
             "report_rate": self.report_rate or 0,
         }
@@ -802,7 +823,7 @@ class Resolution(Feature):
         Set this resolution to be the active resolution.
         """
         if not self.active:
-            for r in self.profile.resolutions.values():
+            for r in self.profile.resolutions:
                 r.active = False
             self.active = True
 
@@ -822,7 +843,7 @@ class Resolution(Feature):
         :raises: ConfigError
         """
         if not self.default:
-            for r in [r for r in self.profile.resolutions.values() if r.default]:
+            for r in [r for r in self.profile.resolutions if r.default]:
                 r._default = False
                 r.notify("default")
             self._default = True

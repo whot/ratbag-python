@@ -631,14 +631,14 @@ class RoccatDevice(GObject.Object):
             assert self.ratbag_device == ratbag_device
             logger.debug(f"Commiting to device {self.name}")
             for ratbag_profile in [
-                p for p in ratbag_device.profiles.values() if p.dirty
+                p for p in ratbag_device.profiles if p.dirty
             ]:
                 profile = self.profiles[ratbag_profile.index]
                 logger.debug(f"Profile {profile.idx} has changes")
                 profile.update_report_rate(ratbag_profile.report_rate)
 
                 for ratbag_resolution in [
-                    r for r in ratbag_profile.resolutions.values() if r.dirty
+                    r for r in ratbag_profile.resolutions if r.dirty
                 ]:
                     logger.debug(
                         f"Resolution {profile.idx}.{ratbag_resolution.index} has changed to {ratbag_resolution.dpi}"
@@ -650,7 +650,7 @@ class RoccatDevice(GObject.Object):
                     )
 
                 for ratbag_button in [
-                    b for b in ratbag_profile.buttons.values() if b.dirty
+                    b for b in ratbag_profile.buttons if b.dirty
                 ]:
                     logger.debug(
                         f"Button {profile.idx}.{ratbag_button.index} has changed to {ratbag_button.action}"

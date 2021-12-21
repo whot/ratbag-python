@@ -91,7 +91,7 @@ class ExampleDriver(ratbag.drivers.Driver):
         self.emit("device-added", device)
 
     def _on_commit(self, device):
-        for p in device.profiles.values():
+        for p in device.profiles:
             if not p.dirty:
                 continue
 

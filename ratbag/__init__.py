@@ -870,6 +870,14 @@ class Resolution(Feature):
             x, y = new_dpi
             if y not in self._dpi_list:
                 raise ConfigError(f"{y} is not a supported resolution")
+            if (
+                x != y
+                and ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION
+                not in self.capabilities
+            ):
+                raise ConfigError(
+                    "Individual x/y resolution not supported by this device"
+                )
         except TypeError:
             x = new_dpi
             y = new_dpi

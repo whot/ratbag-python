@@ -269,7 +269,7 @@ def test_profile_set_active():
 def test_profile_set_enabled():
     device = ratbag.Device(object(), "test device", "nopath")
     for i in range(5):
-        ratbag.Profile(device, i)
+        ratbag.Profile(device, i, capabilities=[ratbag.Profile.Capability.DISABLE])
 
     p1 = device.profiles[1]
     p3 = device.profiles[3]
@@ -277,17 +277,22 @@ def test_profile_set_enabled():
     # All are enabled by default
     assert [p.enabled for p in device.profiles].count(False) == 0
 
-    p1.enabled = False
+    p1.set_enabled(False)
     assert not p1.enabled
     assert p1.dirty
     assert [p.enabled for p in device.profiles].count(False) == 1
     assert [p.dirty for p in device.profiles].count(True) == 1
 
-    p3.enabled = False
+    p3.set_enabled(False)
     assert not p3.enabled
     assert p3.dirty
     assert [p.enabled for p in device.profiles].count(False) == 2
     assert [p.dirty for p in device.profiles].count(True) == 2
+
+    # Can't disable profiles unless the profile explicitly supports it
+    p = ratbag.Profile(device, 6)
+    with pytest.raises(ratbag.ConfigError):
+        p.set_enabled(False)
 
 
 def test_profile_set_default():

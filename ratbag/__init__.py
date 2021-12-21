@@ -648,8 +648,10 @@ class Profile(Feature):
         """
         return self._enabled
 
-    @enabled.setter
-    def enabled(self, enabled):
+    def set_enabled(self, enabled):
+        if Profile.Capability.DISABLE not in self.capabilities:
+            raise ConfigError("Profile disable capability not supported")
+
         if self._enabled != enabled:
             self._enabled = enabled
             self.dirty = True
@@ -795,8 +797,7 @@ class Resolution(Feature):
     def enabled(self):
         return self._enabled
 
-    @enabled.setter
-    def enabled(self, enabled):
+    def set_enabled(self, enabled):
         if self._enabled != enabled:
             self._enabled = enabled
             self.notify("enabled")

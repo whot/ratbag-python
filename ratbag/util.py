@@ -31,6 +31,33 @@ def as_hex(bs):
     return " ".join(["".join(s) for s in zip(hx[::2], hx[1::2])])
 
 
+def add_to_sparse_tuple(tpl, index, new_value):
+    """
+    Return a new tuple based on tpl with new_value added at the given index.
+    The tuple is either expanded with ``None`` values to match the new size
+    required or the value is replaced. ::
+
+        >>> t = add_to_sparse_tuple(('a', 'b'), 5, 'f')
+        >>> print(t)
+        ('a', 'b', None, None, None, 'f')
+        >>> t = add_to_sparse_tuple(('a', 'b'), 3, 'd')
+        >>> print(t)
+        ('a', 'b', None, 'd', None, 'f')
+
+     This function does not replace existing values in the tuple. ::
+
+        >>> t = add_to_sparse_tuple(('a', 'b'), 0, 'A')
+        AssertionError blah blah
+    """
+    l = [None] * max(len(tpl), index + 1)
+    for i, v in enumerate(tpl):
+        l[i] = v
+
+    assert l[index] is None
+    l[index] = new_value
+    return tuple(l)
+
+
 def find_hidraw_devices():
     """
     :return: a list of local hidraw device paths ``["/dev/hidraw0", "/dev/hidraw1"]``

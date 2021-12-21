@@ -85,3 +85,22 @@ def test_attr_from_data():
     assert offset == 13
     reverse = ratbag.util.attr_to_data(obj, format, maps={"map_me": lambda x: sum(x)})
     assert reverse[-2] << 8 | reverse[-1] == sum(range(11))
+
+
+def test_add_to_sparse_tuple():
+    t = (None,)
+    t = ratbag.util.add_to_sparse_tuple(t, 3, "d")
+    assert t == (None, None, None, "d")
+
+    t = ratbag.util.add_to_sparse_tuple(t, 0, "a")
+    assert t == ("a", None, None, "d")
+    t = ratbag.util.add_to_sparse_tuple(t, 1, "b")
+    assert t == ("a", "b", None, "d")
+
+    with pytest.raises(AssertionError):
+        ratbag.util.add_to_sparse_tuple(t, 1, "B")
+
+    t = ratbag.util.add_to_sparse_tuple(t, 2, "c")
+    assert t == ("a", "b", "c", "d")
+    t = ratbag.util.add_to_sparse_tuple(t, 4, "e")
+    assert t == ("a", "b", "c", "d", "e")

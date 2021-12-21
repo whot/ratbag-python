@@ -1,0 +1,18 @@
+name: checks
+
+on: [ push, pull_request ]
+
+jobs:
+  python-black:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        uses: libratbag/libratbag/.github/actions/pkginstall@master
+        with:
+          apt: pkg-config python3-pip python3-gi libgirepository1.0-dev
+          pip: black pyudev pygobject git+https://gitlab.freedesktop.org/libevdev/hid-tools
+      - name: run Python black
+        run: git ls-files | grep ".py" | xargs black
+      - name: diff for changes
+        run: git diff --exit-code

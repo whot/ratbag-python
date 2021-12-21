@@ -155,7 +155,7 @@ class RoccatProfile(object):
         for (dpi_idx, dpi) in enumerate(self.dpi):
             dpi_list = list(range(200, 8200 + 1, 50))
             caps = [ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION]
-            r = ratbag.Resolution(
+            ratbag.Resolution(
                 p,
                 dpi_idx,
                 dpi,
@@ -171,7 +171,7 @@ class RoccatProfile(object):
                 ratbag.Action.Type.MACRO,
             ]
             action = self.key_mapping.button_to_ratbag(btn_idx)
-            button = ratbag.Button(p, btn_idx, types=caps, action=action)
+            ratbag.Button(p, btn_idx, types=caps, action=action)
 
         self.ratbag_profile = p
         return p

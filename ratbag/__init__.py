@@ -1098,28 +1098,47 @@ class Led(Feature):
         index,
         *,
         color=(0, 0, 0),
+        brightness=0,
         colordepth=Colordepth.RGB_888,
+        mode=Mode.OFF,
         modes=[Mode.OFF],
+        effect_duration=0,
     ):
         super().__init__(profile.device, index)
         self.profile = profile
         self._color = color
         self._colordepth = colordepth
-        self._effect_duration = 0
-        self._mode = Led.Mode.OFF
-        self._modes = modes
+        self._brightness = brightness
+        self._effect_duration = effect_duration
+        self._mode = mode
+        self._modes = list(modes)
         self.profile._add_led(self)
 
     @GObject.Property
     def color(self):
+        """
+        Return a triplet of ``(r, g, b)`` of positive integers. If any color
+        scaling applies because of the device's :class:`ratbag.Led.Colordepth`
+        this is **not** reflected in this value. In other words, the color
+        always matches the last successful call to :meth:`set_color`.
+        """
         return self._color
 
     def set_color(self, rgb):
+        """
+        Set the color for this LED. The color provided has to be within the
+        allowed color range, see :class:`ratbag.Led.Colordepth`. ratbag
+        silently scales and/or clamps to the device's color depth, it is the
+        caller's responsibility to set the colors in a non-ambiguous way.
+
+        :raises: ConfigError
+        """
         try:
-            if len(rgb) != 3:
-                raise ConfigError("Invalid color, must be (r, g, b)")
-        except TypeError:
-            raise ConfigError("Invalid color, must be (r, g, b)")
+            r, g, b = [int(c) for c in rgb]
+            if not all([0 <= c <= 255 for c in (r, g, b)]):
+                raise ValueError()
+        except (TypeError, ValueError):
+            raise ConfigError("Invalid color, must be (r, g, b), zero or higher")
         if self._color != rgb:
             self._color = rgb
             self.notify("color")
@@ -1133,6 +1152,13 @@ class Led(Feature):
         return self._brightness
 
     def set_brightness(self, brightness):
+        try:
+            brightness = int(brightness)
+            if not 0 <= brightness <= 255:
+                raise ValueError()
+        except (TypeError, ValueError):
+            raise ConfigError("Invalid brightness value, must be 0-255")
+
         if brightness != self._brightness:
             self._brightness = brightness
             self.dirty = True
@@ -1142,6 +1168,14 @@ class Led(Feature):
         return self._effect_duration
 
     def set_effect_duration(self, effect_duration):
+        try:
+            effect_duration = int(effect_duration)
+            # effect over 10s is likely a bug in the caller
+            if not 0 <= effect_duration <= 10000:
+                raise ValueError()
+        except (TypeError, ValueError):
+            raise ConfigError("Invalid effect_duration value, must be >= 0")
+
         if effect_duration != self._effect_duration:
             self._effect_duration = effect_duration
             self.notify("effect_duration")
@@ -1152,6 +1186,10 @@ class Led(Feature):
         return self._mode
 
     def set_mode(self, mode):
+        """
+        Change the mode of this LED. The supplied mode must be one returned by
+        :meth:`modes`.
+        """
         if mode not in self.modes:
             raise ConfigError(f"Unsupported LED mode {str(mode)}")
         if mode != self._mode:
@@ -1159,6 +1197,7 @@ class Led(Feature):
             self.notify("mode")
             self.dirty = True
 
+    @property
     def modes(self):
         """
         Return the list of :class:`Led.Mode` available for this LED

@@ -173,6 +173,74 @@ def test_resolution_set_active():
     assert [r.dirty for r in device.profiles[2].resolutions.values()].count(True) == 2
 
 
+def test_led():
+    device = ratbag.Device(object(), "test device", "nopath")
+    profile = ratbag.Profile(device, 0)
+    led = ratbag.Led(profile, 0)
+
+    # color checks
+    invalid_colors = [
+        "abc",
+        (1, 2, 3, 4),
+        (-1, 2, 3),
+        -1,
+        (1, 3, 256),
+    ]
+
+    for v in invalid_colors:
+        with pytest.raises(ratbag.ConfigError):
+            led.set_color(v)
+
+    led.set_color((0, 10, 200))
+    assert led.color == (0, 10, 200)
+    led.set_color((0, 0, 0))
+    assert led.color == (0, 0, 0)
+
+    # brightness checks
+    invalid_brightness = [
+        -1,
+        "a",
+        (1, 2),
+        256,
+    ]
+    for v in invalid_brightness:
+        with pytest.raises(ratbag.ConfigError):
+            led.set_brightness(v)
+
+    led.set_brightness(200)
+    assert led.brightness == 200
+    led.set_brightness(0)
+    assert led.brightness == 0
+
+    # effect duration checks
+    invalid_effect_duration = [
+        -1,
+        "a",
+        (1, 2),
+        10001,
+    ]
+    for v in invalid_effect_duration:
+        with pytest.raises(ratbag.ConfigError):
+            led.set_effect_duration(v)
+
+    led.set_effect_duration(200)
+    assert led.effect_duration == 200
+    led.set_effect_duration(0)
+    assert led.effect_duration == 0
+
+    with pytest.raises(ratbag.ConfigError):
+        led.set_mode(1)
+
+    # LED modes
+    assert led.modes == [ratbag.Led.Mode.OFF]
+    led = ratbag.Led(profile, 1, modes=list(ratbag.Led.Mode), mode=ratbag.Led.Mode.ON)
+    assert led.modes == list(ratbag.Led.Mode)
+    for m in led.modes:
+        led.set_mode(m)
+        assert led.dirty
+        assert led.mode == m
+
+
 def test_profile_set_active():
     device = ratbag.Device(object(), "test device", "nopath")
     for i in range(5):

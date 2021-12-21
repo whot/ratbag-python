@@ -19,7 +19,10 @@ logger = logging.getLogger(__name__)
 
 class UnsupportedDeviceError(Exception):
     """
-    Error indicating that the device is not supported.
+    Error indicating that the device is not supported. This exception is
+    raised for devices that ratbag does not have an implementation for.
+
+    .. note:: This error is unrecoverable without changes to ratbag.
 
     .. attribute:: path
 
@@ -39,7 +42,11 @@ class UnsupportedDeviceError(Exception):
 class SomethingIsMissingError(Exception):
     """
     Error indicating that the device is missing something that we require for
-    it to work.
+    it to work. This exception is raised for devices that ratbag has an
+    implementation for but for some reason the device is lacking a required
+    feature.
+
+    .. note:: This error is unrecoverable without changes to ratbag.
 
     .. attribute:: path
 
@@ -62,6 +69,12 @@ class SomethingIsMissingError(Exception):
 
 class ConfigError(Exception):
     """
+    Error indicating that the caller has tried to set the device's
+    configuration to an unsupported value, format, or feature.
+
+    This error is recoverable by re-reading the device's current state and
+    attempting a different configuration.
+
     .. attribute:: message
 
         The error message
@@ -75,6 +88,8 @@ class ProtocolError(Exception):
     """
     Error indicating that the communication with the device encountered an
     error
+
+    It depends on the specifics on the error whether this is recoverable.
 
     .. attribute:: path
 
@@ -112,11 +127,18 @@ class Ratbag(GObject.Object):
     Where static device paths are given, the device must be present and
     removal of that device will not re-add this device in the future.
 
+    Example: ::
+
+        r = ratbag.Ratbag()
+        r.connect("device-added", lambda ratbag, device: print(f"New device: {device}"))
+        r.start()
+        GLib.MainLoop().run()
+
     :class:`ratbag.Ratbag` requires a GLib mainloop.
 
     :param config: a dictionary with configuration information
 
-    Configuration items:
+    Supported keys in ``config``:
 
     - ``device-paths``: a list of device paths to initialize (if any)
     - ``emulators``: a list of :class:`ratbag.emulator.YamlDevice` or similar
@@ -356,7 +378,7 @@ class Device(GObject.Object):
         Write the current changes to the driver. This function emits the
         ``commit`` signal to notify the respective driver that the current
         state of the device is to be committed. Calling this method resets
-        :attr:`dirty` to `False` for all features of this device.
+        :attr:`dirty` to ``False`` for all features of this device.
 
         If an error occurs, the driver emits the ``resync`` signal. A caller
         receiving that signal should synchronize its own state of the device.
@@ -394,7 +416,7 @@ class Device(GObject.Object):
     @GObject.Property
     def dirty(self):
         """
-        `True` if changes are uncommited. Connect to ``notify::dirty`` to receive changes.
+        ``True`` if changes are uncommited. Connect to ``notify::dirty`` to receive changes.
         """
         return self._dirty
 
@@ -455,7 +477,7 @@ class Feature(GObject.Object):
     @GObject.Property
     def dirty(self):
         """
-        `True` if changes are uncommited. Connect to ``notify::dirty`` to receive changes.
+        ``True`` if changes are uncommited. Connect to ``notify::dirty`` to receive changes.
         """
         return self._dirty
 
@@ -495,6 +517,10 @@ class Profile(Feature):
     """
 
     class Capability(enum.Enum):
+        """
+        Capabilities specific to profiles.
+        """
+
         SET_DEFAULT = enum.auto()
         """
         This profile can be set as the default profile. The default profile is
@@ -590,6 +616,9 @@ class Profile(Feature):
 
     @property
     def capabilities(self):
+        """
+        Return the list of supported :class:`Profile.Capability`
+        """
         return self._capabilities
 
     @GObject.Property
@@ -636,6 +665,11 @@ class Profile(Feature):
         return self._default
 
     def set_default(self):
+        """
+        Set this profile as the default profile.
+
+        :raises: ConfigError
+        """
         if Profile.Capability.SET_DEFAULT not in self.capabilities:
             raise ConfigError("Profiles set-default capability not supported")
         if not self.default:
@@ -693,7 +727,16 @@ class Resolution(Feature):
     """
 
     class Capability(enum.Enum):
+        """
+        Capabilities specific to resolutions.
+        """
+
         SEPARATE_XY_RESOLUTION = enum.auto()
+        """
+        The device can adjust x and y resolution independently. If this
+        capability is **not** present, the arguments to :meth:`set_dpi` must
+        be a tuple of identical values.
+        """
 
     def __init__(
         self, profile, index, dpi, *, enabled=True, capabilities=[], dpi_list=[]
@@ -773,6 +816,11 @@ class Resolution(Feature):
         return self._default
 
     def set_default(self):
+        """
+        Set this resolution as the default resolution.
+
+        :raises: ConfigError
+        """
         if not self.default:
             for r in [r for r in self.profile.resolutions.values() if r.default]:
                 r._default = False

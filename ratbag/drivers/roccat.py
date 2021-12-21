@@ -108,6 +108,8 @@ class RoccatProfile(object):
         self.active = False
         self.ratbag_profile = None
         self.key_mapping = None
+        self.report_id = ReportID.SETTINGS.value
+        self.report_length = RoccatProfile.SIZE
 
     def from_data(self, data):
         if len(data) != RoccatProfile.SIZE:
@@ -226,6 +228,8 @@ class RoccatMacro(object):
         self.keys = 500 * [(0, 0, 0)]  # A triple of keycode, flags, wait_time
         self.length = 0
         self._macro_exists_on_device = False
+        self.report_id = ReportID.MACRO.value
+        self.report_length = RoccatMacro.SIZE
 
     def to_ratbag(self):
         events = []
@@ -396,6 +400,8 @@ class RoccatKeyMapping(object):
         self.profile = profile
         self.macros = {}  # button index: RoccatMacro
         self.num_buttons = MAX_BUTTONS
+        self.report_id = ReportID.KEY_MAPPING.value
+        self.report_length = RoccatKeyMapping.SIZE
 
     def from_data(self, data):
         if len(data) != RoccatKeyMapping.SIZE:

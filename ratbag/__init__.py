@@ -668,7 +668,7 @@ class Profile(Feature):
         Set this profile to be the active profile.
         """
         if not self.active:
-            for p in [p for p in self.device.profiles if p.active]:
+            for p in filter(lambda p: p.active, self.device.profiles):
                 p._active = False
                 p.notify("active")
             self._active = True
@@ -693,7 +693,7 @@ class Profile(Feature):
         if Profile.Capability.SET_DEFAULT not in self.capabilities:
             raise ConfigError("Profiles set-default capability not supported")
         if not self.default:
-            for p in [p for p in self.device.profiles if p.default]:
+            for p in filter(lambda p: p.default, self.device.profiles):
                 p._default = False
                 p.notify("default")
             self._default = True
@@ -843,7 +843,7 @@ class Resolution(Feature):
         :raises: ConfigError
         """
         if not self.default:
-            for r in [r for r in self.profile.resolutions if r.default]:
+            for r in filter(lambda r: r.default, self.profile.resolutions):
                 r._default = False
                 r.notify("default")
             self._default = True

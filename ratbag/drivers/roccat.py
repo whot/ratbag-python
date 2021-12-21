@@ -627,19 +627,18 @@ class RoccatDevice(GObject.Object):
         return bs[1] == 0x1
 
     def cb_commit(self, ratbag_device):
+        def is_dirty(feature):
+            return feature.dirty
+
         try:
             assert self.ratbag_device == ratbag_device
             logger.debug(f"Commiting to device {self.name}")
-            for ratbag_profile in [
-                p for p in ratbag_device.profiles if p.dirty
-            ]:
+            for ratbag_profile in filter(is_dirty, ratbag_device.profiles):
                 profile = self.profiles[ratbag_profile.index]
                 logger.debug(f"Profile {profile.idx} has changes")
                 profile.update_report_rate(ratbag_profile.report_rate)
 
-                for ratbag_resolution in [
-                    r for r in ratbag_profile.resolutions if r.dirty
-                ]:
+                for ratbag_resolution in filter(is_dirty, ratbag_profile.resolutions):
                     logger.debug(
                         f"Resolution {profile.idx}.{ratbag_resolution.index} has changed to {ratbag_resolution.dpi}"
                     )
@@ -649,9 +648,7 @@ class RoccatDevice(GObject.Object):
                         ratbag_resolution.enabled,
                     )
 
-                for ratbag_button in [
-                    b for b in ratbag_profile.buttons if b.dirty
-                ]:
+                for ratbag_button in filter(is_dirty, ratbag_profile.buttons):
                     logger.debug(
                         f"Button {profile.idx}.{ratbag_button.index} has changed to {ratbag_button.action}"
                     )

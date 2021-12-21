@@ -16,3 +16,15 @@ jobs:
         run: git ls-files | grep ".py" | xargs black
       - name: diff for changes
         run: git diff --exit-code
+
+  pytest:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        uses: libratbag/libratbag/.github/actions/pkginstall@master
+        with:
+          apt: pkg-config python3-pip python3-gi libgirepository1.0-dev libevdev2
+          pip: pytest pyudev pygobject libevdev git+https://gitlab.freedesktop.org/libevdev/hid-tools
+      - name: run test suite
+        run: pytest -v

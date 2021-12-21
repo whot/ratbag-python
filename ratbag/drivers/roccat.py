@@ -103,6 +103,9 @@ class RoccatProfile(object):
         self.active = False
         self.ratbag_profile = None
         self.key_mapping = None
+        ratbag.util.attr_from_data(
+            self, RoccatProfile.format, bytes([0] * RoccatProfile.SIZE)
+        )
         self.report_id = ReportID.PROFILE_SETTINGS.value
         self.report_length = RoccatProfile.SIZE
 

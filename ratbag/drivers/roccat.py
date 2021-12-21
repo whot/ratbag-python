@@ -52,7 +52,7 @@ class ReportID(enum.IntEnum):
     """
 
     CONFIGURE_PROFILE = 0x4
-    PROFILE = 0x5
+    CURRENT_PROFILE = 0x5
     SETTINGS = 0x6
     KEY_MAPPING = 0x7
     MACRO = 8
@@ -545,7 +545,7 @@ class RoccatDevice(GObject.Object):
             )
 
         # Featch current profile index
-        logger.debug(f"ioctl {ReportID.PROFILE.name}")
+        logger.debug(f"ioctl {ReportID.CURRENT_PROFILE.name}")
         bs = self.hidraw_device.hid_get_feature(ReportID.PROFILE)
         current_profile_idx = bs[2]
         logger.debug(f"current profile is {current_profile_idx}")

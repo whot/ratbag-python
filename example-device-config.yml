@@ -9,6 +9,7 @@ matches:
 # file are untouched
 profiles:
   - index: 0
+    report-rate: 500  # Report rate in Hz
     resolutions:
       # Set the resolution to the given x/y dpi tuple. If the device does not
       # support separate x/y resolution, both values must be the same

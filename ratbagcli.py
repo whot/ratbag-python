@@ -54,7 +54,7 @@ class Config(object):
             raise Config.Error("Missing 'profiles' array")
 
         # verify the config and switch a few things to be more useful:
-        # - index is converted to int
+        # - index and report_rate are converted to int
         # - button special are converted to the ratbag.ActionSpecial type
         # - resolution dpi is converted to an int tuple
         for pidx, p in enumerate(self.profiles):
@@ -64,6 +64,15 @@ class Config(object):
             pidx = p["index"]
             if not p.get("disable", True):
                 raise Config.Error(f"Profile {pidx}: disable must be 'true'")
+
+            report_rate = p.get("report-rate", None)
+            if report_rate is not None:
+                try:
+                    p["report-rate"] = int(report_rate)
+                except ValueError:
+                    raise Config.Error(
+                        f"Profile {pidx}: invalid report rate {report_rate}"
+                    )
 
             # Buttons
             for bidx, b in enumerate(p.get("buttons", [])):
@@ -167,6 +176,11 @@ class Config(object):
                 logger.info(f"Disabling profile {profile.index}")
                 profile.enabled = False
                 continue
+
+            report_rate = pconf.get("report-rate", None)
+            if report_rate is not None:
+                logger.info(f"Report rate for {profile.index} is now {report_rate}")
+                profile.set_report_rate(report_rate)
 
             # Resolutions
             for rconf in pconf.get("resolutions", []):

@@ -181,6 +181,7 @@ class RoccatProfile(object):
         self.dpi[index] = values
         self.xres = [v[0] // 50 for v in self.dpi]
         self.yres = [v[1] // 50 for v in self.dpi]
+        self.xy_linked = all([x == y for x, y in zip(self.xres, self.yres)])
         mask = 1 << index
         if is_enabled:
             self.dpi_mask |= mask

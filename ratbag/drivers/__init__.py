@@ -173,20 +173,20 @@ class Rodent(GObject.Object):
         else:
             return device
 
-    def __init__(self, path):
+    def __init__(self, path=None):
         GObject.Object.__init__(self)
-        self.path = path
 
-        info = ratbag.util.load_device_info(path)
-        self.name = info["name"] or "Unnamed device"
-        self.report_descriptor = info.get("report_descriptor", None)
-        if self.report_descriptor is not None:
-            self._rdesc = hidtools.hid.ReportDescriptor.from_bytes(
-                self.report_descriptor
-            )
+        if path is not None:
+            self.path = path
+            info = ratbag.util.load_device_info(path)
+            self.name = info["name"] or "Unnamed device"
+            self.report_descriptor = info.get("report_descriptor", None)
+            self._fd = open(path, "r+b", buffering=0)
+            os.set_blocking(self._fd.fileno(), False)
 
-        self._fd = open(path, "r+b", buffering=0)
-        os.set_blocking(self._fd.fileno(), False)
+        rdesc = getattr(self, "report_descriptor", None)
+        if rdesc is not None:
+            self._rdesc = hidtools.hid.ReportDescriptor.from_bytes(rdesc)
 
     @property
     def report_ids(self):

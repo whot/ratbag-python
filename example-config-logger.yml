@@ -1,3 +1,12 @@
+# Logger configuration file for ratbag
+# See https://docs.python.org/3/library/logging.config.html for details on
+# this format
+#
+# Save this file as
+# - $XDG_CONFIG_HOME/ratbagd/config-logger.yml
+# - $PWD/config-logger.yml
+#
+# To apply the config to ratbagcli and other tools
 version: 1
 formatters:
   simple:

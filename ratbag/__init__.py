@@ -894,7 +894,7 @@ class Resolution(Feature):
         return {
             "index": self.index,
             "dpi": list(self.dpi),
-            "dpi_list": self.dpi_list,
+            "dpi_list": list(self.dpi_list),
             "active": self.active,
             "enabled": self.enabled,
             "default": self.default,

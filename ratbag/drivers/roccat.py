@@ -51,16 +51,16 @@ class ReportID(enum.IntEnum):
     Feature Report IDs used for various settings
     """
 
-    CONFIGURE_PROFILE = 0x4
+    SELECT_PROFILE = 0x4
     CURRENT_PROFILE = 0x5
-    SETTINGS = 0x6
+    PROFILE_SETTINGS = 0x6
     KEY_MAPPING = 0x7
     MACRO = 8
 
 
 class RoccatProfile(object):
     """
-    Represents the reply from the :attr:`ReportID.SETTINGS` feature request.
+    Represents the reply from the :attr:`ReportID.PROFILE_SETTINGS` feature request.
     In ratbag parlance this is called a profile, so let's use that name here
     too.
 
@@ -108,7 +108,7 @@ class RoccatProfile(object):
         self.active = False
         self.ratbag_profile = None
         self.key_mapping = None
-        self.report_id = ReportID.SETTINGS.value
+        self.report_id = ReportID.PROFILE_SETTINGS.value
         self.report_length = RoccatProfile.SIZE
 
     def from_data(self, data):
@@ -545,14 +545,14 @@ class RoccatDevice(GObject.Object):
             raise ratbag.SomethingIsMissingError(
                 self.name, self.path, "KeyMapping Report ID"
             )
-        if ReportID.CONFIGURE_PROFILE not in feature_reports:
+        if ReportID.SELECT_PROFILE not in feature_reports:
             raise ratbag.SomethingIsMissingError(
                 self.name, self.path, "ConfigureProfile Report ID"
             )
 
         # Featch current profile index
         logger.debug(f"ioctl {ReportID.CURRENT_PROFILE.name}")
-        bs = self.hidraw_device.hid_get_feature(ReportID.PROFILE)
+        bs = self.hidraw_device.hid_get_feature(ReportID.CURRENT_PROFILE)
         current_profile_idx = bs[2]
         logger.debug(f"current profile is {current_profile_idx}")
 
@@ -563,8 +563,8 @@ class RoccatDevice(GObject.Object):
             self.set_config_profile(idx, ConfigureCommand.SETTINGS)
 
             # Profile settings
-            logger.debug(f"ioctl {ReportID.SETTINGS.name} for profile {idx}")
-            bs = self.hidraw_device.hid_get_feature(ReportID.SETTINGS)
+            logger.debug(f"ioctl {ReportID.PROFILE_SETTINGS.name} for profile {idx}")
+            bs = self.hidraw_device.hid_get_feature(ReportID.PROFILE_SETTINGS)
             profile = RoccatProfile(idx).from_data(bytes(bs))
             profile.active = idx == current_profile_idx
 
@@ -595,11 +595,11 @@ class RoccatDevice(GObject.Object):
         return self.ratbag_device
 
     def set_config_profile(self, profile, type):
-        bs = struct.pack("BBB", ReportID.CONFIGURE_PROFILE, profile, type)
+        bs = struct.pack("BBB", ReportID.SELECT_PROFILE, profile, type)
         logger.debug(
-            f"ioctl {ReportID.CONFIGURE_PROFILE.name} for idx {profile} type {type}"
+            f"ioctl {ReportID.SELECT_PROFILE.name} for idx {profile} type {type}"
         )
-        self.hidraw_device.hid_set_feature(ReportID.CONFIGURE_PROFILE, bs)
+        self.hidraw_device.hid_set_feature(ReportID.SELECT_PROFILE, bs)
         self.wait()
 
     def wait(self):
@@ -616,7 +616,7 @@ class RoccatDevice(GObject.Object):
 
     @property
     def ready(self):
-        bs = self.hidraw_device.hid_get_feature(ReportID.CONFIGURE_PROFILE)
+        bs = self.hidraw_device.hid_get_feature(ReportID.SELECT_PROFILE)
         if bs[1] == 0x3:
             time.sleep(0.1)
         elif bs[1] == 0x2:
@@ -668,7 +668,7 @@ class RoccatDevice(GObject.Object):
                 self.write(ReportID.KEY_MAPPING, keymap_bytes)
                 profile_bytes = bytes(profile)
                 logger.debug(f"Updating profile with {as_hex(profile_bytes)}")
-                self.write(ReportID.SETTINGS, profile_bytes)
+                self.write(ReportID.PROFILE_SETTINGS, profile_bytes)
         except Exception as e:
             logger.critical(f"::::::: ERROR: Exception during commit: {e}")
             traceback.print_exc()

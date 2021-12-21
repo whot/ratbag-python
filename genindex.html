@@ -124,10 +124,12 @@
         <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Hidpp20Driver.add_recorder">(ratbag.drivers.hidpp20.Hidpp20Driver method)</a>
 </li>
       </ul></li>
-      <li><a href="ratbag.html#ratbag.emulator.Reply.add_value">add_value() (ratbag.emulator.Reply method)</a>
+      <li><a href="ratbag.html#ratbag.util.add_to_sparse_tuple">add_to_sparse_tuple() (in module ratbag.util)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ratbag.html#ratbag.emulator.Reply.add_value">add_value() (ratbag.emulator.Reply method)</a>
+</li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Profile.address">address (ratbag.drivers.hidpp20.Profile attribute)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.FeatureName.ADJUSTIBLE_DPI">ADJUSTIBLE_DPI (ratbag.drivers.hidpp20.FeatureName attribute)</a>
@@ -182,7 +184,7 @@
 </li>
       <li><a href="ratbag.html#ratbag.ActionButton.button">button (ratbag.ActionButton property)</a>
 </li>
-      <li><a href="ratbag.html#ratbag.Profile.buttons">buttons (ratbag.Profile attribute)</a>
+      <li><a href="ratbag.html#ratbag.Profile.buttons">buttons (ratbag.Profile property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -482,7 +484,7 @@
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.FeatureName.LED_SW_CONTROL">LED_SW_CONTROL (ratbag.drivers.hidpp20.FeatureName attribute)</a>
 </li>
-      <li><a href="ratbag.html#ratbag.Profile.leds">leds (ratbag.Profile attribute)</a>
+      <li><a href="ratbag.html#ratbag.Profile.leds">leds (ratbag.Profile property)</a>
 </li>
       <li><a href="ratbag.html#ratbag.util.load_data_files">load_data_files() (in module ratbag.util)</a>
 </li>
@@ -528,7 +530,7 @@
 </li>
       <li><a href="ratbag.html#ratbag.Led.mode">mode (ratbag.Led attribute)</a>
 </li>
-      <li><a href="ratbag.html#ratbag.Led.modes">modes() (ratbag.Led method)</a>
+      <li><a href="ratbag.html#ratbag.Led.modes">modes (ratbag.Led property)</a>
 </li>
       <li>
     module
@@ -705,8 +707,12 @@
 </li>
       <li><a href="ratbag.html#ratbag.ActionSpecial.Special.PROFILE_UP">PROFILE_UP (ratbag.ActionSpecial.Special attribute)</a>
 </li>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Hidpp20Device.profiles">profiles (ratbag.drivers.hidpp20.Hidpp20Device attribute)</a>
+      <li><a href="ratbag.html#ratbag.Device.profiles">profiles (ratbag.Device property)</a>
+
+      <ul>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Hidpp20Device.profiles">(ratbag.drivers.hidpp20.Hidpp20Device attribute)</a>
 </li>
+      </ul></li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Hidpp20Device.protocol_version">protocol_version (ratbag.drivers.hidpp20.Hidpp20Device attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.ProtocolError">ProtocolError</a>
@@ -862,7 +868,7 @@
 </li>
       <li><a href="ratbag.html#ratbag.ActionSpecial.Special.RESOLUTION_UP">RESOLUTION_UP (ratbag.ActionSpecial.Special attribute)</a>
 </li>
-      <li><a href="ratbag.html#ratbag.Profile.resolutions">resolutions (ratbag.Profile attribute)</a>
+      <li><a href="ratbag.html#ratbag.Profile.resolutions">resolutions (ratbag.Profile property)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Led.Colordepth.RGB_111">RGB_111 (ratbag.Led.Colordepth attribute)</a>
 </li>
@@ -902,12 +908,18 @@
 </li>
       <li><a href="ratbag.html#ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION">SEPARATE_XY_RESOLUTION (ratbag.Resolution.Capability attribute)</a>
 </li>
+      <li><a href="ratbag.html#ratbag.Button.set_action">set_action() (ratbag.Button method)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Profile.set_active">set_active() (ratbag.Profile method)</a>
 
       <ul>
         <li><a href="ratbag.html#ratbag.Resolution.set_active">(ratbag.Resolution method)</a>
 </li>
       </ul></li>
+      <li><a href="ratbag.html#ratbag.Led.set_brightness">set_brightness() (ratbag.Led method)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.Led.set_color">set_color() (ratbag.Led method)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Profile.Capability.SET_DEFAULT">SET_DEFAULT (ratbag.Profile.Capability attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Profile.set_default">set_default() (ratbag.Profile method)</a>
@@ -916,11 +928,19 @@
         <li><a href="ratbag.html#ratbag.Resolution.set_default">(ratbag.Resolution method)</a>
 </li>
       </ul></li>
+      <li><a href="ratbag.html#ratbag.Resolution.set_dpi">set_dpi() (ratbag.Resolution method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ratbag.html#ratbag.Led.set_effect_duration">set_effect_duration() (ratbag.Led method)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.Led.set_mode">set_mode() (ratbag.Led method)</a>
+</li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.set_query_param_be">set_query_param_be() (ratbag.drivers.hidpp20.Query method)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.set_query_params">set_query_params() (ratbag.drivers.hidpp20.Query method)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.Profile.set_report_rate">set_report_rate() (ratbag.Profile method)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.SHORT_MESSAGE_LENGTH">SHORT_MESSAGE_LENGTH (ratbag.drivers.hidpp20.Query attribute)</a>
 </li>

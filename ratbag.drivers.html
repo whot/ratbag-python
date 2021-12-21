@@ -127,7 +127,8 @@
 <span class="sig-name descname"><span class="pre">probe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp10.Hidpp10Driver.probe" title="Permalink to this definition"></a></dt>
 <dd><p>Probe the device for information. On success, the driver will create a
 <a class="reference internal" href="ratbag.html#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a> with at least one profile and the appropriate
-number of buttons/leds/resolutions.</p>
+number of buttons/leds/resolutions and emit the <code class="docutils literal notranslate"><span class="pre">device-added</span></code>
+signal for that device.</p>
 <p>A caller should subscribe to the <code class="docutils literal notranslate"><span class="pre">device-added</span></code> signal before
 calling this function.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">device</span></code> is a string or a <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> object, the driver
@@ -563,7 +564,8 @@ notable enough to be recorder for later replay.</p>
 <span class="sig-name descname"><span class="pre">probe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Hidpp20Driver.probe" title="Permalink to this definition"></a></dt>
 <dd><p>Probe the device for information. On success, the driver will create a
 <a class="reference internal" href="ratbag.html#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a> with at least one profile and the appropriate
-number of buttons/leds/resolutions.</p>
+number of buttons/leds/resolutions and emit the <code class="docutils literal notranslate"><span class="pre">device-added</span></code>
+signal for that device.</p>
 <p>A caller should subscribe to the <code class="docutils literal notranslate"><span class="pre">device-added</span></code> signal before
 calling this function.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">device</span></code> is a string or a <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> object, the driver
@@ -891,11 +893,16 @@ same command is issued again once <code class="docutils literal notranslate"><sp
 <dt class="sig sig-object py" id="ratbag.drivers.Message">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.</span></span><span class="sig-name descname"><span class="pre">Message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Direction.TX</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Message" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gi.overrides.GObject.Object</span></code></p>
-<p>A message sent to the device or received from the device.</p>
+<p>A message sent to the device or received from the device. This object
+exists to standardize logging attempts. Drivers should, where possible,
+re-use the existing messages.</p>
+<p>Messages are usually logged as <code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">subtype</span> <span class="pre">direction</span> <span class="pre">data</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.drivers.Message.SUBTYPE">
 <span class="sig-name descname"><span class="pre">SUBTYPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#ratbag.drivers.Message.SUBTYPE" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>The subtype of this message. Used e.g. by ioctls to specify which ioctl
+was invoked.</p>
+</dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.drivers.Message.Direction">
@@ -905,17 +912,20 @@ same command is issued again once <code class="docutils literal notranslate"><sp
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.drivers.Message.Direction.RX">
 <span class="sig-name descname"><span class="pre">RX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#ratbag.drivers.Message.Direction.RX" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Message received from the device</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.drivers.Message.Direction.TX">
 <span class="sig-name descname"><span class="pre">TX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#ratbag.drivers.Message.Direction.TX" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Message sent to the device</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.drivers.Message.Direction.IOC">
 <span class="sig-name descname"><span class="pre">IOC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#ratbag.drivers.Message.Direction.IOC" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>An ioctl invocation on the device</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -929,6 +939,8 @@ same command is issued again once <code class="docutils literal notranslate"><sp
 file descriptor. This class exists so we have a default interface for
 communicating with the device that we can hook into for logging and
 others.</p>
+<p>See <a class="reference internal" href="#ratbag.drivers.Rodent.from_device" title="ratbag.drivers.Rodent.from_device"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_device()</span></code></a> for the most convenient way to create a new Rodent
+object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>path</strong> – the path to the physical device</p>
@@ -947,7 +959,7 @@ others.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.drivers.Rodent.path">
 <span class="sig-name descname"><span class="pre">path</span></span><a class="headerlink" href="#ratbag.drivers.Rodent.path" title="Permalink to this definition"></a></dt>
-<dd><p>The device’s path we’re reading to/writing from</p>
+<dd><p>The device’s path</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -957,6 +969,18 @@ others.</p>
 is a hidraw device, otherwise <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p>
 </dd></dl>
 
+<dl class="simple">
+<dt>GObject Signals:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">data-to-device</span></code>, <code class="docutils literal notranslate"><span class="pre">data-from-device</span></code>: the <code class="docutils literal notranslate"><span class="pre">bytes</span></code> that have
+been written to or read from the device.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ioctl-command</span></code>: an ioctl has been called on the device with the
+given ioctl name and the data in <code class="docutils literal notranslate"><span class="pre">bytes</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ioctl-reply</span></code>: an ioctl has returned data in <code class="docutils literal notranslate"><span class="pre">bytes</span></code></p></li>
+</ul>
+</dd>
+</dl>
+<p>These signals are primarily used by recorders, there should be no need to
+handle those signals in other parts of the implementation.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.drivers.Rodent.from_device">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent.from_device" title="Permalink to this definition"></a></dt>
@@ -981,18 +1005,25 @@ instance for the given device path.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.drivers.Rodent.recv">
 <span class="sig-name descname"><span class="pre">recv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent.recv" title="Permalink to this definition"></a></dt>
-<dd><p>Receive data from the device</p>
+<dd><p>Receive data from the device. This method waits synchronously for the data.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.drivers.Rodent.hid_get_feature">
 <span class="sig-name descname"><span class="pre">hid_get_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent.hid_get_feature" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Return a list of bytes as returned by this HID GetFeature request</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.drivers.Rodent.hid_set_feature">
 <span class="sig-name descname"><span class="pre">hid_set_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent.hid_set_feature" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Issue a HID SetFeature request for the given report ID with the given
+data.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>the first element of data must be the report_id</p>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.drivers.Rodent.connect_to_recorder">
@@ -1047,7 +1078,8 @@ notable enough to be recorder for later replay.</p>
 <span class="sig-name descname"><span class="pre">probe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Driver.probe" title="Permalink to this definition"></a></dt>
 <dd><p>Probe the device for information. On success, the driver will create a
 <a class="reference internal" href="ratbag.html#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a> with at least one profile and the appropriate
-number of buttons/leds/resolutions.</p>
+number of buttons/leds/resolutions and emit the <code class="docutils literal notranslate"><span class="pre">device-added</span></code>
+signal for that device.</p>
 <p>A caller should subscribe to the <code class="docutils literal notranslate"><span class="pre">device-added</span></code> signal before
 calling this function.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">device</span></code> is a string or a <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> object, the driver

@@ -73,11 +73,6 @@ class RoccatProfile(object):
 
         The raw bytes represeting this profile
 
-    .. attribute:: dpi
-
-        A list of `(x, y)` resolution tuples. This list has a constant length
-        of the supported resolutions, a resolution that is disabled is ``(0, 0)``.
-
     """
 
     SIZE = 43
@@ -111,6 +106,19 @@ class RoccatProfile(object):
         self.report_id = ReportID.PROFILE_SETTINGS.value
         self.report_length = RoccatProfile.SIZE
 
+    @property
+    def dpi(self):
+        # the x/y dpi is in multiples of 50 but if it's disabled we force it
+        # to 0 instead
+        return [
+            (x * 50, y * 50) if self.dpi_mask & (1 << idx) else (0, 0)
+            for idx, (x, y) in enumerate(zip(self.xres, self.yres))
+        ]
+
+    @property
+    def report_rate(self):
+        return RoccatProfile.report_rates[self._report_rate_idx]
+
     def from_data(self, data):
         if len(data) != RoccatProfile.SIZE:
             raise ratbag.ProtocolError(f"Invalid size {len(data)} for Profile")
@@ -120,19 +128,6 @@ class RoccatProfile(object):
         # Checksum first because if we have garbage, don't touch anything
         if crc(data) != self.checksum:
             raise ratbag.ProtocolError(f"CRC validation failed for profile {self.idx}")
-
-        # the x/y dpi is in multiples of 50
-        def times_50(x):
-            return x * 50
-
-        self.dpi = list(zip(map(times_50, self.xres), map(times_50, self.yres)))
-        # but if the mask isn't set it's disabled
-        for idx in range(len(self.dpi)):
-            mask = 1 << idx
-            if (self.dpi_mask & mask) == 0:
-                self.dpi[idx] = (0, 0)
-
-        self.report_rate = RoccatProfile.report_rates[self._report_rate_idx]
 
         return self  # just to allow for chaining
 
@@ -176,7 +171,6 @@ class RoccatProfile(object):
 
     def update_dpi(self, index, values, is_enabled):
         assert len(values) == 2
-        self.dpi[index] = values
         self.xres = [v[0] // 50 for v in self.dpi]
         self.yres = [v[1] // 50 for v in self.dpi]
         self.xy_linked = all([x == y for x, y in zip(self.xres, self.yres)])

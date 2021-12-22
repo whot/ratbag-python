@@ -133,7 +133,7 @@ def load_device_info(devnode):
     return info
 
 
-def attr_from_data(obj, fmt_tuples, data, offset=0):
+def attr_from_data(obj, fmt_tuples, data, offset=0, quiet=False):
     """
     ``fmt_tuples`` is a list of tuples that are converted into attributes on
     ``obj``. Each entry is a tuple in the form ``(format, fieldname)`` where
@@ -167,7 +167,8 @@ def attr_from_data(obj, fmt_tuples, data, offset=0):
     :returns: the new offset after parsing all tuples
     """
 
-    logger_autoparse.debug(f"parsing {type(obj).__name__}: {as_hex(data)}")
+    if not quiet:
+        logger_autoparse.debug(f"parsing {type(obj).__name__}: {as_hex(data)}")
 
     endian = ">"  # default to BE
 
@@ -203,9 +204,10 @@ def attr_from_data(obj, fmt_tuples, data, offset=0):
                 else:
                     debugstr = f"self.{name:24s} = {val}"
                     setattr(obj, name, val)
-            logger_autoparse.debug(
-                f"offset {offset:02d}: {as_hex(data[offset:offset+sz]):5s} → {debugstr}"
-            )
+            if not quiet:
+                logger_autoparse.debug(
+                    f"offset {offset:02d}: {as_hex(data[offset:offset+sz]):5s} → {debugstr}"
+                )
             offset += sz
 
     return offset

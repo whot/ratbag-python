@@ -104,7 +104,7 @@ class RoccatProfile(object):
         self.ratbag_profile = None
         self.key_mapping = None
         ratbag.util.attr_from_data(
-            self, RoccatProfile.format, bytes([0] * RoccatProfile.SIZE)
+            self, RoccatProfile.format, bytes([0] * RoccatProfile.SIZE), quiet=True
         )
         self.report_id = ReportID.PROFILE_SETTINGS.value
         self.report_length = RoccatProfile.SIZE
@@ -224,7 +224,7 @@ class RoccatMacro(object):
     def __init__(self, profile_idx, button_idx):
         # Init everything with zeroes so we have all attributes we need
         ratbag.util.attr_from_data(
-            self, RoccatMacro.format, bytes([0x00] * RoccatMacro.SIZE)
+            self, RoccatMacro.format, bytes([0x00] * RoccatMacro.SIZE), quiet=True
         )
         self.report_id = ReportID.MACRO.value
         self.report_length = RoccatMacro.SIZE

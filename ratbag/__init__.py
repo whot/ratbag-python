@@ -39,7 +39,7 @@ class UnsupportedDeviceError(Exception):
         self.path = path
 
 
-class SomethingIsMissingError(Exception):
+class SomethingIsMissingError(UnsupportedDeviceError):
     """
     Error indicating that the device is missing something that we require for
     it to work. This exception is raised for devices that ratbag has an
@@ -48,22 +48,13 @@ class SomethingIsMissingError(Exception):
 
     .. note:: This error is unrecoverable without changes to ratbag.
 
-    .. attribute:: path
-
-       The device path that failed
-
-    .. attribute:: name
-
-       The device name that failed
-
     .. attribute:: thing
 
        A string explaining the thing that is missing
     """
 
     def __init__(self, name, path, thing):
-        self.name = name
-        self.path = path
+        super().__init__(name, path)
         self.thing = thing
 
 

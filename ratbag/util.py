@@ -186,7 +186,7 @@ def attr_from_data(obj, fmt_tuples, data, offset=0, quiet=False):
             assert groupcount > 1
 
         count = len(fmt)
-        for _ in range(groupcount):
+        for group_index in range(groupcount):
             val = struct.unpack_from(endian + fmt, data, offset=offset)
             sz = struct.calcsize(fmt)
             if name == "_":
@@ -198,9 +198,10 @@ def attr_from_data(obj, fmt_tuples, data, offset=0, quiet=False):
                     val = val[0]
                 if groupcount > 1:
                     debugstr = f"self.{name:24s} += {val}"
-                    attr = getattr(obj, name, [])
+                    if group_index == 0:
+                        setattr(obj, name, [])
+                    attr = getattr(obj, name)
                     attr.append(val)
-                    setattr(obj, name, attr)
                 else:
                     debugstr = f"self.{name:24s} = {val}"
                     setattr(obj, name, val)

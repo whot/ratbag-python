@@ -467,7 +467,7 @@ class Feature(GObject.Object):
             f"{self.device.name}: creating {type(self).__name__} with index {self.index}"
         )
 
-    @GObject.Property
+    @property
     def index(self):
         """
         The 0-based device index of this feature. Indices are counted from the

@@ -42,3 +42,11 @@ effects on the implementation:
 - a ``GLib.MainLoop`` is required
 - the API uses `set_foo` instead of `@property.setter` because we cannot throw
   exceptions in a GObject property setter.
+
+Only properties that are expected to change are of type GObject.Property -
+callers *may* want to subscribe to notifications on those properties.
+Properties that are read-only and constant for the lifetime of the object are
+regular Python properties.
+
+Eventually we may get rid of GObject and then this will have been a great
+idea.

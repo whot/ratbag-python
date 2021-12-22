@@ -284,7 +284,9 @@ class Ratbag(GObject.Object):
             return None
 
         try:
-            load_driver_func = getattr(module, ratbag.drivers.Driver.DRIVER_LOAD_FUNC)
+            from ratbag.drivers import Driver
+
+            load_driver_func = getattr(module, Driver.DRIVER_LOAD_FUNC)
         except AttributeError:
             logger.error(
                 f"Bug: driver {driver_name} does not have '{ratbag.drivers.Driver.DRIVER_LOAD_FUNC}()'"

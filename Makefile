@@ -27,3 +27,6 @@ html: Makefile
 	mkdir -p $(BUILDDIR)
 	cp -r $(SOURCEDIR)/* $(BUILDDIR)/
 	@$(SPHINXBUILD) -M $@ "$(BUILDDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+clean:
+	test -n "$(BUILDDIR)" -a "$(BUILDDIR)" != "/" -a "$(BUILDDIR)" != "." -a "$(BUILDDIR)" != ".." && rm -rf $(BUILDDIR)/

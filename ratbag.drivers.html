@@ -933,7 +933,7 @@ was invoked.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.drivers.Rodent">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.</span></span><span class="sig-name descname"><span class="pre">Rodent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.</span></span><span class="sig-name descname"><span class="pre">Rodent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gi.overrides.GObject.Object</span></code></p>
 <p>An class abstracting a physical device, connected via a non-blocking
 file descriptor. This class exists so we have a default interface for
@@ -988,6 +988,14 @@ handle those signals in other parts of the implementation.</p>
 pre-setup device (from a recorder), this function returns that device.
 Otherwise, this function returns a <a class="reference internal" href="#ratbag.drivers.Rodent" title="ratbag.drivers.Rodent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.Rodent</span></code></a>
 instance for the given device path.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ratbag.drivers.Rodent.report_ids">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">report_ids</span></span><a class="headerlink" href="#ratbag.drivers.Rodent.report_ids" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary containg the list each of “feature”, “input” and “output”
+report IDs. For devices without a report descriptor, each list is
+empty.</p>
 </dd></dl>
 
 <dl class="py method">

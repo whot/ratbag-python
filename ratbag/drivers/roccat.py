@@ -530,6 +530,7 @@ class RoccatKeyMapping(object):
                 else:
                     action = 48  # it's a macro
             self.macros[idx] = macro
+        self.actions[idx] = (action, 0, 0)
 
     def __bytes__(self):
         # Weirdly enough, our first KeyMapping reply has a length of zero

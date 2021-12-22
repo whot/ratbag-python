@@ -414,8 +414,8 @@ class RoccatKeyMapping(object):
         39: ratbag.hid.ConsumerControl.CC_VOLUME_DOWN,
     }
 
-    def __init__(self, profile):
-        self.profile = profile
+    def __init__(self, profile_idx):
+        self.profile_id = profile_idx
         self.macros = {}  # button index: RoccatMacro
         self.num_buttons = MAX_BUTTONS
         self.report_id = ReportID.KEY_MAPPING.value
@@ -431,7 +431,7 @@ class RoccatKeyMapping(object):
         ratbag.util.attr_from_data(self, RoccatKeyMapping.format, data, offset=0)
         if crc(data) != self.checksum:
             raise ratbag.ProtocolError(
-                f"CRC validation failed for mapping on {self.profile.idx}"
+                f"CRC validation failed for mapping on {self.profile_id}"
             )
         return self  # to allow for chaining
 
@@ -473,7 +473,7 @@ class RoccatKeyMapping(object):
             # For keycodes we pretend it's a macro
             assert macro is None
             try:
-                macro = RoccatMacro(self.profile.idx, idx)
+                macro = RoccatMacro(self.profile_id, idx)
                 keycode = RoccatKeyMapping.keycodes[action]
                 macro.name = "keycode"
                 macro.keys = [
@@ -592,7 +592,7 @@ class RoccatDevice(GObject.Object):
             self.set_config_profile(idx, ConfigureCommand.KEY_MAPPING)
             logger.debug(f"ioctl {ReportID.KEY_MAPPING.name} for profile {idx}")
             bs = self.hidraw_device.hid_get_feature(ReportID.KEY_MAPPING)
-            mapping = RoccatKeyMapping(profile).from_data(bytes(bs))
+            mapping = RoccatKeyMapping(profile.idx).from_data(bytes(bs))
             profile.key_mapping = mapping
 
             # Macros are in a separate HID Report, fetch those and store them

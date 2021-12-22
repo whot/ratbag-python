@@ -417,7 +417,7 @@ class Device(GObject.Object):
 
         profile.connect("notify::dirty", cb_dirty)
 
-    @GObject.Property
+    @GObject.Property(type=bool, default=False)
     def dirty(self):
         """
         ``True`` if changes are uncommited. Connect to ``notify::dirty`` to receive changes.
@@ -478,7 +478,7 @@ class Feature(GObject.Object):
 
         return self._index
 
-    @GObject.Property
+    @GObject.Property(type=bool, default=False)
     def dirty(self):
         """
         ``True`` if changes are uncommited. Connect to ``notify::dirty`` to receive changes.
@@ -603,7 +603,7 @@ class Profile(Feature):
         """
         return self._leds
 
-    @GObject.Property
+    @GObject.Property(type=int, default=0)
     def report_rate(self):
         """The report rate in Hz. If the profile does not support configurable
         (or queryable) report rates, the report rate is always ``None``"""
@@ -635,7 +635,7 @@ class Profile(Feature):
         """
         return self._capabilities
 
-    @GObject.Property
+    @GObject.Property(type=bool, default=True)
     def enabled(self):
         """
         ``True`` if this profile is enabled.
@@ -651,7 +651,7 @@ class Profile(Feature):
             self.dirty = True
             self.notify("enabled")
 
-    @GObject.Property
+    @GObject.Property(type=bool, default=False)
     def active(self):
         """
         ``True`` if this profile is active, ``False`` otherwise. Note that
@@ -671,7 +671,7 @@ class Profile(Feature):
             self.notify("active")
             self.dirty = True
 
-    @GObject.Property
+    @GObject.Property(type=bool, default=False)
     def default(self):
         """
         ``True`` if this profile is the default profile, ``False`` otherwise.
@@ -787,7 +787,7 @@ class Resolution(Feature):
         """
         return self._capabilities
 
-    @GObject.Property
+    @GObject.Property(type=bool, default=True)
     def enabled(self):
         return self._enabled
 
@@ -797,7 +797,7 @@ class Resolution(Feature):
             self.notify("enabled")
             self.dirty = True
 
-    @GObject.Property
+    @GObject.Property(type=bool, default=False)
     def active(self):
         """
         ``True`` if this resolution is active, ``False`` otherwise. This
@@ -822,7 +822,7 @@ class Resolution(Feature):
                 r.active = False
             self.active = True
 
-    @GObject.Property
+    @GObject.Property(type=bool, default=False)
     def default(self):
         """
         ``True`` if this resolution is the default resolution, ``False`` otherwise.
@@ -1121,7 +1121,7 @@ class Button(Feature):
         """
         return self._types
 
-    @GObject.Property
+    @GObject.Property(type=ratbag.Action, default=None)
     def action(self):
         """
         The currently assigned action. This action is guaranteed to be of
@@ -1219,7 +1219,7 @@ class Led(Feature):
     def colordepth(self):
         return self._colordepth
 
-    @GObject.Property
+    @GObject.Property(type=int, default=0)
     def brightness(self):
         return self._brightness
 
@@ -1235,7 +1235,7 @@ class Led(Feature):
             self._brightness = brightness
             self.dirty = True
 
-    @GObject.Property
+    @GObject.Property(type=int, default=0)
     def effect_duration(self):
         return self._effect_duration
 

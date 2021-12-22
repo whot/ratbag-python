@@ -245,8 +245,8 @@ class Ratbag(GObject.Object):
         # FIXME: this needs to use the install path
         path = Path("data")
         if not path.exists():
-            path = "/usr/share/libratbag/"
-            if not path("data"):
+            path = Path("/usr/share/libratbag/data")
+            if not path.exists():
                 raise NotImplementedError(
                     "Missing data files: none in /usr/share/libratbag, none in $PWD/data"
                 )

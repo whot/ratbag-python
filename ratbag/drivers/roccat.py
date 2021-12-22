@@ -204,29 +204,35 @@ class RoccatMacro(object):
     """
 
     SIZE = 2082
+    NKEYS = 500
+    NAMELEN = 24
 
     format = [
         ("B", "report_id"),
         ("<H", "report_length"),
         ("B", "profile"),
-        ("B", "button_index"),
+        ("B", "button_idx"),
         ("B", "active"),
         ("B" * 24, "_"),
-        ("B" * 24, "group"),
-        ("B" * 24, "_name"),
+        ("B" * NAMELEN, "_group"),
+        ("B" * NAMELEN, "_name"),
         ("<H", "length"),
-        ("<500*BBH", "_keys"),  # keycode, flag, time
+        (f"<{NKEYS}*BBH", "_keys"),  # keycode, flag, time
         ("<H", "checksum"),
     ]
 
-    def __init__(self, button_idx):
-        self.button = button_idx
-        self.name = f"macro on {button_idx}"
-        self.keys = 500 * [(0, 0, 0)]  # A triple of keycode, flags, wait_time
-        self.length = 0
-        self._macro_exists_on_device = False
+    def __init__(self, profile_idx, button_idx):
+        # Init everything with zeroes so we have all attributes we need
+        ratbag.util.attr_from_data(
+            self, RoccatMacro.format, bytes([0x00] * RoccatMacro.SIZE)
+        )
         self.report_id = ReportID.MACRO.value
         self.report_length = RoccatMacro.SIZE
+        self.profile = profile_idx
+        self.button_idx = button_idx
+        self.name = f"macro on {profile_idx}.{button_idx}"
+        self.group = "g0"
+        self._macro_exists_on_device = False
 
     def to_ratbag(self):
         events = []
@@ -280,7 +286,7 @@ class RoccatMacro(object):
                 ratbag.ActionMacro.Event.KEY_PRESS,
                 ratbag.ActionMacro.Event.KEY_RELEASE,
             ]:
-                self.keys[offset] = (keycode, flag, wait_time)
+                self.update_key(offset, (keycode, flag, wait_time))
                 offset += 1
                 keycode, flag = 0, 0
 
@@ -301,12 +307,45 @@ class RoccatMacro(object):
                 continue
 
         if keycode:
-            self.keys[offset] = (keycode, flag, wait_time)
+            self.update_key(offset, (keycode, flag, wait_time))
             offset += 1
 
         self.length = offset
-        self.keys = self.keys[: self.length]
         self._macro_exists_on_device = True
+
+    @property
+    def keys(self):
+        return self._keys[: self.length]
+
+    @keys.setter
+    def keys(self, keys):
+        for idx, k in enumerate(keys):
+            self._keys[idx] = k
+        self.length = len(keys)
+
+    def update_key(self, index, key):
+        # This only extends the length, but doesn't shorten it
+        assert index < RoccatMacro.NKEYS
+        self._keys[index] = key
+        self.length = max(self.length, index + 1)
+
+    @property
+    def name(self):
+        return bytes(self._name).decode("utf-8").rstrip("\x00")
+
+    @name.setter
+    def name(self, name):
+        name = bytearray(name[: RoccatMacro.NAMELEN].encode("utf-8"))
+        self._name = tuple(bytes(name).ljust(RoccatMacro.NAMELEN, b"\x00"))
+
+    @property
+    def group(self):
+        return bytes(self._group).decode("utf-8").rstrip("\x00")
+
+    @group.setter
+    def group(self, group):
+        group = bytearray(group[: RoccatMacro.NAMELEN].encode("utf-8"))
+        self._group = tuple(bytes(group).ljust(RoccatMacro.NAMELEN, b"\x00"))
 
     def from_data(self, data):
         if len(data) != RoccatMacro.SIZE:
@@ -314,35 +353,17 @@ class RoccatMacro(object):
 
         ratbag.util.attr_from_data(self, RoccatMacro.format, data, offset=0)
 
-        # Shorten the keys array to the valid ones only
-        self.keys = self._keys[: self.length]
-
         if crc(data) != self.checksum:
             raise ratbag.ProtocolError(
-                f"CRC validation failed for macro on button {self.button.profile.idx}.{self.button.idx}"
+                f"CRC validation failed for macro on button {self.profile}.{self.button_idx}"
             )
-        self.name = bytes(self._name).decode("utf-8")
 
         return self  # to allow for chaining
 
     def __bytes__(self):
         if not self._macro_exists_on_device:
-            self.report_id = int(ReportID.MACRO)
-            self.report_length = RoccatMacro.SIZE
-            self.profile = self.button.profile.idx
-            self.button_index = self.button_idx
             self.active = 0x01
-            self.checksum = 0x00
-            group = bytearray("g0".encode("utf-8"))
-            if len(group) < 24:
-                group.extend([0x00] * (24 - len(group)))
-            self.group = bytes(group)
 
-        name = bytearray(self.name[:24].encode("utf-8"))
-        if len(name) < 24:
-            name.extend([0x00] * (24 - len(name)))
-        self._name = bytes(name)
-        self._keys = self.keys + [(0, 0, 0)] * (500 - len(self.keys))
         return ratbag.util.attr_to_data(
             self, RoccatMacro.format, maps={"checksum": lambda x: crc(x)}
         )
@@ -452,7 +473,7 @@ class RoccatKeyMapping(object):
             # For keycodes we pretend it's a macro
             assert macro is None
             try:
-                macro = RoccatMacro(self, idx)
+                macro = RoccatMacro(self.profile.idx, idx)
                 keycode = RoccatKeyMapping.keycodes[action]
                 macro.name = "keycode"
                 macro.keys = [
@@ -581,7 +602,7 @@ class RoccatDevice(GObject.Object):
 
                 logger.debug(f"ioctl {ReportID.MACRO.name} for button {idx}.{bidx}")
                 bs = self.hidraw_device.hid_get_feature(ReportID.MACRO)
-                macro = RoccatMacro(bidx).from_data(bytes(bs))
+                macro = RoccatMacro(idx, bidx).from_data(bytes(bs))
                 mapping.macros[bidx] = macro
 
             self.profiles.append(profile)

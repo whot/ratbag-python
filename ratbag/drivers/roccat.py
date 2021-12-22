@@ -219,8 +219,7 @@ class RoccatMacro(object):
         ("<H", "checksum"),
     ]
 
-    def __init__(self, mapping, button_idx):
-        self.mapping = mapping
+    def __init__(self, button_idx):
         self.button = button_idx
         self.name = f"macro on {button_idx}"
         self.keys = 500 * [(0, 0, 0)]  # A triple of keycode, flags, wait_time
@@ -582,7 +581,7 @@ class RoccatDevice(GObject.Object):
 
                 logger.debug(f"ioctl {ReportID.MACRO.name} for button {idx}.{bidx}")
                 bs = self.hidraw_device.hid_get_feature(ReportID.MACRO)
-                macro = RoccatMacro(mapping, bidx).from_data(bytes(bs))
+                macro = RoccatMacro(bidx).from_data(bytes(bs))
                 mapping.macros[bidx] = macro
 
             self.profiles.append(profile)

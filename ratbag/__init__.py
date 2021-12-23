@@ -868,8 +868,8 @@ class Resolution(Feature):
         """
         try:
             x, y = new_dpi
-            if y not in self._dpi_list:
-                raise ConfigError(f"{y} is not a supported resolution")
+            if y not in self._dpi_list or x not in self._dpi_list:
+                raise ConfigError(f"({x}, {y}) is not a supported resolution")
             if (
                 x != y
                 and ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION
@@ -879,10 +879,7 @@ class Resolution(Feature):
                     "Individual x/y resolution not supported by this device"
                 )
         except TypeError:
-            x = new_dpi
-            y = new_dpi
-        if x not in self._dpi_list:
-            raise ConfigError(f"{x} is not a supported resolution")
+            raise ConfigError(f"Invalid resolution {new_dpi}, must be (x, y) tuple")
         if (x, y) != self._dpi:
             self._dpi = (x, y)
             self.dirty = True

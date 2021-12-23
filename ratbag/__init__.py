@@ -1122,7 +1122,7 @@ class Button(Feature):
         super().__init__(profile.device, index)
         self.profile = profile
         self._types = types
-        self._action = action
+        self._action = action or Action(self)
         self.profile._add_button(self)
 
     @property

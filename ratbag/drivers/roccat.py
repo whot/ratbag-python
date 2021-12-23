@@ -150,7 +150,7 @@ class RoccatProfile(object):
             active=self.active,
         )
         for (dpi_idx, dpi) in enumerate(self.dpi):
-            dpi_list = list(range(200, 8200 + 1, 50))
+            dpi_list = tuple(range(200, 8200 + 1, 50))
             caps = [ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION]
             ratbag.Resolution(
                 p,

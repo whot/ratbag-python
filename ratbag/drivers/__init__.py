@@ -13,6 +13,8 @@ import os
 import select
 import struct
 
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import hidtools.hid
 
 from gi.repository import GObject
@@ -47,13 +49,13 @@ class Message(GObject.Object):
         IOC = enum.auto()
         """An ioctl invocation on the device"""
 
-    def __init__(self, bytes, direction=Direction.TX):
+    def __init__(self, bytes: bytes, direction: Direction = Direction.TX):
         self.direction = direction
         self.bytes = bytes
         self.msgtype = type(self).NAME
         self.subtype = type(self).SUBTYPE
 
-    def __str__(self):
+    def __str__(self) -> str:
         bytestr = " ".join(f"{b:02x}" for b in self.bytes)
         if self.subtype:
             subtype = f" {self.subtype}"
@@ -131,7 +133,7 @@ class Rodent(GObject.Object):
 
         NAME = "fd"
 
-        def __init__(self, bytes):
+        def __init__(self, bytes: bytes):
             super().__init__(bytes, direction=Message.Direction.TX)
 
     class Reply(Message):
@@ -139,7 +141,7 @@ class Rodent(GObject.Object):
 
         NAME = "fd"
 
-        def __init__(self, bytes):
+        def __init__(self, bytes: bytes):
             super().__init__(bytes, direction=Message.Direction.RX)
 
     class IoctlCommand(Message):
@@ -147,7 +149,7 @@ class Rodent(GObject.Object):
 
         NAME = "ioctl"
 
-        def __init__(self, name, bytes):
+        def __init__(self, name: str, bytes: bytes):
             super().__init__(bytes, direction=Message.Direction.TX)
             self.subtype = name
 
@@ -156,12 +158,12 @@ class Rodent(GObject.Object):
 
         NAME = "ioctl"
 
-        def __init__(self, name, bytes):
+        def __init__(self, name: str, bytes: bytes):
             super().__init__(bytes, direction=Message.Direction.RX)
             self.subtype = name
 
     @classmethod
-    def from_device(cls, device):
+    def from_device(cls, device: Union[pathlib.Path, "ratbag.drivers.Rodent"]):
         """
         A simplification for drivers. If the given device is already a
         pre-setup device (from a recorder), this function returns that device.
@@ -173,7 +175,7 @@ class Rodent(GObject.Object):
         else:
             return device
 
-    def __init__(self, path=None):
+    def __init__(self, path: Optional[pathlib.Path] = None):
         GObject.Object.__init__(self)
 
         if path is not None:
@@ -189,26 +191,30 @@ class Rodent(GObject.Object):
             self._rdesc = hidtools.hid.ReportDescriptor.from_bytes(rdesc)
 
     @property
-    def report_ids(self):
+    def report_ids(self) -> Dict[str, Tuple[int, ...]]:
         """
         A dictionary containg the list each of "feature", "input" and "output"
         report IDs. For devices without a report descriptor, each list is
         empty.
         """
-        ids = {"input": tuple(), "output": tuple(), "feature": tuple()}
+        ids: Dict[str, Tuple[int, ...]] = {
+            "input": tuple(),
+            "output": tuple(),
+            "feature": tuple(),
+        }
         if self.report_descriptor is not None:
             ids["input"] = tuple(self._rdesc.input_reports)
             ids["output"] = tuple(self._rdesc.output_reports)
             ids["feature"] = tuple(self._rdesc.feature_reports)
         return ids
 
-    def start(self):
+    def start(self) -> None:
         """
         Start parsing data from the device.
         """
         pass
 
-    def send(self, bytes):
+    def send(self, bytes: bytes) -> None:
         """
         Send data to the device
         """
@@ -216,7 +222,7 @@ class Rodent(GObject.Object):
         self.emit("data-to-device", bytes)
         self._fd.write(bytes)
 
-    def recv(self):
+    def recv(self) -> Optional[bytes]:
         """
         Receive data from the device. This method waits synchronously for the data.
         """
@@ -235,7 +241,7 @@ class Rodent(GObject.Object):
 
         return None
 
-    def hid_get_feature(self, report_id):
+    def hid_get_feature(self, report_id: int) -> bytes:
         """
         Return a list of bytes as returned by this HID GetFeature request
         """
@@ -250,7 +256,7 @@ class Rodent(GObject.Object):
         self.emit("ioctl-reply", "HIDIOCGFEATURE", buf)
         return bytes(buf)  # Note: first byte is report ID
 
-    def hid_set_feature(self, report_id, data):
+    def hid_set_feature(self, report_id: int, data: bytes) -> None:
         """
         Issue a HID SetFeature request for the given report ID with the given
         data.
@@ -268,7 +274,7 @@ class Rodent(GObject.Object):
         if sz != len(data):
             raise OSError("Failed to write data: {data} - bytes written: {sz}")
 
-    def connect_to_recorder(self, recorder):
+    def connect_to_recorder(self, recorder: ratbag.Recorder) -> None:
         """
         Connect this device to the given recorder. This is a convenience
         method to simplify drivers.
@@ -332,7 +338,7 @@ class Driver(GObject.Object):
         self.recorders = []
         self.connect("device-added", self._device_sanity_check)
 
-    def add_recorder(self, recorder):
+    def add_recorder(self, recorder: ratbag.Recorder) -> None:
         """
         Instruct the driver to add ``recorder`` to log driver communication to
         the device. It is up to the driver to determine what communication is
@@ -340,7 +346,12 @@ class Driver(GObject.Object):
         """
         self.recorders.append(recorder)
 
-    def probe(self, device, device_info={}, config={}):
+    def probe(
+        self,
+        device: Union["ratbag.drivers.Rodent", pathlib.Path],
+        device_info: Dict[str, Any] = {},
+        config: Dict[str, Any] = {},
+    ) -> None:
         """
         Probe the device for information. On success, the driver will create a
         :class:`ratbag.Device` with at least one profile and the appropriate
@@ -366,7 +377,9 @@ class Driver(GObject.Object):
         """
         raise NotImplementedError("This function must be implemented by the driver")
 
-    def _device_sanity_check(self, driver, device):
+    def _device_sanity_check(
+        self, driver: "ratbag.drivers.Driver", device: ratbag.Device
+    ):
         # Let the parent class do some basic sanity checks
         assert device.name is not None
         assert device.driver is not None

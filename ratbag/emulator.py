@@ -5,7 +5,10 @@
 # This file is formatted with Python Black
 
 import logging
+import pathlib
 import yaml
+
+from typing import Dict, List
 
 import ratbag
 import ratbag.drivers
@@ -33,16 +36,15 @@ class Reply(object):
     yields those values, in order.
     """
 
-    def __init__(self, tx, rx):
+    def __init__(self, tx: bytes, rx: bytes):
         self.tx = tx
-        self.values = [rx]
-        self._it = None
+        self.values: List[bytes] = [rx]
         self.name = None
 
-    def add_value(self, value):
+    def add_value(self, value: bytes):
         self.values.append(value)
 
-    def finalize(self):
+    def finalize(self) -> None:
         reduced = list(set(self.values))
         if len(reduced) == 1:
             self.constant = True
@@ -51,7 +53,7 @@ class Reply(object):
             self.constant = False
             self._it = iter(self.values)
 
-    def next(self):
+    def next(self) -> bytes:
         if self.constant:
             return self.values[0]
         else:
@@ -71,22 +73,22 @@ class YamlDevice(ratbag.drivers.Rodent):
     :param recording: the YAML file previously recorded
     """
 
-    def __init__(self, recording):
+    def __init__(self, recording: pathlib.Path):
         y = yaml.safe_load(open(recording).read())
 
         for attr in y["attributes"]:
             if attr["type"] == "bytes":
-                value = bytes(attr["value"])
+                v = bytes(attr["value"])  # type: ignore
             elif attr["type"] == "int":
-                value = int(attr["value"])
+                v = int(attr["value"])  # type: ignore
             elif attr["type"] == "str":
-                value = attr["value"]
+                v = attr["value"]  # type: ignore
             elif attr["type"] == "bool":
-                value = attr["value"].lower() == "true"
-            setattr(self, attr["name"], value)
+                v = attr["value"].lower() == "true"  # type: ignore
+            setattr(self, attr["name"], v)
 
-        self.conversations = {}
-        self.ioctls = {}
+        self.conversations: Dict[bytes, bytes] = {}
+        self.ioctls: Dict[bytes, Reply] = {}
         key = None
         value = None
         for data in y["data"]:
@@ -119,10 +121,10 @@ class YamlDevice(ratbag.drivers.Rodent):
         for r in self.ioctls.values():
             r.finalize()
 
-    def start(self):
+    def start(self) -> None:
         pass
 
-    def send(self, data):
+    def send(self, data: bytes) -> None:
         """
         :raises InsufficientDataError: when the data is not in the recording and
             thus no matching reply can be identified.
@@ -131,14 +133,16 @@ class YamlDevice(ratbag.drivers.Rodent):
             self.recv_data = self.conversations[data]
             logger.debug(f"send: {as_hex(data)}")
         except KeyError:
-            raise InsufficientDataError(f"Unable to find reply to request: {data}")
+            raise InsufficientDataError(
+                f"Unable to find reply to request: {as_hex(data)}"
+            )
 
-    def recv(self):
+    def recv(self) -> bytes:
         """Return the matching reply for the last :meth:`send` call"""
         logger.debug(f"recv: {as_hex(self.recv_data)}")
         return self.recv_data
 
-    def hid_get_feature(self, report_id):
+    def hid_get_feature(self, report_id: int) -> bytes:
         for r in self.ioctls.values():
             if r.name != "HIDIOCGFEATURE":
                 continue
@@ -151,7 +155,7 @@ class YamlDevice(ratbag.drivers.Rodent):
         else:
             raise InsufficientDataError(f"HIDIOCGFEATURE report_id {report_id}")
 
-    def hid_set_feature(self, report_id, data):
+    def hid_set_feature(self, report_id: int, data: bytes) -> None:
         for r in self.ioctls.values():
             if r.name != "HIDIOCSFEATURE":
                 continue

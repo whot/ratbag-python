@@ -1184,7 +1184,7 @@ class Led(Feature):
         brightness=0,
         colordepth=Colordepth.RGB_888,
         mode=Mode.OFF,
-        modes=[Mode.OFF],
+        modes=(Mode.OFF,),
         effect_duration=0,
     ):
         super().__init__(profile.device, index)
@@ -1194,7 +1194,7 @@ class Led(Feature):
         self._brightness = brightness
         self._effect_duration = effect_duration
         self._mode = mode
-        self._modes = list(modes)
+        self._modes = tuple(modes)
         self.profile._add_led(self)
 
     @GObject.Property
@@ -1283,6 +1283,6 @@ class Led(Feature):
     @property
     def modes(self):
         """
-        Return the list of :class:`Led.Mode` available for this LED
+        Return a tuple of the available :class:`Led.Mode` for this LED
         """
         return self._modes

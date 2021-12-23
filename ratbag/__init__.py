@@ -214,7 +214,7 @@ class Ratbag(GObject.Object):
                 driver.add_recorder(rec)
 
             driver.connect("device-added", cb_device_added)
-            driver.probe(path, info, config)
+            driver.probe(Path(path), info, config)
         except UnsupportedDeviceError as e:
             logger.info(f"Skipping unsupported device {e.name} ({e.path})")
         except SomethingIsMissingError as e:
@@ -445,7 +445,7 @@ class Device(GObject.Object):
         """
         return {
             "name": self.name,
-            "path": self.path,
+            "path": str(self.path),
             "profiles": [p.as_dict() for p in self.profiles],
         }
 

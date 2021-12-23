@@ -34,7 +34,7 @@ class UnsupportedDeviceError(Exception):
 
     """
 
-    def __init__(self, name, path):
+    def __init__(self, name=None, path=None):
         self.name = name
         self.path = path
 
@@ -270,7 +270,12 @@ class Ratbag(GObject.Object):
             driver_config = {}
 
         logger.debug(f"Loading driver {driver_name} for {match} ({device_path})")
-        return self._load_driver_by_name(driver_name), driver_config
+        try:
+            return self._load_driver_by_name(driver_name), driver_config
+        except UnsupportedDeviceError as e:
+            e.name = name
+            e.path = path
+            raise e
 
     def _load_driver_by_name(self, driver_name):
         # Import ratbag.drivers.foo and call load_driver() to instantiate the
@@ -280,18 +285,16 @@ class Ratbag(GObject.Object):
 
             module = importlib.import_module(f"ratbag.drivers.{driver_name}")
         except ImportError as e:
-            logger.error(f"Driver {driver_name} failed to load: {e}")
-            return None
+            raise UnsupportedDeviceError(f"Driver {driver_name} failed to load: {e}")
 
         try:
             from ratbag.drivers import Driver
 
             load_driver_func = getattr(module, Driver.DRIVER_LOAD_FUNC)
         except AttributeError:
-            logger.error(
+            raise NotImplementedError(
                 f"Bug: driver {driver_name} does not have '{ratbag.drivers.Driver.DRIVER_LOAD_FUNC}()'"
             )
-            return None
         return load_driver_func(driver_name)
 
 

@@ -5,6 +5,8 @@
 # This file is formatted with Python Black
 #
 
+from typing import Any, Dict, List, Optional, Tuple
+
 import enum
 import logging
 import pathlib
@@ -593,13 +595,17 @@ class Query(object):
     LONG_MESSAGE_LENGTH = 20
     SHORT_MESSAGE_LENGTH = 7
 
-    report_id = REPORT_ID_SHORT  # override if need be
-    page = None  # Override in subclass, self.page has precedence over class.page
-    command = None  # Override in subclass, self.page has precedence over class.page
+    report_id: int = REPORT_ID_SHORT  # override if need be
+    page: Optional[
+        int
+    ] = None  # Override in subclass, self.page has precedence over class.page
+    command: Optional[
+        int
+    ] = None  # Override in subclass, self.page has precedence over class.page
 
     # a list of tuples that are parsed before parse_reply, see
     # ratbag.util.attr_from_data for details
-    reply_format = None
+    reply_format: Optional[List[Tuple[str, str]]] = None
 
     def __init__(self, device):
         # We have dynamic queries that change per-device, so we use self.page

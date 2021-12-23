@@ -175,8 +175,8 @@ class RoccatProfile(object):
 
     def update_dpi(self, index, values, is_enabled):
         assert len(values) == 2
-        self.xres = [v[0] // 50 for v in self.dpi]
-        self.yres = [v[1] // 50 for v in self.dpi]
+        self.xres = self.xres[:index] + (values[0] // 50,) + self.xres[index + 1 :]
+        self.yres = self.yres[:index] + (values[1] // 50,) + self.yres[index + 1 :]
         self.xy_linked = all([x == y for x, y in zip(self.xres, self.yres)])
         mask = 1 << index
         if is_enabled:

@@ -195,11 +195,11 @@ class Rodent(GObject.Object):
         report IDs. For devices without a report descriptor, each list is
         empty.
         """
-        ids = {"input": [], "output": [], "feature": []}
+        ids = {"input": tuple(), "output": tuple(), "feature": tuple()}
         if self.report_descriptor is not None:
-            ids["input"] = self._rdesc.input_reports
-            ids["output"] = self._rdesc.output_reports
-            ids["feature"] = self._rdesc.feature_reports
+            ids["input"] = tuple(self._rdesc.input_reports)
+            ids["output"] = tuple(self._rdesc.output_reports)
+            ids["feature"] = tuple(self._rdesc.feature_reports)
         return ids
 
     def start(self):

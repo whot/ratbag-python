@@ -168,7 +168,7 @@ class Rodent(GObject.Object):
         Otherwise, this function returns a :class:`ratbag.drivers.Rodent`
         instance for the given device path.
         """
-        if isinstance(device, str) or isinstance(device, pathlib.Path):
+        if isinstance(device, pathlib.Path):
             return Rodent(device)
         else:
             return device
@@ -350,7 +350,7 @@ class Driver(GObject.Object):
         A caller should subscribe to the ``device-added`` signal before
         calling this function.
 
-        If ``device`` is a string or a ``pathlib.Path`` object, the driver
+        If ``device`` is a ``pathlib.Path`` object, the driver
         creates initializes for the device at that path. Otherwise, ``device``
         is used as-is as backing device instance. This is used when emulating
         devices - note that the exact requirements on the device behavior may

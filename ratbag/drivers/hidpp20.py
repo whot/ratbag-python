@@ -75,7 +75,8 @@ class OnboardProfile:
 
 # the following crc computation has been provided by Logitech
 def crc(data):
-    clamp = lambda v: v & 0xFFFF  # because we can't force python to use 16bit
+    def clamp(v):
+        return v & 0xFFFF  # because we can't force python to use 16bit
 
     crc = 0xFFFF  # seed
     for v in data:

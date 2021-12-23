@@ -1,0 +1,138 @@
+# Configuration file to reset a device to sane default values
+# This doesn't have a matches key so it will match any device.
+# Note that only the first 5 profiles are configured, and only 5 resolutions
+# each and 8 buttons each. Your device may have less
+# profiles/resolutions/buttons in which case you get warnings you can ignore.
+#
+# If the device has more than that, let us know because that's uncommon.
+profiles:
+  - index: 0
+    report-rate: 500  # Report rate in Hz
+    resolutions:
+      - { index: 0, dpi: [400, 400] }
+      - { index: 1, dpi: [800, 800] }
+      - { index: 2, dpi: [1000, 1000] }
+      - { index: 3, dpi: [2000, 2000] }
+      - { index: 4, dpi: [2500, 2500] }
+    buttons:
+      - { index: 0, button: 1 }
+      - { index: 1, button: 2 }
+      - { index: 2, button: 3 }
+      - { index: 3, button: 4 }
+      - { index: 4, button: 5 }
+      - { index: 5, button: 6 }
+      - { index: 6, button: 7 }
+      - { index: 7, button: 8 }
+      - { index: 8, button: 9 }
+      - { index: 9, disable: true }
+      - { index: 10, disable: true }
+      - { index: 11, disable: true }
+      - { index: 12, disable: true }
+      - { index: 13, disable: true }
+      - { index: 14, disable: true }
+      - { index: 15, disable: true }
+      - { index: 16, disable: true }
+  - index: 1
+    report-rate: 500  # Report rate in Hz
+    resolutions:
+      - { index: 0, dpi: [400, 400] }
+      - { index: 1, dpi: [800, 800] }
+      - { index: 2, dpi: [1000, 1000] }
+      - { index: 3, dpi: [2000, 2000] }
+      - { index: 4, dpi: [2500, 2500] }
+    buttons:
+      - { index: 0, button: 1 }
+      - { index: 1, button: 2 }
+      - { index: 2, button: 3 }
+      - { index: 3, button: 4 }
+      - { index: 4, button: 5 }
+      - { index: 5, button: 6 }
+      - { index: 6, button: 7 }
+      - { index: 7, button: 8 }
+      - { index: 8, button: 9 }
+      - { index: 9, disable: true }
+      - { index: 10, disable: true }
+      - { index: 11, disable: true }
+      - { index: 12, disable: true }
+      - { index: 13, disable: true }
+      - { index: 14, disable: true }
+      - { index: 15, disable: true }
+      - { index: 16, disable: true }
+  - index: 2
+    report-rate: 500  # Report rate in Hz
+    resolutions:
+      - { index: 0, dpi: [400, 400] }
+      - { index: 1, dpi: [800, 800] }
+      - { index: 2, dpi: [1000, 1000] }
+      - { index: 3, dpi: [2000, 2000] }
+      - { index: 4, dpi: [2500, 2500] }
+    buttons:
+      - { index: 0, button: 1 }
+      - { index: 1, button: 2 }
+      - { index: 2, button: 3 }
+      - { index: 3, button: 4 }
+      - { index: 4, button: 5 }
+      - { index: 5, button: 6 }
+      - { index: 6, button: 7 }
+      - { index: 7, button: 8 }
+      - { index: 8, button: 9 }
+      - { index: 9, disable: true }
+      - { index: 10, disable: true }
+      - { index: 11, disable: true }
+      - { index: 12, disable: true }
+      - { index: 13, disable: true }
+      - { index: 14, disable: true }
+      - { index: 15, disable: true }
+      - { index: 16, disable: true }
+  - index: 3
+    report-rate: 500  # Report rate in Hz
+    resolutions:
+      - { index: 0, dpi: [400, 400] }
+      - { index: 1, dpi: [800, 800] }
+      - { index: 2, dpi: [1000, 1000] }
+      - { index: 3, dpi: [2000, 2000] }
+      - { index: 4, dpi: [2500, 2500] }
+    buttons:
+      - { index: 0, button: 1 }
+      - { index: 1, button: 2 }
+      - { index: 2, button: 3 }
+      - { index: 3, button: 4 }
+      - { index: 4, button: 5 }
+      - { index: 5, button: 6 }
+      - { index: 6, button: 7 }
+      - { index: 7, button: 8 }
+      - { index: 8, button: 9 }
+      - { index: 9, disable: true }
+      - { index: 10, disable: true }
+      - { index: 11, disable: true }
+      - { index: 12, disable: true }
+      - { index: 13, disable: true }
+      - { index: 14, disable: true }
+      - { index: 15, disable: true }
+      - { index: 16, disable: true }
+  - index: 4
+    report-rate: 500  # Report rate in Hz
+    resolutions:
+      - { index: 0, dpi: [400, 400] }
+      - { index: 1, dpi: [800, 800] }
+      - { index: 2, dpi: [1000, 1000] }
+      - { index: 3, dpi: [2000, 2000] }
+      - { index: 4, dpi: [2500, 2500] }
+    buttons:
+      - { index: 0, button: 1 }
+      - { index: 1, button: 2 }
+      - { index: 2, button: 3 }
+      - { index: 3, button: 4 }
+      - { index: 4, button: 5 }
+      - { index: 5, button: 6 }
+      - { index: 6, button: 7 }
+      - { index: 7, button: 8 }
+      - { index: 8, button: 9 }
+      - { index: 9, disable: true }
+      - { index: 10, disable: true }
+      - { index: 11, disable: true }
+      - { index: 12, disable: true }
+      - { index: 13, disable: true }
+      - { index: 14, disable: true }
+      - { index: 15, disable: true }
+      - { index: 16, disable: true }

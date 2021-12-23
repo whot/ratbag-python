@@ -39,7 +39,7 @@ class YamlDeviceRecorder(ratbag.Recorder):
         assert "logfile" in config
         self.logfile = open(config["logfile"], "w")
 
-    def init(self, info):
+    def init(self, info = {}):
         now = datetime.datetime.now().strftime("%y-%m-%d %H:%M")
         self.logfile.write(
             f"# generated {now}\n"

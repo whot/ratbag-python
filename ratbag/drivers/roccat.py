@@ -500,6 +500,10 @@ class RoccatKeyMapping(object):
             action = 0
         elif ratbag_action.type == ratbag.Action.Type.BUTTON:
             action = ratbag_action.button
+            if action > 5:
+                raise ratbag.ConfigError(
+                    f"Unable to map to button {action} on this device"
+                )
             if action > 3:
                 action += 3  # buttons 4, 5 are 7, 8
         elif ratbag_action.type == ratbag.Action.Type.SPECIAL:
@@ -507,10 +511,9 @@ class RoccatKeyMapping(object):
             try:
                 action = inv_specials[ratbag_action.special]
             except KeyError:
-                logger.error(
-                    f"Unsupported special action {ratbag_action.special}. Setting to NONE"
+                raise ratbag.ConfigError(
+                    "Unsupported special action {ratbag_action.special}"
                 )
-                action = 0
         elif ratbag_action.type == ratbag.Action.Type.MACRO:
             macro = self.macros.get(idx, RoccatMacro(self, idx))
             macro.update_from_ratbag(ratbag_action)
@@ -530,6 +533,10 @@ class RoccatKeyMapping(object):
                 else:
                     action = 48  # it's a macro
             self.macros[idx] = macro
+        else:
+            raise ratbag.ConfigError(
+                "Unable to map action type {ratbag_action.type.name} on this device"
+            )
         self.actions[idx] = (action, 0, 0)
 
     def __bytes__(self):
@@ -672,15 +679,18 @@ class RoccatDevice(GObject.Object):
                     logger.debug(
                         f"Button {profile.idx}.{ratbag_button.index} has changed to {ratbag_button.action}"
                     )
-                    profile.key_mapping.button_update_from_ratbag(
-                        ratbag_button.index, ratbag_button.action
-                    )
-                    if profile.key_mapping.button_is_macro(ratbag_button.index):
-                        macro_bytes = bytes(
-                            profile.key_mapping.macros[ratbag_button.index]
+                    try:
+                        profile.key_mapping.button_update_from_ratbag(
+                            ratbag_button.index, ratbag_button.action
                         )
-                        logger.debug(f"Updating macro with {as_hex(macro_bytes)}")
-                        self.write(ReportID.MACRO, macro_bytes)
+                        if profile.key_mapping.button_is_macro(ratbag_button.index):
+                            macro_bytes = bytes(
+                                profile.key_mapping.macros[ratbag_button.index]
+                            )
+                            logger.debug(f"Updating macro with {as_hex(macro_bytes)}")
+                            self.write(ReportID.MACRO, macro_bytes)
+                    except ratbag.ConfigError as e:
+                        logger.error(f"{e}")
 
                 keymap_bytes = bytes(profile.key_mapping)
                 logger.debug(f"Updating keymapping with {as_hex(keymap_bytes)}")

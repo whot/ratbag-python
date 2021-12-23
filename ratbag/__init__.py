@@ -234,7 +234,10 @@ class Ratbag(GObject.Object):
 
         :param device_path: the path to the device node
         :param info: a dict of various info collected for this device
-        :return: a instance of :class:`ratbag.drivers.Driver`
+        :return: a tuple of ``(driver, configdict)`` for a
+                :class:`ratbag.drivers.Driver` and a config dict from the data file
+                with driver-specific configuration
+        :raises: UnsupportedDeviceError, NotImplementedError
         """
         name = info.get("name", None)
         bus = info.get("bus", None)

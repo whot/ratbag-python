@@ -239,9 +239,9 @@ def test_led():
         led.set_mode(1)
 
     # LED modes
-    assert led.modes == [ratbag.Led.Mode.OFF]
-    led = ratbag.Led(profile, 1, modes=list(ratbag.Led.Mode), mode=ratbag.Led.Mode.ON)
-    assert led.modes == list(ratbag.Led.Mode)
+    assert led.modes == (ratbag.Led.Mode.OFF,)
+    led = ratbag.Led(profile, 1, modes=tuple(ratbag.Led.Mode), mode=ratbag.Led.Mode.ON)
+    assert led.modes == tuple(ratbag.Led.Mode)
     for m in led.modes:
         led.set_mode(m)
         assert led.dirty

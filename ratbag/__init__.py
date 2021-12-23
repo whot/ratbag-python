@@ -587,8 +587,8 @@ class Profile(Feature):
         self._active = active
         self._enabled = True
         self._report_rate = report_rate
-        self._report_rates = tuple(set(report_rates))
-        self._capabilities = tuple(set(capabilities))
+        self._report_rates = tuple(sorted(set(report_rates)))
+        self._capabilities = tuple(sorted(set(capabilities)))
         self.device._add_profile(self)
 
     @property
@@ -789,7 +789,7 @@ class Resolution(Feature):
         super().__init__(profile.device, index)
         self.profile = profile
         self._dpi = dpi
-        self._dpi_list = tuple(set(dpi_list))
+        self._dpi_list = tuple(sorted(set(dpi_list)))
         self._capabilities = tuple(set(capabilities))
         self._active = False
         self._default = False
@@ -1136,7 +1136,7 @@ class Button(Feature):
     ):
         super().__init__(profile.device, index)
         self.profile = profile
-        self._types = types
+        self._types = tuple(set(types))
         self._action = action or Action(self)
         self.profile._add_button(self)
 

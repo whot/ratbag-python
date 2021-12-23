@@ -248,7 +248,7 @@ class Rodent(GObject.Object):
         fcntl.ioctl(self._fd.fileno(), _IOC_HIDIOCGFEATURE(None, len(buf)), buf)
         logger.debug(Rodent.IoctlReply("HIDIOCGFEATURE", buf))
         self.emit("ioctl-reply", "HIDIOCGFEATURE", buf)
-        return list(buf)  # Note: first byte is report ID
+        return bytes(buf)  # Note: first byte is report ID
 
     def hid_set_feature(self, report_id, data):
         """

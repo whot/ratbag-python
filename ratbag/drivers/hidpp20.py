@@ -165,9 +165,9 @@ class Profile(object):
 
         format = "BBB"
         sz = struct.calcsize(format)
-        vals = struct.unpack_from(format, data, offset=offset)
+        r, g, b = struct.unpack_from(format, data, offset=offset)
         offset += sz
-        self.colors = Color(*vals)
+        self.colors = Color(r, g, b)
 
         format = "BB"
         sz = struct.calcsize(format)

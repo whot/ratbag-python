@@ -39,7 +39,7 @@ class YamlDeviceRecorder(ratbag.Recorder):
         assert "logfile" in config
         self.logfile = open(config["logfile"], "w")
 
-    def init(self, config):
+    def init(self, info):
         now = datetime.datetime.now().strftime("%y-%m-%d %H:%M")
         self.logfile.write(
             f"# generated {now}\n"
@@ -47,7 +47,7 @@ class YamlDeviceRecorder(ratbag.Recorder):
             f"version: 1\n"
             f"attributes:\n"
         )
-        for key, value in config.items():
+        for key, value in info.items():
             if type(value) == int:
                 tstr = "int"
             elif type(value) == str:

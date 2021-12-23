@@ -38,7 +38,6 @@ class YamlDeviceRecorder(ratbag.Recorder):
         super().__init__(self)
         assert "logfile" in config
         self.logfile = open(config["logfile"], "w")
-        self.attributes = {}
 
     def init(self, config):
         now = datetime.datetime.now().strftime("%y-%m-%d %H:%M")

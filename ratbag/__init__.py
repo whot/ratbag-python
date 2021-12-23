@@ -918,7 +918,11 @@ class Action(GObject.Object):
     def __init__(self, parent):
         GObject.Object.__init__(self)
         self._parent = parent
-        self.type = Action.Type.UNKNOWN
+        self._type = Action.Type.UNKNOWN
+
+    @property
+    def type(self):
+        return self._type
 
     def __str__(self):
         return "Unknown"
@@ -935,7 +939,7 @@ class ActionNone(Action):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self.type = Action.Type.NONE
+        self._type = Action.Type.NONE
 
     def __str__(self):
         return "None"
@@ -952,7 +956,7 @@ class ActionButton(Action):
     def __init__(self, parent, button):
         super().__init__(parent)
         self._button = button
-        self.type = Action.Type.BUTTON
+        self._type = Action.Type.BUTTON
 
     @property
     def button(self):
@@ -1008,7 +1012,7 @@ class ActionSpecial(Action):
 
     def __init__(self, parent, special):
         super().__init__(parent)
-        self.type = Action.Type.SPECIAL
+        self._type = Action.Type.SPECIAL
         self._special = special
 
     @property
@@ -1043,7 +1047,7 @@ class ActionMacro(Action):
 
     def __init__(self, parent, name="Unnamed macro", events=[(Event.INVALID,)]):
         super().__init__(parent)
-        self.type = Action.Type.MACRO
+        self._type = Action.Type.MACRO
         self.name = name
         self._events = events
 

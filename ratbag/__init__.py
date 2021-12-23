@@ -1048,8 +1048,12 @@ class ActionMacro(Action):
     def __init__(self, parent, name="Unnamed macro", events=[(Event.INVALID,)]):
         super().__init__(parent)
         self._type = Action.Type.MACRO
-        self.name = name
+        self._name = name
         self._events = events
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def events(self):

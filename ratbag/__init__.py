@@ -7,6 +7,7 @@
 import enum
 import logging
 import pyudev
+from typing import Any, Dict, List, Optional, Tuple
 
 from pathlib import Path
 
@@ -34,7 +35,7 @@ class UnsupportedDeviceError(Exception):
 
     """
 
-    def __init__(self, name=None, path=None):
+    def __init__(self, name: str = None, path: Path = None):
         self.name = name
         self.path = path
 
@@ -53,7 +54,7 @@ class SomethingIsMissingError(UnsupportedDeviceError):
        A string explaining the thing that is missing
     """
 
-    def __init__(self, name, path, thing):
+    def __init__(self, name: str, path: Path, thing: str):
         super().__init__(name, path)
         self.thing = thing
 
@@ -71,7 +72,7 @@ class ConfigError(Exception):
         The error message
     """
 
-    def __init__(self, message):
+    def __init__(self, message: str):
         self.message = message
 
 
@@ -101,11 +102,11 @@ class ProtocolError(Exception):
 
     """
 
-    def __init__(self, message=None, name=None, path=None):
+    def __init__(self, message: str = None, name: str = None, path: str = None):
         self.name = name
         self.path = path
         self.message = message
-        self.conversation = []
+        self.conversation: List[bytes] = []
 
 
 class Ratbag(GObject.Object):
@@ -153,12 +154,12 @@ class Ratbag(GObject.Object):
         ),
     }
 
-    def __init__(self, config):
+    def __init__(self, config: Dict[str, Any] = {}):
         super().__init__()
-        self._devices = []
+        self._devices: List[Device] = []
         self._config = config
 
-    def start(self):
+    def start(self) -> None:
         """
         Add the devices and/or start monitoring udev for new devices.
         """
@@ -174,7 +175,7 @@ class Ratbag(GObject.Object):
             driver = self._load_driver_by_name(emulator.driver)
             driver.probe(emulator, {}, {})
 
-    def _install_udev_monitor(self):
+    def _install_udev_monitor(self) -> None:
         context = pyudev.Context()
         monitor = pyudev.Monitor.from_netlink(context)
         monitor.filter_by(subsystem="hidraw")
@@ -191,7 +192,7 @@ class Ratbag(GObject.Object):
         GObject.io_add_watch(monitor, GObject.IO_IN, udev_monitor_callback, monitor)
         monitor.start()
 
-    def _add_device(self, path):
+    def _add_device(self, path: str) -> None:
         try:
             info = ratbag.util.load_device_info(path)
             driver, config = self._find_driver(path, info)
@@ -226,7 +227,9 @@ class Ratbag(GObject.Object):
         except PermissionError as e:
             logger.error(f"Unable to open device at {path}: {e}")
 
-    def _find_driver(self, device_path, info):
+    def _find_driver(
+        self, device_path: str, info: Dict[str, Any]
+    ) -> Tuple["ratbag.drivers.Driver", Dict[str, Any]]:
         """
         Load the driver assigned to the bus/VID/PID match. If a matching
         driver is found, that driver's :func:`LOAD_DRIVER_FUNC` is called with
@@ -280,7 +283,7 @@ class Ratbag(GObject.Object):
             e.path = path
             raise e
 
-    def _load_driver_by_name(self, driver_name):
+    def _load_driver_by_name(self, driver_name: str) -> "ratbag.drivers.Driver":
         # Import ratbag.drivers.foo and call load_driver() to instantiate the
         # driver.
         try:
@@ -309,10 +312,10 @@ class Recorder(GObject.Object):
     :param config: A dictionary with logger-specific data to initialize
     """
 
-    def __init__(self, config={}):
+    def __init__(self, config: Dict[str, Any] = {}):
         GObject.Object.__init__(self)
 
-    def init(self, info={}):
+    def init(self, info: Dict[str, Any] = {}) -> None:
         """
         Initialize the logger for the given device.
 
@@ -320,13 +323,13 @@ class Recorder(GObject.Object):
         """
         pass
 
-    def log_rx(self, data):
+    def log_rx(self, data: bytes) -> None:
         """
         Log data received from the device
         """
         pass
 
-    def log_tx(self, data):
+    def log_tx(self, data: bytes) -> None:
         """
         Log data sent to the device
         """
@@ -363,7 +366,7 @@ class Device(GObject.Object):
         "resync": (GObject.SignalFlags.RUN_FIRST, None, ()),
     }
 
-    def __init__(self, driver, path, name):
+    def __init__(self, driver: "ratbag.drivers.Driver", path: str, name: str):
         GObject.Object.__init__(self)
         self.driver = driver
         self.path = path
@@ -373,7 +376,7 @@ class Device(GObject.Object):
         self._dirty = False
 
     @property
-    def profiles(self):
+    def profiles(self) -> Tuple["ratbag.Profile", ...]:
         """
         The tuple of device profiles, in-order sorted by profile index.
         """
@@ -382,7 +385,7 @@ class Device(GObject.Object):
         # modify it.
         return self._profiles
 
-    def commit(self):
+    def commit(self) -> None:
         """
         Write the current changes to the driver. This function emits the
         ``commit`` signal to notify the respective driver that the current
@@ -399,18 +402,18 @@ class Device(GObject.Object):
         logger.debug("Writing current changes to device")
         self.emit("commit")
 
-        def clean(x):
-            x.dirty = False
+        def clean(x: "ratbag.Feature") -> None:
+            x.dirty = False  # type: ignore
 
         # Now reset all dirty values
         for p in self.profiles:
             map(clean, p.buttons)
             map(clean, p.resolutions)
             map(clean, p.leds)
-            p.dirty = False
-        self.dirty = False
+            p.dirty = False  # type: ignore
+        self.dirty = False  # type: ignore
 
-    def _add_profile(self, profile):
+    def _add_profile(self, profile: "ratbag.Profile") -> None:
         """
         Add the profile to the device.
         """
@@ -424,21 +427,21 @@ class Device(GObject.Object):
         profile.connect("notify::dirty", cb_dirty)
 
     @GObject.Property(type=bool, default=False)
-    def dirty(self):
+    def dirty(self) -> bool:
         """
         ``True`` if changes are uncommited. Connect to ``notify::dirty`` to receive changes.
         """
         return self._dirty
 
-    @dirty.setter
-    def dirty(self, is_dirty):
+    @dirty.setter  # type: ignore
+    def dirty(self, is_dirty: bool) -> None:
         if self._dirty != is_dirty:
             self._dirty = is_dirty
             self.notify("dirty")
             if self._dirty:
                 logger.debug(f"Device {self.name} has uncommited changes")
 
-    def as_dict(self):
+    def as_dict(self) -> Dict[str, Any]:
         """
         Returns this device as a dictionary that can e.g. be printed as YAML
         or JSON.
@@ -463,7 +466,7 @@ class Feature(GObject.Object):
         The device associated with this feature
     """
 
-    def __init__(self, device, index):
+    def __init__(self, device: ratbag.Device, index: int):
         assert index >= 0
         GObject.Object.__init__(self)
         self.device = device
@@ -474,7 +477,7 @@ class Feature(GObject.Object):
         )
 
     @property
-    def index(self):
+    def index(self) -> int:
         """
         The 0-based device index of this feature. Indices are counted from the
         parent feature up, i.e. the first resolution of a profile 1 is
@@ -485,14 +488,14 @@ class Feature(GObject.Object):
         return self._index
 
     @GObject.Property(type=bool, default=False)
-    def dirty(self):
+    def dirty(self) -> bool:
         """
         ``True`` if changes are uncommited. Connect to ``notify::dirty`` to receive changes.
         """
         return self._dirty
 
-    @dirty.setter
-    def dirty(self, is_dirty):
+    @dirty.setter  # type: ignore
+    def dirty(self, is_dirty) -> None:
         if self._dirty != is_dirty:
             self._dirty = is_dirty
             self.notify("dirty")
@@ -589,33 +592,33 @@ class Profile(Feature):
         self.device._add_profile(self)
 
     @property
-    def buttons(self):
+    def buttons(self) -> Tuple["ratbag.Button", ...]:
         """
         The tuple of :class:`Button` that are available in this profile
         """
         return self._buttons
 
     @property
-    def resolutions(self):
+    def resolutions(self) -> Tuple["ratbag.Resolution", ...]:
         """
         The tuple of :class:`Resolution` that are available in this profile
         """
         return self._resolutions
 
     @property
-    def leds(self):
+    def leds(self) -> Tuple["ratbag.Led", ...]:
         """
         The tuple of :class:`Led` that are available in this profile
         """
         return self._leds
 
     @GObject.Property(type=int, default=0)
-    def report_rate(self):
+    def report_rate(self) -> int:
         """The report rate in Hz. If the profile does not support configurable
         (or queryable) report rates, the report rate is always ``None``"""
         return self._report_rate
 
-    def set_report_rate(self, rate):
+    def set_report_rate(self, rate: int) -> None:
         """
         Set the report rate for this profile.
 
@@ -625,47 +628,47 @@ class Profile(Feature):
             raise ConfigError(f"{rate} is not a supported report rate")
         if rate != self._report_rate:
             self._report_rate = rate
-            self.dirty = True
+            self.dirty = True  # type: ignore
             self.notify("report-rate")
 
     @property
-    def report_rates(self):
+    def report_rates(self) -> Tuple[int, ...]:
         """The tuple of supported report rates in Hz. If the device does not
         support configurable report rates, the tuple is the empty tuple"""
         return self._report_rates
 
     @property
-    def capabilities(self):
+    def capabilities(self) -> Tuple[Capability, ...]:
         """
         Return the tuple of supported :class:`Profile.Capability`
         """
         return self._capabilities
 
     @GObject.Property(type=bool, default=True)
-    def enabled(self):
+    def enabled(self) -> bool:
         """
         ``True`` if this profile is enabled.
         """
         return self._enabled
 
-    def set_enabled(self, enabled):
+    def set_enabled(self, enabled: bool) -> None:
         if Profile.Capability.DISABLE not in self.capabilities:
             raise ConfigError("Profile disable capability not supported")
 
         if self._enabled != enabled:
             self._enabled = enabled
-            self.dirty = True
+            self.dirty = True  # type: ignore
             self.notify("enabled")
 
     @GObject.Property(type=bool, default=False)
-    def active(self):
+    def active(self) -> bool:
         """
         ``True`` if this profile is active, ``False`` otherwise. Note that
         only one profile at a time can be active. See :meth:`set_active`.
         """
         return self._active
 
-    def set_active(self):
+    def set_active(self) -> None:
         """
         Set this profile to be the active profile.
         """
@@ -675,10 +678,10 @@ class Profile(Feature):
                 p.notify("active")
             self._active = True
             self.notify("active")
-            self.dirty = True
+            self.dirty = True  # type: ignore
 
     @GObject.Property(type=bool, default=False)
-    def default(self):
+    def default(self) -> bool:
         """
         ``True`` if this profile is the default profile, ``False`` otherwise.
         Note that only one profile at a time can be the default. See
@@ -686,7 +689,7 @@ class Profile(Feature):
         """
         return self._default
 
-    def set_default(self):
+    def set_default(self) -> None:
         """
         Set this profile as the default profile.
 
@@ -700,28 +703,28 @@ class Profile(Feature):
                 p.notify("default")
             self._default = True
             self.notify("default")
-            self.dirty = True
+            self.dirty = True  # type: ignore
 
     def _cb_dirty(self, feature, pspec):
         self.dirty = self.dirty or feature.dirty
 
-    def _add_button(self, button):
+    def _add_button(self, button: "ratbag.Button") -> None:
         self._buttons = ratbag.util.add_to_sparse_tuple(
             self._buttons, button.index, button
         )
         button.connect("notify::dirty", self._cb_dirty)
 
-    def _add_resolution(self, resolution):
+    def _add_resolution(self, resolution: "ratbag.Resolution") -> None:
         self._resolutions = ratbag.util.add_to_sparse_tuple(
             self._resolutions, resolution.index, resolution
         )
         resolution.connect("notify::dirty", self._cb_dirty)
 
-    def _add_led(self, led):
+    def _add_led(self, led: "ratbag.Led") -> None:
         self._leds = ratbag.util.add_to_sparse_tuple(self._leds, led.index, led)
         led.connect("notify::dirty", self._cb_dirty)
 
-    def as_dict(self):
+    def as_dict(self) -> Dict[str, Any]:
         """
         Returns this profile as a dictionary that can e.g. be printed as YAML
         or JSON.
@@ -762,7 +765,14 @@ class Resolution(Feature):
         """
 
     def __init__(
-        self, profile, index, dpi, *, enabled=True, capabilities=[], dpi_list=[]
+        self,
+        profile: Profile,
+        index: int,
+        dpi: Tuple[int, int],
+        *,
+        enabled: bool = True,
+        capabilities: Tuple[Capability, ...] = (),
+        dpi_list: Tuple[int, ...] = (),
     ):
         try:
             assert index >= 0
@@ -787,24 +797,24 @@ class Resolution(Feature):
         self.profile._add_resolution(self)
 
     @property
-    def capabilities(self):
+    def capabilities(self) -> Tuple[Capability, ...]:
         """
         Return the tuple of supported :class:`Resolution.Capability`
         """
         return self._capabilities
 
     @GObject.Property(type=bool, default=True)
-    def enabled(self):
+    def enabled(self) -> bool:
         return self._enabled
 
-    def set_enabled(self, enabled):
+    def set_enabled(self, enabled: bool) -> None:
         if self._enabled != enabled:
             self._enabled = enabled
             self.notify("enabled")
-            self.dirty = True
+            self.dirty = True  # type: ignore
 
     @GObject.Property(type=bool, default=False)
-    def active(self):
+    def active(self) -> bool:
         """
         ``True`` if this resolution is active, ``False`` otherwise. This
         property should be treated as read-only, use :meth:`set_active`
@@ -812,14 +822,14 @@ class Resolution(Feature):
         """
         return self._active
 
-    @active.setter
-    def active(self, active):
+    @active.setter  # type: ignore
+    def active(self, active: bool) -> None:
         if self._active != active:
             self._active = active
             self.notify("active")
-            self.dirty = True
+            self.dirty = True  # type: ignore
 
-    def set_active(self):
+    def set_active(self) -> None:
         """
         Set this resolution to be the active resolution.
         """
@@ -829,7 +839,7 @@ class Resolution(Feature):
             self.active = True
 
     @GObject.Property(type=bool, default=False)
-    def default(self):
+    def default(self) -> bool:
         """
         ``True`` if this resolution is the default resolution, ``False`` otherwise.
         Note that only one resolution at a time can be the default. See
@@ -837,7 +847,7 @@ class Resolution(Feature):
         """
         return self._default
 
-    def set_default(self):
+    def set_default(self) -> None:
         """
         Set this resolution as the default resolution.
 
@@ -849,10 +859,10 @@ class Resolution(Feature):
                 r.notify("default")
             self._default = True
             self.notify("default")
-            self.dirty = True
+            self.dirty = True  # type: ignore
 
     @GObject.Property
-    def dpi(self):
+    def dpi(self) -> Tuple[int, int]:
         """
         A tuple of `(x, y)` resolution values. If this device does not have
         :meth:`Resolution.Capability.SEPARATE_XY_RESOLUTION`, the tuple always
@@ -860,7 +870,7 @@ class Resolution(Feature):
         """
         return self._dpi
 
-    def set_dpi(self, new_dpi):
+    def set_dpi(self, new_dpi: Tuple[int, int]) -> None:
         """
         Change the dpi of this device.
 
@@ -882,17 +892,17 @@ class Resolution(Feature):
             raise ConfigError(f"Invalid resolution {new_dpi}, must be (x, y) tuple")
         if (x, y) != self._dpi:
             self._dpi = (x, y)
-            self.dirty = True
+            self.dirty = True  # type: ignore
             self.notify("dpi")
 
     @property
-    def dpi_list(self):
+    def dpi_list(self) -> Tuple[int, ...]:
         """
         Return a tuple of possible resolution values on this device
         """
         return self._dpi_list
 
-    def as_dict(self):
+    def as_dict(self) -> Dict[str, Any]:
         """
         Returns this resolution as a dictionary that can e.g. be printed as YAML
         or JSON.
@@ -921,13 +931,13 @@ class Action(GObject.Object):
         self._type = Action.Type.UNKNOWN
 
     @property
-    def type(self):
+    def type(self) -> Type:
         return self._type
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Unknown"
 
-    def as_dict(self):
+    def as_dict(self) -> Dict[str, Any]:
         return {"type": self.type.name}
 
 
@@ -939,9 +949,9 @@ class ActionNone(Action):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self._type = Action.Type.NONE
+        self._type: Action.Type = Action.Type.NONE
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "None"
 
 
@@ -953,20 +963,20 @@ class ActionButton(Action):
     at button 1 (left mouse button).
     """
 
-    def __init__(self, parent, button):
+    def __init__(self, parent, button: int):
         super().__init__(parent)
         self._button = button
         self._type = Action.Type.BUTTON
 
     @property
-    def button(self):
+    def button(self) -> int:
         """The 1-indexed mouse button"""
         return self._button
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Button {self.button}"
 
-    def as_dict(self):
+    def as_dict(self) -> Dict[str, Any]:
         return {
             **super().as_dict(),
             **{
@@ -1010,19 +1020,19 @@ class ActionSpecial(Action):
         SECOND_MODE = enum.auto()
         BATTERY_LEVEL = enum.auto()
 
-    def __init__(self, parent, special):
+    def __init__(self, parent, special: Special):
         super().__init__(parent)
         self._type = Action.Type.SPECIAL
         self._special = special
 
     @property
-    def special(self):
+    def special(self) -> Special:
         return self._special
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Special {self.special.name}"
 
-    def as_dict(self):
+    def as_dict(self) -> Dict[str, Any]:
         return {
             **super().as_dict(),
             **{
@@ -1045,18 +1055,23 @@ class ActionMacro(Action):
         KEY_RELEASE = enum.auto()
         WAIT_MS = enum.auto()
 
-    def __init__(self, parent, name="Unnamed macro", events=[(Event.INVALID,)]):
+    def __init__(
+        self,
+        parent,
+        name: str = "Unnamed macro",
+        events: List[Tuple[Event, int]] = [(Event.INVALID, 0)],
+    ):
         super().__init__(parent)
         self._type = Action.Type.MACRO
         self._name = name
         self._events = events
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._name
 
     @property
-    def events(self):
+    def events(self) -> List[Tuple[Event, int]]:
         """
         A list of tuples that describe the sequence of this macro. Each tuple
         is of type ``(Macro.Event.KEY_PRESS, 34)`` or ``(Macro.Event.WAIT_MS, 500)``,
@@ -1071,7 +1086,7 @@ class ActionMacro(Action):
         """
         return self._events
 
-    def _events_as_strlist(self):
+    def _events_as_strlist(self) -> List[str]:
         prefix = {
             ActionMacro.Event.INVALID: "x",
             ActionMacro.Event.KEY_PRESS: "+",
@@ -1080,11 +1095,11 @@ class ActionMacro(Action):
         }
         return [f"{prefix[t]}{v}" for t, v in self.events]
 
-    def __str__(self):
+    def __str__(self) -> str:
         str = " ".join(self._events_as_strlist())
         return f"Macro: {self.name}: {str}"
 
-    def as_dict(self):
+    def as_dict(self) -> Dict[str, Any]:
         return {
             **super().as_dict(),
             **{
@@ -1113,11 +1128,11 @@ class Button(Feature):
 
     def __init__(
         self,
-        profile,
-        index,
+        profile: ratbag.Profile,
+        index: int,
         *,
-        types=[Action.Type.BUTTON],
-        action=None,
+        types: Tuple[Action.Type] = (Action.Type.BUTTON,),
+        action: Optional[Action] = None,
     ):
         super().__init__(profile.device, index)
         self.profile = profile
@@ -1126,21 +1141,21 @@ class Button(Feature):
         self.profile._add_button(self)
 
     @property
-    def types(self):
+    def types(self) -> Tuple[Action.Type, ...]:
         """
         The list of supported :class:`Action.Type` for this button
         """
         return self._types
 
     @GObject.Property(type=ratbag.Action, default=None)
-    def action(self):
+    def action(self) -> Action:
         """
         The currently assigned action. This action is guaranteed to be of
         type :class:`Action` or one of its subclasses.
         """
         return self._action
 
-    def set_action(self, new_action):
+    def set_action(self, new_action: Action) -> None:
         """
         Set the action rate for this button.
 
@@ -1150,9 +1165,9 @@ class Button(Feature):
             raise ConfigError(f"Invalid button action of type {type(new_action)}")
         self._action = new_action
         self.notify("action")
-        self.dirty = True
+        self.dirty = True  # type: ignore
 
-    def as_dict(self):
+    def as_dict(self) -> Dict[str, Any]:
         """
         Returns this button as a dictionary that can e.g. be printed as YAML
         or JSON.
@@ -1177,15 +1192,15 @@ class Led(Feature):
 
     def __init__(
         self,
-        profile,
-        index,
+        profile: ratbag.Profile,
+        index: int,
         *,
-        color=(0, 0, 0),
-        brightness=0,
-        colordepth=Colordepth.RGB_888,
-        mode=Mode.OFF,
-        modes=(Mode.OFF,),
-        effect_duration=0,
+        color: Tuple[int, int, int] = (0, 0, 0),
+        brightness: int = 0,
+        colordepth: Colordepth = Colordepth.RGB_888,
+        mode: Mode = Mode.OFF,
+        modes: Tuple[Mode, ...] = (Mode.OFF,),
+        effect_duration: int = 0,
     ):
         super().__init__(profile.device, index)
         self.profile = profile
@@ -1198,7 +1213,7 @@ class Led(Feature):
         self.profile._add_led(self)
 
     @GObject.Property
-    def color(self):
+    def color(self) -> Tuple[int, int, int]:
         """
         Return a triplet of ``(r, g, b)`` of positive integers. If any color
         scaling applies because of the device's :class:`ratbag.Led.Colordepth`
@@ -1207,7 +1222,7 @@ class Led(Feature):
         """
         return self._color
 
-    def set_color(self, rgb):
+    def set_color(self, rgb: Tuple[int, int, int]) -> None:
         """
         Set the color for this LED. The color provided has to be within the
         allowed color range, see :class:`ratbag.Led.Colordepth`. ratbag
@@ -1225,16 +1240,16 @@ class Led(Feature):
         if self._color != rgb:
             self._color = rgb
             self.notify("color")
-            self.dirty = True
+            self.dirty = True  # type: ignore
 
-    def colordepth(self):
+    def colordepth(self) -> Colordepth:
         return self._colordepth
 
     @GObject.Property(type=int, default=0)
-    def brightness(self):
+    def brightness(self) -> int:
         return self._brightness
 
-    def set_brightness(self, brightness):
+    def set_brightness(self, brightness: int) -> None:
         try:
             brightness = int(brightness)
             if not 0 <= brightness <= 255:
@@ -1244,13 +1259,13 @@ class Led(Feature):
 
         if brightness != self._brightness:
             self._brightness = brightness
-            self.dirty = True
+            self.dirty = True  # type: ignore
 
     @GObject.Property(type=int, default=0)
-    def effect_duration(self):
+    def effect_duration(self) -> int:
         return self._effect_duration
 
-    def set_effect_duration(self, effect_duration):
+    def set_effect_duration(self, effect_duration: int) -> None:
         try:
             effect_duration = int(effect_duration)
             # effect over 10s is likely a bug in the caller
@@ -1262,13 +1277,13 @@ class Led(Feature):
         if effect_duration != self._effect_duration:
             self._effect_duration = effect_duration
             self.notify("effect_duration")
-            self.dirty = True
+            self.dirty = True  # type: ignore
 
     @GObject.Property
-    def mode(self):
+    def mode(self) -> Mode:
         return self._mode
 
-    def set_mode(self, mode):
+    def set_mode(self, mode: Mode) -> None:
         """
         Change the mode of this LED. The supplied mode must be one returned by
         :meth:`modes`.
@@ -1278,10 +1293,10 @@ class Led(Feature):
         if mode != self._mode:
             self._mode = mode
             self.notify("mode")
-            self.dirty = True
+            self.dirty = True  # type: ignore
 
     @property
-    def modes(self):
+    def modes(self) -> Tuple[Mode, ...]:
         """
         Return a tuple of the available :class:`Led.Mode` for this LED
         """

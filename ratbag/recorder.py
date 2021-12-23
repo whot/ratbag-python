@@ -6,6 +6,8 @@
 
 import datetime
 
+from typing import Any, Dict
+
 import ratbag
 
 
@@ -34,12 +36,12 @@ class YamlDeviceRecorder(ratbag.Recorder):
 
     """
 
-    def __init__(self, config):
+    def __init__(self, config: Dict[str, Any]):
         super().__init__(self)
         assert "logfile" in config
         self.logfile = open(config["logfile"], "w")
 
-    def init(self, info = {}):
+    def init(self, info: Dict[str, Any] = {}) -> None:
         now = datetime.datetime.now().strftime("%y-%m-%d %H:%M")
         self.logfile.write(
             f"# generated {now}\n"
@@ -60,7 +62,7 @@ class YamlDeviceRecorder(ratbag.Recorder):
         self.logfile.write("data:\n")
         self.logfile.flush()
 
-    def _log_bytes(self, data, prefix=""):
+    def _log_bytes(self, data: bytes, prefix: str = "") -> None:
         GROUPING = 8
 
         prefix += "["
@@ -82,7 +84,12 @@ class YamlDeviceRecorder(ratbag.Recorder):
             idx += GROUPING
             prefix = " " * prefix_len
 
-    def _log_data(self, direction, data, extra={"type": "fd"}):
+    def _log_data(
+        self,
+        direction: str,
+        data: bytes,
+        extra: Dict[str, Any] = {"type": "fd"},
+    ):
         it = iter(extra.items())
         k, v = next(it)
         self.logfile.write(f"  - {k}: {v}\n")
@@ -93,15 +100,15 @@ class YamlDeviceRecorder(ratbag.Recorder):
         self._log_bytes(data, prefix)
         self.logfile.flush()
 
-    def log_rx(self, data):
+    def log_rx(self, data: bytes) -> None:
         self._log_data("rx", data)
 
-    def log_tx(self, data):
+    def log_tx(self, data: bytes) -> None:
         self._log_data("tx", data)
 
-    def log_ioctl_tx(self, ioctl_name, data):
+    def log_ioctl_tx(self, ioctl_name: str, data: bytes) -> None:
         self._log_data("tx", data, extra={"type": "ioctl", "name": ioctl_name})
 
-    def log_ioctl_rx(self, ioctl_name, data):
+    def log_ioctl_rx(self, ioctl_name: str, data: bytes) -> None:
         self._log_bytes(data, prefix=f"    rx: ")
         self.logfile.flush()

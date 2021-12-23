@@ -7,7 +7,7 @@ BUILDDIR      = build
 PYTHON_SOURCES	:= $(shell git ls-files | grep -e "\.py")
 
 
-all: data black pytest html data
+all: data black pytest html data mypy
 
 data:
 	@if ! [[ -e data ]]; then echo "ERROR: symlink libratbag.git/data to this directory first" && exit 1; fi
@@ -17,6 +17,9 @@ black: $(PYTHON_SOURCES)
 
 pytest: data $(PYTHON_SOURCES)
 	pytest
+
+mypy: $(PYTHON_SOURCES)
+	mypy ratbag tests
 
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

@@ -15,7 +15,7 @@ data:
 black: $(PYTHON_SOURCES)
 	black $(PYTHON_SOURCES)
 
-pytest: data
+pytest: data $(PYTHON_SOURCES)
 	pytest
 
 help:

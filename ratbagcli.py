@@ -262,15 +262,117 @@ class Config(object):
                     continue
 
         if not self.nocommit:
+
             def cb_commit_complete(device, cookie, success):
+                logger.debug(f"Cookie received: {cookie}")
                 if not success:
-                    logger.error("Unable to write changes to the device")
+                    logger.error(
+                        "Unable to write changes to the device, use --verify-config to check"
+                    )
                 else:
                     logger.info("Done")
 
             device.connect("commit-complete", cb_commit_complete)
             cookie = device.commit()
-            logger.info(f"Waiting for {cookie}")
+            logger.debug(f"Waiting for cookie {cookie}")
+
+    def verify(self, device):
+        logger.info(f"Verifying config against {device.name}")
+        if self.empty or not self._matches(device):
+            return
+
+        for pconf in self.profiles:
+            pidx = pconf["index"]
+            try:
+                profile = device.profiles[pidx]
+            except IndexError:
+                print(f"Config references nonexisting profile {pidx}")
+                continue
+
+            if pconf.get("disable", False) and profile.enabled:
+                print(f"Profile {pidx} expected disabled, is enabled")
+
+            report_rate = pconf.get("report-rate", profile.report_rate)
+            if report_rate != profile.report_rate:
+                print(
+                    f"Profile {pidx} report rate expected {pconf['report-rate']}, is {profile.report_rate}"
+                )
+
+            for rconf in pconf.get("resolutions", []):
+                ridx = rconf["index"]
+                try:
+                    resolution = profile.resolutions[ridx]
+                except IndexError:
+                    print(f"Config references nonexisting resolution {pidx}.{ridx}")
+                    continue
+
+                if rconf.get("disable", False) and resolution.enabled:
+                    print(f"Resolution {pidx}.{ridx} expected disabled, is enabled")
+                    continue
+
+                dpis = rconf.get("dpi", None)
+                if dpis and tuple(dpis) != resolution.dpi:
+                    print(
+                        f"Resolution {pidx}.{ridx} expected dpi ({dpis[0]}, {dpis[1]}), is ({resolution.dpi[0]}, {resolution.dpi[1]})"
+                    )
+
+            for bconf in pconf.get("buttons", []):
+                bidx = bconf["index"]
+                try:
+                    button = profile.buttons[bidx]
+                except IndexError:
+                    print(f"Config references nonexisting button {pidx}.{bidx}")
+                    continue
+
+                if (
+                    bconf.get("disable", False)
+                    and button.action.type != ratbag.Action.Type.NONE
+                ):
+                    print(f"Button {pidx}.{bidx} expected disabled, is enabled")
+                    continue
+
+                bstring = {
+                    ratbag.Action.Type.NONE: lambda b: "disabled",
+                    ratbag.Action.Type.UNKNOWN: lambda b: "unknown",
+                    ratbag.Action.Type.BUTTON: lambda b: f"button {b.action.button}",
+                    ratbag.Action.Type.SPECIAL: lambda b: f"special {b.action.special.name}",
+                    ratbag.Action.Type.MACRO: lambda b: f"macro {str(b.action.macro)}",
+                }[button.action.type](button)
+
+                # Button numbers
+                bnumber = bconf.get("button", 0)
+                if bnumber > 0 and button.action != ratbag.ActionButton(None, bnumber):
+                    print(
+                        f"Button {pidx}.{bidx} expected button {bnumber}, is {bstring}"
+                    )
+                    continue
+
+                special = bconf.get("special", None)
+                if special and button.action != ratbag.ActionSpecial(None, special):
+                    print(
+                        f"Button {pidx}.{bidx} expected button {bnumber}, is {bstring}"
+                    )
+                    continue
+
+                macro = bconf.get("macro", {})
+                # FIXME: duplicated from apply()
+                if macro:
+                    lut = {
+                        "t": ratbag.ActionMacro.Event.WAIT_MS,
+                        "+": ratbag.ActionMacro.Event.KEY_PRESS,
+                        "-": ratbag.ActionMacro.Event.KEY_RELEASE,
+                    }
+                    events = [
+                        (lut[entry[0]], int(entry[1:])) for entry in macro["entries"]
+                    ]
+
+                    if button.action != ratbag.ActionMacro(
+                        None, name=None, events=events
+                    ):
+                        print(
+                            f"Button {pidx}.{bidx} expected macro {events}, is {bstring}"
+                        )
+                        continue
 
 
 def _init_logger(conf=None, verbose=False):
@@ -322,6 +424,12 @@ if __name__ == "__main__":
         default=None,
     )
     parser.add_argument(
+        "--verify-config",
+        help="Verify the given config was applied to all matching devices",
+        type=str,
+        default=None,
+    )
+    parser.add_argument(
         "--nocommit",
         help="Never invoke commit() on the device",
         action="store_true",
@@ -349,6 +457,12 @@ if __name__ == "__main__":
         sys.exit(1)
 
     try:
+        verify_config = Config(ns.verify_config, ns.nocommit)
+    except Config.Error as e:
+        print(f"Config error in {ns.verify_config}: {str(e)}. Aborting")
+        sys.exit(1)
+
+    try:
         mainloop = GLib.MainLoop()
         ratbagd = ratbag.Ratbag(config)
 
@@ -356,6 +470,7 @@ if __name__ == "__main__":
             device_dict = device.as_dict()
             print(yaml.dump(device_dict, default_flow_style=None))
             user_config.apply(device)
+            verify_config.verify(device)
 
         ratbagd.connect("device-added", cb_device_added)
         ratbagd.start()

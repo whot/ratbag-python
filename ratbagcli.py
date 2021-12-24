@@ -262,7 +262,15 @@ class Config(object):
                     continue
 
         if not self.nocommit:
-            device.commit()
+            def cb_commit_complete(device, cookie, success):
+                if not success:
+                    logger.error("Unable to write changes to the device")
+                else:
+                    logger.info("Done")
+
+            device.connect("commit-complete", cb_commit_complete)
+            cookie = device.commit()
+            logger.info(f"Waiting for {cookie}")
 
 
 def _init_logger(conf=None, verbose=False):

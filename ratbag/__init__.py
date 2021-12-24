@@ -7,11 +7,12 @@
 import enum
 import logging
 import pyudev
+import uuid
 from typing import Any, Dict, List, Optional, Tuple
 
 from pathlib import Path
 
-from gi.repository import GObject
+from gi.repository import GObject, GLib
 
 import ratbag.util
 
@@ -357,13 +358,19 @@ class Device(GObject.Object):
     - ``disconnected``: this device has been disconnected
     - ``commit``: commit the current state to the physical device. This signal
       is used by drivers.
-    - ``resync``: callers should re-sync the state of the device
+    - ``commit-complete``: called with the cookie and a boolean success
+      argument once the driver has finished committing the changes to the
+      device.
     """
 
     __gsignals__ = {
         "disconnected": (GObject.SignalFlags.RUN_FIRST, None, ()),
-        "commit": (GObject.SignalFlags.RUN_FIRST, None, ()),
-        "resync": (GObject.SignalFlags.RUN_FIRST, None, ()),
+        "commit": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
+        "commit-complete": (
+            GObject.SignalFlags.RUN_FIRST,
+            None,
+            (GObject.TYPE_PYOBJECT, bool),
+        ),
     }
 
     def __init__(self, driver: "ratbag.drivers.Driver", path: str, name: str):
@@ -385,22 +392,35 @@ class Device(GObject.Object):
         # modify it.
         return self._profiles
 
-    def commit(self) -> None:
+    def commit(self) -> uuid.UUID:
         """
-        Write the current changes to the driver. This function emits the
-        ``commit`` signal to notify the respective driver that the current
-        state of the device is to be committed. Calling this method resets
-        :attr:`dirty` to ``False`` for all features of this device.
+        Schedule a write ofthe current changes to the driver. This function
+        returns a unique cookie that is passed back to through the
+        ``commit-complete`` signal when the driver has finished writing all
+        changes to the device and the :attr:`dirty` state has been reset to
+        ``False`` for all features on this device.
 
-        If an error occurs, the driver emits the ``resync`` signal. A caller
-        receiving that signal should synchronize its own state of the device.
+        Internally, this function emits the ``commit`` signal to notify the
+        respective driver that the current state of the device is to be
+        committed.
+
+        The second argument to the ``commit-complete`` signal is a boolean
+        indicating whether the commit was successful. If ``False``, a caller
+        should synchronize its own state of the device.
         """
+        cookie = uuid.uuid1()
+        # FIXME: should run in its own thread
+        GLib.idle_add(self._cb_idle_commit, cookie)
+        return cookie
+
+    def _cb_idle_commit(self, cookie: uuid.UUID) -> bool:
         if not self.dirty:
+            self.emit("commit-complete", cookie)
             # well, that was easy
             return
 
         logger.debug("Writing current changes to device")
-        self.emit("commit")
+        self.emit("commit", cookie)
 
         def clean(x: "ratbag.Feature") -> None:
             x.dirty = False  # type: ignore
@@ -412,6 +432,8 @@ class Device(GObject.Object):
             map(clean, p.leds)
             p.dirty = False  # type: ignore
         self.dirty = False  # type: ignore
+
+        return False  # don't reschedule
 
     def _add_profile(self, profile: "ratbag.Profile") -> None:
         """

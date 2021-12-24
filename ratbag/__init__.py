@@ -962,6 +962,12 @@ class Action(GObject.Object):
     def as_dict(self) -> Dict[str, Any]:
         return {"type": self.type.name}
 
+    def __eq__(self, other):
+        return type(self) == type(other)
+
+    def __ne__(self, other):
+        return not self == other
+
 
 class ActionNone(Action):
     """
@@ -1005,6 +1011,9 @@ class ActionButton(Action):
                 "button": self.button,
             },
         }
+
+    def __eq__(self, other):
+        return type(self) == type(other) and self.button == other.button
 
 
 class ActionSpecial(Action):
@@ -1061,6 +1070,9 @@ class ActionSpecial(Action):
                 "special": self.special.name,
             },
         }
+
+    def __eq__(self, other):
+        return type(self) == type(other) and self.special == other.special
 
 
 class ActionMacro(Action):
@@ -1131,6 +1143,11 @@ class ActionMacro(Action):
                 }
             },
         }
+
+    def __eq__(self, other):
+        return type(self) == type(other) and all(
+            [x == y for x in self.events for y in other.events]
+        )
 
 
 class Button(Feature):

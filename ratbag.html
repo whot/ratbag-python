@@ -676,7 +676,9 @@ finalized.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">disconnected</span></code>: this device has been disconnected</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">commit</span></code>: commit the current state to the physical device. This signal
 is used by drivers.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">resync</span></code>: callers should re-sync the state of the device</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">commit-complete</span></code>: called with the cookie and a boolean success
+argument once the driver has finished committing the changes to the
+device.</p></li>
 </ul>
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.Device.profiles">
@@ -692,15 +694,20 @@ is used by drivers.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.Device.commit">
 <span class="sig-name descname"><span class="pre">commit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Device.commit" title="Permalink to this definition"></a></dt>
-<dd><p>Write the current changes to the driver. This function emits the
-<code class="docutils literal notranslate"><span class="pre">commit</span></code> signal to notify the respective driver that the current
-state of the device is to be committed. Calling this method resets
-<a class="reference internal" href="#ratbag.Device.dirty" title="ratbag.Device.dirty"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dirty</span></code></a> to <code class="docutils literal notranslate"><span class="pre">False</span></code> for all features of this device.</p>
-<p>If an error occurs, the driver emits the <code class="docutils literal notranslate"><span class="pre">resync</span></code> signal. A caller
-receiving that signal should synchronize its own state of the device.</p>
+<dd><p>Schedule a write ofthe current changes to the driver. This function
+returns a unique cookie that is passed back to through the
+<code class="docutils literal notranslate"><span class="pre">commit-complete</span></code> signal when the driver has finished writing all
+changes to the device and the <a class="reference internal" href="#ratbag.Device.dirty" title="ratbag.Device.dirty"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dirty</span></code></a> state has been reset to
+<code class="docutils literal notranslate"><span class="pre">False</span></code> for all features on this device.</p>
+<p>Internally, this function emits the <code class="docutils literal notranslate"><span class="pre">commit</span></code> signal to notify the
+respective driver that the current state of the device is to be
+committed.</p>
+<p>The second argument to the <code class="docutils literal notranslate"><span class="pre">commit-complete</span></code> signal is a boolean
+indicating whether the commit was successful. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, a caller
+should synchronize its own state of the device.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UUID</span></code></p>
 </dd>
 </dl>
 </dd></dl>

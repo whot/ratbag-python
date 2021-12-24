@@ -339,3 +339,41 @@ def test_profile_out_of_order():
     assert device.profiles[0] is None
     assert device.profiles[2] is None
     assert len(device.profiles) == 4
+
+
+def test_action_equals():
+    assert ratbag.Action(None) == ratbag.Action(None)
+    assert ratbag.Action(None) != ratbag.ActionButton(None, 1)
+    assert ratbag.Action(None) != ratbag.ActionSpecial(
+        None, ratbag.ActionSpecial.Special.DOUBLECLICK
+    )
+
+    assert ratbag.ActionButton(None, 1) == ratbag.ActionButton(None, 1)
+    assert ratbag.ActionButton(None, 2) != ratbag.ActionButton(None, 1)
+    assert ratbag.ActionButton(None, 1) != ratbag.ActionSpecial(
+        None, ratbag.ActionSpecial.Special.DOUBLECLICK
+    )
+
+    assert ratbag.ActionSpecial(
+        None, ratbag.ActionSpecial.Special.DOUBLECLICK
+    ) == ratbag.ActionSpecial(None, ratbag.ActionSpecial.Special.DOUBLECLICK)
+    assert ratbag.ActionSpecial(
+        None, ratbag.ActionSpecial.Special.WHEEL_DOWN
+    ) != ratbag.ActionSpecial(None, ratbag.ActionSpecial.Special.DOUBLECLICK)
+
+    # name is not checked for equality
+    assert ratbag.ActionMacro(
+        None, name="foo", events=[(ratbag.ActionMacro.Event.KEY_PRESS, 1)]
+    ) == ratbag.ActionMacro(
+        None, name="bar", events=[(ratbag.ActionMacro.Event.KEY_PRESS, 1)]
+    )
+    assert ratbag.ActionMacro(
+        None,
+        name="foo",
+        events=[
+            (ratbag.ActionMacro.Event.KEY_PRESS, 1),
+            (ratbag.ActionMacro.Event.KEY_PRESS, 2),
+        ],
+    ) != ratbag.ActionMacro(
+        None, name="bar", events=[(ratbag.ActionMacro.Event.KEY_PRESS, 1)]
+    )

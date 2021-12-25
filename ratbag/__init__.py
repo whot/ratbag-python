@@ -382,7 +382,7 @@ class Device(GObject.Object):
         self.driver = driver
         self.path = path
         self.name = name
-        self._profiles = ()
+        self._profiles: Tuple[Profile, ...] = tuple()
         self._driver = driver
         self._dirty = False
 

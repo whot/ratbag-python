@@ -15,13 +15,17 @@ import logging
 import pyudev
 import struct
 
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+FormatSpec = List[Tuple[str, str]]
+
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 logger_autoparse = logging.getLogger("ratbag.autoparse")
 
 
-def as_hex(bs):
+def as_hex(bs: bytes) -> str:
     """
     Convert the bytes ``bs`` to a ``"ab 12 cd 34"`` string
     """
@@ -31,7 +35,7 @@ def as_hex(bs):
     return " ".join(["".join(s) for s in zip(hx[::2], hx[1::2])])
 
 
-def add_to_sparse_tuple(tpl, index, new_value):
+def add_to_sparse_tuple(tpl: Tuple, index: int, new_value) -> Tuple:
     """
     Return a new tuple based on tpl with new_value added at the given index.
     The tuple is either expanded with ``None`` values to match the new size
@@ -58,7 +62,7 @@ def add_to_sparse_tuple(tpl, index, new_value):
     return tuple(l)
 
 
-def find_hidraw_devices():
+def find_hidraw_devices() -> List[str]:
     """
     :return: a list of local hidraw device paths ``["/dev/hidraw0", "/dev/hidraw1"]``
     """
@@ -72,7 +76,7 @@ def find_hidraw_devices():
     return devices
 
 
-def load_data_files(path):
+def load_data_files(path) -> Dict[str, configparser.ConfigParser]:
     """
     :return: a list of ``configparser.ConfigParser`` objects
     """
@@ -82,7 +86,7 @@ def load_data_files(path):
     for f in Path(path).glob("**/*.device"):
         parser = configparser.ConfigParser()
         # don't convert keys to lowercase
-        parser.optionxform = lambda option: option
+        parser.optionxform = lambda option: option  # type: ignore
         parser.read(f)
         match = parser["Device"]["DeviceMatch"]
         for key in match.split(";"):
@@ -95,14 +99,14 @@ def load_data_files(path):
     return files
 
 
-def load_device_info(devnode):
+def load_device_info(devnode: Union[Path, str]) -> Dict[str, Any]:
     """
     :return: a dictionary with information about the device at `devnode`
     """
     context = pyudev.Context()
     device = pyudev.Devices.from_device_file(context, devnode)
 
-    def find_prop(device, prop):
+    def find_prop(device, prop: str) -> Optional[str]:
         try:
             return device.properties[prop]
         except KeyError:
@@ -111,14 +115,14 @@ def load_device_info(devnode):
             except StopIteration:
                 return None
 
-    info = {}
+    info: Dict[str, Any] = {}
     info["name"] = find_prop(device, "HID_NAME")
-    info["vid"] = int(find_prop(device, "ID_VENDOR_ID") or 0, 16)
-    info["pid"] = int(find_prop(device, "ID_MODEL_ID") or 0, 16)
+    info["vid"] = int(find_prop(device, "ID_VENDOR_ID") or 0, 16)  # type: ignore
+    info["pid"] = int(find_prop(device, "ID_MODEL_ID") or 0, 16)  # type: ignore
     info["bus"] = find_prop(device, "ID_BUS")
     info["syspath"] = device.sys_path
 
-    def find_report_descriptor(device):
+    def find_report_descriptor(device) -> Optional[bytes]:
         try:
             with open(Path(device.sys_path) / "report_descriptor", "rb") as fd:
                 return fd.read()
@@ -133,7 +137,13 @@ def load_device_info(devnode):
     return info
 
 
-def attr_from_data(obj, fmt_tuples, data, offset=0, quiet=False):
+def attr_from_data(
+    obj: object,
+    fmt_tuples: List[Tuple[str, str]],
+    data: bytes,
+    offset: int = 0,
+    quiet: bool = False,
+) -> int:
     """
     ``fmt_tuples`` is a list of tuples that are converted into attributes on
     ``obj``. Each entry is a tuple in the form ``(format, fieldname)`` where
@@ -181,8 +191,8 @@ def attr_from_data(obj, fmt_tuples, data, offset=0, quiet=False):
 
         groupcount = 1
         if fmt[0].isdigit():
-            groupcount, fmt = fmt.split("*")
-            groupcount = int(groupcount)
+            gcount, fmt = fmt.split("*")
+            groupcount = int(gcount)
             assert groupcount > 1
 
         count = len(fmt)
@@ -214,7 +224,7 @@ def attr_from_data(obj, fmt_tuples, data, offset=0, quiet=False):
     return offset
 
 
-def attr_to_data(obj, fmt_tuples, maps={}):
+def attr_to_data(obj: object, fmt_tuples: FormatSpec, maps={}) -> bytes:
     """
     The inverse of :func:`attr_from_data`.
     ``fmt_tuples`` is a list of tuples that represent attributes on
@@ -245,12 +255,13 @@ def attr_to_data(obj, fmt_tuples, maps={}):
 
         groupcount = 1
         if fmt[0].isdigit():
-            groupcount, fmt = fmt.split("*")
-            groupcount = int(groupcount)
+            gcount, fmt = fmt.split("*")
+            groupcount = int(gcount)
             assert groupcount > 1
 
         count = len(fmt)
         for idx in range(groupcount):
+            val: Any = None  # just to shut up mypy
             # Padding bytes and unknown are always zero
             # If the device doesn't support writing unknown bytes to zero, map
             # it to a property

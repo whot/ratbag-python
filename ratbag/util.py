@@ -94,7 +94,7 @@ def load_data_files(path) -> Dict[str, configparser.ConfigParser]:
             # logger.debug(f"Found data file for {key}")
 
     if not files:
-        raise FileNotFoundException("Unable to find data files")
+        raise FileNotFoundError("Unable to find data files")
 
     return files
 

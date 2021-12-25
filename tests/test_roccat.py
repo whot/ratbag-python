@@ -72,6 +72,12 @@ class RoccatTestDevice(ratbag.drivers.Rodent):
         # This is currently not per-profile though
         self.profiles = [RoccatTestDevice.Profile() for _ in range(roccat.MAX_PROFILES)]
         self.active_profile = 0
+        self.expected_commit_status = True
+        self.commits = []  # the cookies
+
+    def commit_callback(self, device, status, cookie):
+        assert status == self.expected_commit_status
+        self.commits.append(cookie)
 
     def hid_get_feature(self, report_id):
         try:
@@ -298,7 +304,9 @@ class TestRoccatDriver(object):
         device = self.ratbag_device
         button = device.profiles[3].buttons[2]
         button.set_action(ratbag.ActionButton(button, 1))  # change to left button
-        device.commit()
+        cookie = device.commit(dev.commit_callback)
         self.mainloop()
 
+        assert len(dev.commits) == 1
+        assert dev.commits[0] == cookie
         assert dev.profiles[3].buttons[2] == 1

@@ -7,11 +7,15 @@
 import enum
 import logging
 import pyudev
-from typing import Any, Dict, List, Optional, Tuple
+import uuid
+
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
+CommitCallback = Callable[["ratbag.Device", bool, str], None]
 
 from pathlib import Path
 
-from gi.repository import GObject
+from gi.repository import GLib, GObject
 
 import ratbag.util
 
@@ -362,8 +366,15 @@ class Device(GObject.Object):
 
     __gsignals__ = {
         "disconnected": (GObject.SignalFlags.RUN_FIRST, None, ()),
-        "commit": (GObject.SignalFlags.RUN_FIRST, None, ()),
-        "resync": (GObject.SignalFlags.RUN_FIRST, None, ()),
+        "commit": (
+            GObject.SignalFlags.RUN_FIRST,
+            None,
+            (
+                GObject.TYPE_PYOBJECT,
+                GObject.TYPE_PYOBJECT,
+            ),
+        ),
+        "resync": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
     }
 
     def __init__(self, driver: "ratbag.drivers.Driver", path: str, name: str):
@@ -385,33 +396,63 @@ class Device(GObject.Object):
         # modify it.
         return self._profiles
 
-    def commit(self) -> None:
+    def commit(self, callback: CommitCallback = None) -> str:
         """
-        Write the current changes to the driver. This function emits the
-        ``commit`` signal to notify the respective driver that the current
-        state of the device is to be committed. Calling this method resets
-        :attr:`dirty` to ``False`` for all features of this device.
+        Write the current changes to the driver. This is an asynchronous
+        operation (maybe in a separate thread). Once complete the
+        driver calls the specified callback function with a boolean status. ::
 
-        If an error occurs, the driver emits the ``resync`` signal. A caller
-        receiving that signal should synchronize its own state of the device.
+            def commit_complete(device, status, cookie):
+                if status:
+                    print("Commit was successful")
+
+            device.commit(commit_complete)
+
+        The cookie parameter is a unique token to filter out subsequent
+        ``resync`` signals, see below.
+
+        The :attr:`dirty` status of the device's features is reset to
+        ``False`` immediately before the callback is invoked but not before
+        the driver handles the state changes. In other words, a caller must
+        not rely on the :attr:`dirty` status between :meth:`commit` and the
+        callback.
+
+        If an error occurs, the driver calls the callback with a ``False``.
+
+        If any device state changes in response to :meth:`commit`, the driver
+        emits a ``resync`` signal to notify all other listeners. This signal
+        includes the same cookie as passed to the callback to allow for
+        filtering signals.
+
+        :returns: a unique string for this transaction
         """
+        cookie = str(uuid.uuid1())
+        GLib.idle_add(self._cb_idle_commit, callback, cookie)
+        return cookie
+
+    def _cb_idle_commit(self, callback: CommitCallback, cookie: str) -> bool:
         if not self.dirty:
             # well, that was easy
-            return
+            callback(self, True, cookie)
+            return False  # don't reschedule idle func
+
+        def callback_wrapper(device: ratbag.Device, status: bool, cookie: str) -> None:
+            def clean(x: "ratbag.Feature") -> None:
+                x.dirty = False  # type: ignore
+
+            # Now reset all dirty values
+            for p in self.profiles:
+                map(clean, p.buttons)
+                map(clean, p.resolutions)
+                map(clean, p.leds)
+                p.dirty = False  # type: ignore
+            self.dirty = False  # type: ignore
+            callback(self, status, cookie)
 
         logger.debug("Writing current changes to device")
-        self.emit("commit")
+        self.emit("commit", callback_wrapper, cookie)
 
-        def clean(x: "ratbag.Feature") -> None:
-            x.dirty = False  # type: ignore
-
-        # Now reset all dirty values
-        for p in self.profiles:
-            map(clean, p.buttons)
-            map(clean, p.resolutions)
-            map(clean, p.leds)
-            p.dirty = False  # type: ignore
-        self.dirty = False  # type: ignore
+        return False  # don't reschedule idle func
 
     def _add_profile(self, profile: "ratbag.Profile") -> None:
         """

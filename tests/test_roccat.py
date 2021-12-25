@@ -310,3 +310,22 @@ class TestRoccatDriver(object):
         assert len(dev.commits) == 1
         assert dev.commits[0] == cookie
         assert dev.profiles[3].buttons[2] == 1
+
+    def test_dpi_change(self, driver):
+        dev = RoccatTestDevice()
+        driver.connect("device-added", self.cb_device_added)
+        driver.probe(dev, {}, {})
+        self.mainloop()
+
+        device = self.ratbag_device
+        res = device.profiles[2].resolutions[4]
+        res.set_dpi((1300, 1300))
+        res = device.profiles[1].resolutions[1]
+        res.set_dpi((1400, 1400))
+        cookie = device.commit(dev.commit_callback)
+        self.mainloop()
+
+        assert len(dev.commits) == 1
+        assert dev.commits[0] == cookie
+        assert dev.profiles[1].resolutions[1] == (1400, 1400)
+        assert dev.profiles[2].resolutions[4] == (1300, 1300)

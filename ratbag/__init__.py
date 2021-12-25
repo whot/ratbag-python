@@ -216,7 +216,8 @@ class Ratbag(GObject.Object):
                 driver.add_recorder(rec)
 
             driver.connect("device-added", cb_device_added)
-            driver.probe(Path(path), info, config)
+            # driver.probe(Path(path), info, config)
+            driver.probe(Path(path))
         except UnsupportedDeviceError as e:
             logger.info(f"Skipping unsupported device {e.name} ({e.path})")
         except SomethingIsMissingError as e:
@@ -278,13 +279,13 @@ class Ratbag(GObject.Object):
 
         logger.debug(f"Loading driver {driver_name} for {match} ({device_path})")
         try:
-            return self._load_driver_by_name(driver_name), driver_config
+            return self._load_driver_by_name(driver_name, driver_config), driver_config
         except UnsupportedDeviceError as e:
             e.name = name
             e.path = path
             raise e
 
-    def _load_driver_by_name(self, driver_name: str) -> "ratbag.drivers.Driver":
+    def _load_driver_by_name(self, driver_name: str, driver_config) -> "ratbag.drivers.Driver":
         # Import ratbag.drivers.foo and call load_driver() to instantiate the
         # driver.
         try:
@@ -302,7 +303,7 @@ class Ratbag(GObject.Object):
             raise NotImplementedError(
                 f"Bug: driver {driver_name} does not have '{ratbag.drivers.Driver.DRIVER_LOAD_FUNC}()'"
             )
-        return load_driver_func(driver_name)
+        return load_driver_func(driver_name, driver_config)
 
 
 class Recorder(GObject.Object):

@@ -490,8 +490,8 @@ class Hidpp20Driver(ratbag.drivers.Driver):
 
     def probe(self, device):
         if isinstance(device, str) or isinstance(device, pathlib.Path):
-            assert device.startswith("/dev/hidraw")
-            self.hidraw_device = Rodent(device)
+            assert str(device).startswith("/dev/hidraw")
+            self.hidraw_device = ratbag.drivers.Rodent.from_device(device)
         else:
             self.hidraw_device = device
         self.device = Hidpp20Device(self.hidraw_device, self.index)
@@ -523,17 +523,19 @@ class Hidpp20Driver(ratbag.drivers.Driver):
         for idx, profile in enumerate(self.device.profiles):
             p = ratbag.Profile(self.ratbag_device, idx, name=profile.name)
             for dpi_idx, dpi in enumerate(profile.dpi):
-                r = ratbag.Resolution(p, dpi_idx, dpi)
-                p.add_resolution(r)
+                ratbag.Resolution(p, dpi_idx, (dpi, dpi))
+                # r = ratbag.Resolution(p, dpi_idx, (dpi, dpi))
+                # p.add_resolution(r)
 
-            self.ratbag_device.add_profile(p)
+            # self.ratbag_device.add_profile(p)
         self.emit("device-added", self.ratbag_device)
 
     def cb_commit(self, device):
         pass
 
 
-def load_driver(driver_name, device_info, driver_config):
+# def load_driver(driver_name, device_info, driver_config):
+def load_driver(driver_name, driver_config):
     """
     :meta private:
     """

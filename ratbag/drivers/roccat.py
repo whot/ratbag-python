@@ -11,6 +11,8 @@ import struct
 import time
 import traceback
 
+from typing import List, Tuple
+
 from gi.repository import GObject
 
 import ratbag
@@ -22,11 +24,11 @@ from ratbag.util import as_hex
 
 logger = logging.getLogger(__name__)
 
-MAX_PROFILES = 5
-MAX_BUTTONS = 24
+MAX_PROFILES: int = 5
+MAX_BUTTONS: int = 24
 
 
-def crc(data):
+def crc(data: bytes):
     if len(data) < 3:
         return -1
     return sum(data[:-2]) & 0xFFFF
@@ -75,9 +77,9 @@ class RoccatProfile(object):
 
     """
 
-    SIZE = 43
+    SIZE: int = 43
 
-    format = [
+    format: ratbag.util.FormatSpec = [
         ("B", "report_id"),
         ("B", "report_length"),
         ("B", "profile_id"),
@@ -96,13 +98,14 @@ class RoccatProfile(object):
 
     report_rates = [125, 250, 500, 1000]
 
-    def __init__(self, idx):
+    def __init__(self, idx: int):
         self.idx = idx
         self.name = f"Profile {idx}"
         self.buttons = []
         self.active = False
         self.ratbag_profile = None
         self.key_mapping = None
+        self.dpi_mask = 0
         ratbag.util.attr_from_data(
             self, RoccatProfile.format, bytes([0] * RoccatProfile.SIZE), quiet=True
         )
@@ -110,16 +113,16 @@ class RoccatProfile(object):
         self.report_length = RoccatProfile.SIZE
 
     @property
-    def dpi(self):
+    def dpi(self) -> Tuple[Tuple[int, int], ...]:
         # the x/y dpi is in multiples of 50 but if it's disabled we force it
         # to 0 instead
-        return [
+        return tuple(
             (x * 50, y * 50) if self.dpi_mask & (1 << idx) else (0, 0)
             for idx, (x, y) in enumerate(zip(self.xres, self.yres))
-        ]
+        )
 
     @property
-    def report_rate(self):
+    def report_rate(self) -> int:
         return RoccatProfile.report_rates[self._report_rate_idx]
 
     def from_data(self, data):

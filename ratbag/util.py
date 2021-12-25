@@ -165,7 +165,7 @@ def attr_from_data(
         offset = attr_from_data(obj, format, mybytes, offset=0)
         print(obj.nprofiles)
 
-    Grouping is possible by prefixing the format string with ``N*`` where
+    Repeating is possible by prefixing the format string with ``N*`` where
     ``N`` is an integer greater than 1.
 
     :param obj: the object to set the attributes for
@@ -189,14 +189,14 @@ def attr_from_data(
             endian = fmt[0]
             fmt = fmt[1:]
 
-        groupcount = 1
+        repeat = 1
         if fmt[0].isdigit():
-            gcount, fmt = fmt.split("*")
-            groupcount = int(gcount)
-            assert groupcount > 1
+            rpt, fmt = fmt.split("*")
+            repeat = int(rpt)
+            assert repeat > 1
 
         count = len(fmt)
-        for group_index in range(groupcount):
+        for repeat_index in range(repeat):
             val = struct.unpack_from(endian + fmt, data, offset=offset)
             sz = struct.calcsize(fmt)
             if name == "_":
@@ -206,9 +206,9 @@ def attr_from_data(
             else:
                 if count == 1:
                     val = val[0]
-                if groupcount > 1:
+                if repeat > 1:
                     debugstr = f"self.{name:24s} += {val}"
-                    if group_index == 0:
+                    if repeat_index == 0:
                         setattr(obj, name, [])
                     attr = getattr(obj, name)
                     attr.append(val)
@@ -253,14 +253,14 @@ def attr_to_data(obj: object, fmt_tuples: FormatSpec, maps={}) -> bytes:
             endian = fmt[0]
             fmt = fmt[1:]
 
-        groupcount = 1
+        repeat = 1
         if fmt[0].isdigit():
-            gcount, fmt = fmt.split("*")
-            groupcount = int(gcount)
-            assert groupcount > 1
+            rpt, fmt = fmt.split("*")
+            repeat = int(rpt)
+            assert repeat > 1
 
         count = len(fmt)
-        for idx in range(groupcount):
+        for idx in range(repeat):
             val: Any = None  # just to shut up mypy
             # Padding bytes and unknown are always zero
             # If the device doesn't support writing unknown bytes to zero, map
@@ -268,19 +268,19 @@ def attr_to_data(obj: object, fmt_tuples: FormatSpec, maps={}) -> bytes:
             if name in ["_", "?"]:
                 if len(fmt) > 1:
                     val = [0] * len(fmt)
-                    if groupcount > 1:
-                        val = groupcount * [val]
+                    if repeat > 1:
+                        val = repeat * [val]
                 else:
                     val = 0
-                    if groupcount > 1:
-                        val = groupcount * [val]
+                    if repeat > 1:
+                        val = repeat * [val]
             else:
                 # If this element has a mapping, use that.
                 if name in maps:
                     val = maps[name](data[:offset])
                 else:
                     val = getattr(obj, name)
-            if groupcount > 1:
+            if repeat > 1:
                 val = val[idx]
             sz = struct.calcsize(fmt)
             if offset + sz >= len(data):

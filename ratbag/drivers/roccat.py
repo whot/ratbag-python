@@ -101,7 +101,6 @@ class RoccatProfile(object):
     def __init__(self, idx: int):
         self.idx = idx
         self.name = f"Profile {idx}"
-        self.buttons = []
         self.active = False
         self.ratbag_profile = None
         self.key_mapping = None

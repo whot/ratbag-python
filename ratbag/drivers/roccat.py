@@ -653,11 +653,13 @@ class RoccatDevice(GObject.Object):
 
         return bs[1] == 0x1
 
-    def cb_commit(self, ratbag_device):
+    def cb_commit(
+        self, ratbag_device: ratbag.Device, callback: ratbag.CommitCallback, cookie: str
+    ):
         def is_dirty(feature):
             return feature.dirty
 
-        needs_resync = False
+        success = True
         try:
             assert self.ratbag_device == ratbag_device
             logger.debug(f"Commiting to device {self.name}")
@@ -692,7 +694,7 @@ class RoccatDevice(GObject.Object):
                             self.write(ReportID.MACRO, macro_bytes)
                     except ratbag.ConfigError as e:
                         logger.error(f"{e}")
-                        needs_resync = True
+                        success = False
 
                 keymap_bytes = bytes(profile.key_mapping)
                 logger.debug(f"Updating keymapping with {as_hex(keymap_bytes)}")
@@ -703,10 +705,10 @@ class RoccatDevice(GObject.Object):
         except Exception as e:
             logger.critical(f"::::::: ERROR: Exception during commit: {e}")
             traceback.print_exc()
-            needs_resync = True
+            success = False
 
-        if needs_resync:
-            ratbag_device.emit("resync")
+        callback(ratbag_device, success, cookie)
+        ratbag_device.emit("resync", cookie)
 
     def write(self, report_id, bs):
         self.hidraw_device.hid_set_feature(int(report_id), bs)

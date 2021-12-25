@@ -262,19 +262,7 @@ class Config(object):
                     continue
 
         if not self.nocommit:
-
-            def cb_commit_complete(device, cookie, success):
-                logger.debug(f"Cookie received: {cookie}")
-                if not success:
-                    logger.error(
-                        "Unable to write changes to the device, use --verify-config to check"
-                    )
-                else:
-                    logger.info("Done")
-
-            device.connect("commit-complete", cb_commit_complete)
-            cookie = device.commit()
-            logger.debug(f"Waiting for cookie {cookie}")
+            device.commit()
 
     def verify(self, device):
         logger.info(f"Verifying config against {device.name}")

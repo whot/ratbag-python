@@ -471,29 +471,32 @@ class Hidpp20Driver(ratbag.drivers.Driver):
         G305 = "G305"
         G602 = "G602"
 
-    def __init__(self, config, quirk=None):
+    def __init__(self):
         super().__init__()
 
-        assert quirk is None or isinstance(quirk, ratbag.drivers.Hidpp20Driver.Quirk)
+        self.device = None
 
-        self.config = config  # dict of the config items
-        self.quirk = quirk
+    def probe(self, device, info, config):
+        self.config = config
+        for key in ("Buttons", "DeviceIndex", "Leds", "ReportRate"):
+            try:
+                val = config[key]
+                config[key.lower()] = val
+            except KeyError:
+                pass
+
+        quirk = config.get("Quirk", None)
+        if quirk is not None:
+            try:
+                self.quirk = [x for x in Hidpp20Driver.Quirk if x.value == quirk][0]
+            except IndexError:
+                raise ratbag.ConfigError(f"Invalid quirk value '{quirk}'")
+
         # Usually we default to the receiver IDX and let the kernel sort it
         # out, but some devices need to have the index hardcoded in the data
         # files
         self.index = config.get("deviceindex", RECEIVER_IDX)
-        self.device = None
-        self.recorders = []
-
-    def add_recorder(self, recorder):
-        self.recorders.append(recorder)
-
-    def probe(self, device):
-        if isinstance(device, str) or isinstance(device, pathlib.Path):
-            assert device.startswith("/dev/hidraw")
-            self.hidraw_device = Rodent(device)
-        else:
-            self.hidraw_device = device
+        self.hidraw_device = ratbag.drivers.Rodent.from_device(device)
         self.device = Hidpp20Device(self.hidraw_device, self.index)
 
         for rec in self.recorders:
@@ -523,39 +526,19 @@ class Hidpp20Driver(ratbag.drivers.Driver):
         for idx, profile in enumerate(self.device.profiles):
             p = ratbag.Profile(self.ratbag_device, idx, name=profile.name)
             for dpi_idx, dpi in enumerate(profile.dpi):
-                r = ratbag.Resolution(p, dpi_idx, dpi)
-                p.add_resolution(r)
-
-            self.ratbag_device.add_profile(p)
+                ratbag.Resolution(p, dpi_idx, (dpi, dpi))
         self.emit("device-added", self.ratbag_device)
 
     def cb_commit(self, device):
         pass
 
 
-def load_driver(driver_name, device_info, driver_config):
+def load_driver(driver_name):
     """
     :meta private:
     """
     assert driver_name == "hidpp20"
-
-    config = {}
-    for key in ("Buttons", "DeviceIndex", "Leds", "ReportRate"):
-        try:
-            val = driver_config[key]
-            config[key.lower()] = val
-        except KeyError:
-            pass
-
-    quirk = driver_config.get("Quirk", None)
-    if quirk is not None:
-        try:
-            quirk = [x for x in Hidpp20Driver.Quirk if x.value == quirk][0]
-        except IndexError:
-            raise ConfigError(f"Invalid quirk value '{quirk}'")
-
-    return Hidpp20Driver(config, quirk)
-
+    return Hidpp20Driver()
 
 ################################################################################
 #

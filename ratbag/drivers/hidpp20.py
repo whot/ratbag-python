@@ -7,6 +7,7 @@
 
 from typing import Any, Dict, List, Optional, Tuple
 
+import attr
 import enum
 import logging
 import pathlib
@@ -93,16 +94,18 @@ def crc(data: bytes) -> int:
     return crc
 
 
+@attr.s
 class Feature(object):
-    def __init__(self, name: str, index: int, type: int):
-        self.name = name
-        self.index = index
-        self.type = type
+    name: FeatureName = attr.ib()
+    index: int = attr.ib()
+    type: int = attr.ib()
 
 
+@attr.s
 class Color:
-    def __init__(self, r: int, g: int, b: int):
-        self.red, self.green, self.blue = r, g, b
+    red: int = attr.ib()
+    green: int = attr.ib()
+    blue: int = attr.ib()
 
     def __str__(self):
         return f"rgb({self.red},{self.green},{self.blue})"
@@ -338,7 +341,7 @@ class Hidpp20Device(GObject.Object):
 
             try:
                 name = FeatureName(fid)
-                features.append(Feature(name, idx, type))
+                features.append(Feature(name, idx, ftype))
                 logger.debug(f"device has feature {name.name}")
             except ValueError:
                 # We're intentionally skipping unknown features here, if we can't

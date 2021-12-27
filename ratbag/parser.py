@@ -170,7 +170,7 @@ class Parser(object):
         return Result(obj, offset)
 
     @classmethod
-    def from_object(cls, obj: Any, specs: List[Spec]) -> bytes:
+    def from_object(cls, obj: Any, specs: List[Spec], pad_to: int = 0) -> bytes:
         """
         Convert the attributes on the given objects to a byte array, given the
         specifications (in-order). This is the inverse of :meth:`Parser.to_object`.
@@ -220,4 +220,4 @@ class Parser(object):
                     f"offset {offset:02d}: {debugstr:30s} is {valstr:8s} → {as_hex(data[offset:offset+spec._size]):5s}"
                 )
                 offset += spec._size
-        return bytes(data[:offset])
+        return bytes(data[:offset]).ljust(pad_to, b"\x00")

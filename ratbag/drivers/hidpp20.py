@@ -76,8 +76,8 @@ class OnboardProfile:
 
 
 # the following crc computation has been provided by Logitech
-def crc(data):
-    def clamp(v):
+def crc(data: bytes) -> int:
+    def clamp(v: int) -> int:
         return v & 0xFFFF  # because we can't force python to use 16bit
 
     crc = 0xFFFF  # seed
@@ -94,14 +94,14 @@ def crc(data):
 
 
 class Feature(object):
-    def __init__(self, name, index, type):
+    def __init__(self, name: str, index: int, type: int):
         self.name = name
         self.index = index
         self.type = type
 
 
 class Color:
-    def __init__(self, r, g, b):
+    def __init__(self, r: int, g: int, b: int):
         self.red, self.green, self.blue = r, g, b
 
     def __str__(self):
@@ -140,13 +140,13 @@ class Profile(object):
         The report rate in Hz
     """
 
-    def __init__(self, addr):
+    def __init__(self, addr: int):
         self.address = addr
         self.enabled = False
         self.name = f"Profile {self.address}"
         self.data = None
 
-    def from_data(self, data):
+    def from_data(self, data: bytes):
         self.data = data
         offset = 0
 
@@ -210,7 +210,7 @@ class Profile(object):
         # last 2 bytes are the 16-bit crc
 
     @classmethod
-    def from_sector(cls, data, index):
+    def from_sector(cls, data: bytes, index: int):
         addr_offset = 4 * index
         addr = int.from_bytes(data[addr_offset : addr_offset + 2], byteorder="big")
         if addr == OnboardProfile.Sector.END_OF_PROFILE_DIRECTORY.value:
@@ -273,14 +273,14 @@ class Hidpp20Device(GObject.Object):
         self.hidraw_device = hidraw_device
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.hidraw_device.name
 
     @property
-    def path(self):
+    def path(self) -> pathlib.Path:
         return self.hidraw_device.path
 
-    def start(self):
+    def start(self) -> None:
         supported = self._get_supported_report_types(
             self.hidraw_device.report_descriptor
         )
@@ -296,7 +296,7 @@ class Hidpp20Device(GObject.Object):
         self._init_features()
         self._init_profiles()
 
-    def _get_supported_report_types(self, report_descriptor):
+    def _get_supported_report_types(self, report_descriptor: bytes):
         rdesc = hidtools.hid.ReportDescriptor.from_bytes(report_descriptor)
 
         supported = []
@@ -310,7 +310,7 @@ class Hidpp20Device(GObject.Object):
 
         return set(supported)
 
-    def _init_protocol_version(self):
+    def _init_protocol_version(self) -> None:
         # Get the protocol version and our feature set
         version = QueryProtocolVersion(self).run()
         logger.debug(f"protocol version {version.major}.{version.minor}")
@@ -320,7 +320,7 @@ class Hidpp20Device(GObject.Object):
             )
         self.protocol_version = (version.major, version.minor)
 
-    def _init_features(self):
+    def _init_features(self) -> None:
         feature_set = QueryRootGetFeature(
             self, FeatureName.FEATURE_SET
         ).run()  # PAGE_FEATURE_SET
@@ -347,7 +347,7 @@ class Hidpp20Device(GObject.Object):
 
         self.features = dict(zip([f.name for f in features], features))
 
-    def _init_profiles(self):
+    def _init_profiles(self) -> None:
         if FeatureName.ONBOARD_PROFILES not in self.features:
             raise ratbag.SomethingIsMissingError(
                 self.name, self.path, "HID++2.0 feature ONBOARD_PROFILES"
@@ -416,19 +416,19 @@ class Hidpp20Device(GObject.Object):
                 logger.debug(profile)
                 self.profiles.append(profile)
 
-    def send(self, bytes):
+    def send(self, bytes: bytes) -> None:
         """
         Send the bytestream to the device
         """
         self.hidraw_device.send(bytes)
 
-    def recv_sync(self):
+    def recv_sync(self) -> bytes:
         """
         Wait until the device replies and return that bytestream
         """
         return self.hidraw_device.recv()
 
-    def send_and_recv_sync(self, bytes):
+    def send_and_recv_sync(self, bytes: bytes) -> bytes:
         """
         Send a bytestream to the device and wait for a reply that matches our
         message. Note that messages that are not a reply to our message are
@@ -533,12 +533,13 @@ class Hidpp20Driver(ratbag.drivers.Driver):
         pass
 
 
-def load_driver(driver_name):
+def load_driver(driver_name: str) -> ratbag.drivers.Driver:
     """
     :meta private:
     """
     assert driver_name == "hidpp20"
     return Hidpp20Driver()
+
 
 ################################################################################
 #

@@ -78,7 +78,7 @@ class Spec(object):
     than 1, the resulting attribute is a list with ``repeat`` elements (each
     element may be tuple, see ``format``).
     """
-    convert_to_data: Optional[Callable[[bytes, Any, int], Any]] = attr.ib(default=None)
+    convert_to_data: Optional[Callable[[bytes, Any, int], Any]] = attr.ib(default=None, validator=attr.validators.is_callable())
     """
     Conversion function of this attribute to data. This function takes the
     data bytes produced so far by :meth:`Parser.from_object` and the current

@@ -394,24 +394,6 @@ class Hidpp20Device(GObject.Object):
         """
         return self.hidraw_device.recv()
 
-    def send_and_recv_sync(self, bytes: bytes) -> bytes:
-        """
-        Send a bytestream to the device and wait for a reply that matches our
-        message. Note that messages that are not a reply to our message are
-        discarded.
-        """
-        self.send(bytes)
-
-        while True:
-            reply = self.recv_sync()
-            if reply is None:
-                break
-
-            if (reply.sub_id, reply.address) == (message.sub_id, message.address):
-                break
-
-        return reply
-
 
 class Hidpp20Driver(ratbag.drivers.Driver):
     """

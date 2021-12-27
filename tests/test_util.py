@@ -104,3 +104,61 @@ def test_add_to_sparse_tuple():
     assert t == ("a", "b", "c", "d")
     t = ratbag.util.add_to_sparse_tuple(t, 4, "e")
     assert t == ("a", "b", "c", "d", "e")
+
+
+def test_parser():
+    from ratbag.parser import Parser, Spec
+
+    data = bytes(range(16))
+    spec = [
+        Spec("B", "zero"),
+        Spec("B", "first"),
+        Spec("H", "second", endian="BE"),
+        Spec("H", "third", endian="le"),
+        Spec("BB", "tuples", repeat=5),
+    ]
+
+    result = Parser.to_object(data, spec)
+
+    assert result.size == 16
+    assert result.object.zero == 0x0
+    assert result.object.first == 0x1
+    assert result.object.second == 0x0203
+    assert result.object.third == 0x0504
+    assert result.object.tuples == [(6, 7), (8, 9), (10, 11), (12, 13), (14, 15)]
+    reverse = Parser.from_object(result.object, spec)
+    assert reverse == data[: result.size]
+
+    data = bytes(range(16))
+    spec = [Spec("BBB", "list")]
+    result = Parser.to_object(data, spec)
+    assert result.size == 3
+    assert result.object.list == (0, 1, 2)
+    reverse = Parser.from_object(result.object, spec)
+    assert reverse == data[: result.size]
+
+    data = bytes(range(16))
+    spec = [Spec("BBB", "list", repeat=3)]
+    result = Parser.to_object(data, spec)
+    assert result.size == 9
+    assert result.object.list == [(0, 1, 2), (3, 4, 5), (6, 7, 8)]
+    reverse = Parser.from_object(result.object, spec)
+    assert reverse == data[: result.size]
+
+    data = bytes(range(16))
+    spec = [Spec("H", "?"), Spec("BBB", "_", repeat=3)]
+    result = Parser.to_object(data, spec)
+    assert result.size == 11
+    reverse = Parser.from_object(result.object, spec)
+    assert reverse == bytes([0] * 11)
+
+    data = bytes(range(16))
+    spec = [
+        Spec("H", "something"),
+        Spec("BBB", "other", repeat=3),
+        Spec("H", "map_me", convert_to_data=lambda bs, v, idx: sum(bs)),
+    ]
+    result = Parser.to_object(data, spec)
+    assert result.size == 13
+    reverse = Parser.from_object(result.object, spec)
+    assert reverse[-2] << 8 | reverse[-1] == sum(range(11))

@@ -161,7 +161,7 @@ def test_parser():
     spec = [
         Spec("H", "something"),
         Spec("BBB", "other", repeat=3),
-        Spec("H", "map_me", convert_to_data=lambda bs, v, idx: sum(bs)),
+        Spec("H", "map_me", convert_to_data=lambda arg: sum(arg.bytes)),
     ]
     result = Parser.to_object(data, spec)
     assert result.size == 13

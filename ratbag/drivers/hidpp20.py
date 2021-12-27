@@ -21,6 +21,7 @@ from gi.repository import GObject
 
 import ratbag
 from ratbag.util import as_hex
+from ratbag.parser import Parser, Spec
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ REPORT_ID_SHORT = 0x10
 REPORT_ID_LONG = 0x11
 
 
-class FeatureName(enum.Enum):
+class FeatureName(enum.IntEnum):
     ROOT = 0x0000
     FEATURE_SET = 0x0001
     DEVICE_INFO = 0x0003
@@ -315,29 +316,29 @@ class Hidpp20Device(GObject.Object):
 
     def _init_protocol_version(self) -> None:
         # Get the protocol version and our feature set
-        version = QueryProtocolVersion(self).run()
-        logger.debug(f"protocol version {version.major}.{version.minor}")
-        if version.major < 2:
+        version = QueryProtocolVersion.instance(self).run()
+        logger.debug(f"protocol version {version.reply.major}.{version.reply.minor}")
+        if version.reply.major < 2:
             raise ratbag.SomethingIsMissingError(
                 self.name, self.path, "Protocol version 2.x"
             )
         self.protocol_version = (version.major, version.minor)
 
     def _init_features(self) -> None:
-        feature_set = QueryRootGetFeature(
+        feature_set = QueryRootGetFeature.instance(
             self, FeatureName.FEATURE_SET
         ).run()  # PAGE_FEATURE_SET
         logger.debug(feature_set)
-        feature_count = QueryFeatureSetCount(self, feature_set).run()
+        feature_count = QueryFeatureSetCount.instance(self, feature_set).run()
         logger.debug(feature_count)
 
         features = []
-        for idx in range(feature_count.count):
-            query = QueryFeatureSetId(self, feature_set, idx).run()
+        for idx in range(feature_count.reply.count):
+            query = QueryFeatureSetId.instance(self, feature_set, idx).run()
             logger.debug(query)
 
-            fid = query.feature_id
-            ftype = query.feature_type
+            fid = query.reply.feature_id
+            ftype = query.reply.feature_type
 
             try:
                 name = FeatureName(fid)
@@ -356,22 +357,22 @@ class Hidpp20Device(GObject.Object):
                 self.name, self.path, "HID++2.0 feature ONBOARD_PROFILES"
             )
 
-        desc_query = QueryOnboardProfilesDesc(self).run()
+        desc_query = QueryOnboardProfilesDesc.instance(self).run()
         logger.debug(desc_query)
-        if desc_query.memory_model_id != OnboardProfile.MemoryType.G402.value:
+        if desc_query.reply.memory_model_id != OnboardProfile.MemoryType.G402.value:
             raise ratbag.SomethingIsMissingError(
                 self.name,
                 self.path,
                 f"Unsupported memory model {desc_query.memory_model_id}",
             )
-        if desc_query.macro_format_id != OnboardProfile.MacroType.G402.value:
+        if desc_query.reply.macro_format_id != OnboardProfile.MacroType.G402.value:
             raise ratbag.SomethingIsMissingError(
                 self.name,
                 self.path,
                 f"Unsupported macro format {desc_query.macro_format_id}",
             )
         try:
-            OnboardProfile.ProfileType(desc_query.profile_format_id)
+            OnboardProfile.ProfileType(desc_query.reply.profile_format_id)
         except ValueError:
             raise ratbag.SomethingIsMissingError(
                 self.name,
@@ -379,38 +380,36 @@ class Hidpp20Device(GObject.Object):
                 f"Unsupported profile format {desc_query.profile_format_id}",
             )
 
-        sector_size = desc_query.sector_size
+        sector_size = desc_query.reply.sector_size
 
-        mode_query = QueryOnboardProfilesGetMode(self).run()
+        mode_query = QueryOnboardProfilesGetMode.instance(self).run()
         logger.debug(mode_query)
-        if mode_query.mode != OnboardProfile.Mode.ONBOARD.value:
+        if mode_query.reply.mode != OnboardProfile.Mode.ONBOARD.value:
             raise ratbag.SomethingIsMissingError(
-                self.name, self.path, f"Device not in Onboard mode ({mode_query.mode})"
+                self.name,
+                self.path,
+                f"Device not in Onboard mode ({mode_query.reply.mode})",
             )
 
-        # profiles are in a format known to us, yay. Let's read the whole
-        # sector
-        mem_query = QueryOnboardProfilesMemRead(
+        mem_query = QueryOnboardProfilesMemReadSector.instance(
             self,
             OnboardProfile.Sector.USER_PROFILES_G402.value,
-            offset=0,
             sector_size=sector_size,
         ).run()
         logger.debug(mem_query)
-
         self.profiles = []
 
-        if mem_query.crc_valid:
-            for idx in range(desc_query.profile_count):
+        if mem_query.checksum == crc(mem_query.data):
+            for idx in range(desc_query.reply.profile_count):
                 profile = Profile.from_sector(mem_query.data, idx)
                 if not profile:
                     continue
 
-                profile_query = QueryOnboardProfilesMemRead(
-                    self, profile.address, offset=0, sector_size=sector_size
+                profile_query = QueryOnboardProfilesMemReadSector.instance(
+                    self, profile.address, sector_size=sector_size
                 ).run()
                 logger.debug(profile_query)
-                if not profile_query.crc_valid:
+                if profile_query.checksum != crc(profile_query.data):
                     # FIXME: libratbag reads the ROM instead in this case
                     logger.error(f"CRC validation failed for profile {idx}")
                     continue
@@ -418,6 +417,8 @@ class Hidpp20Device(GObject.Object):
                 profile.from_data(profile_query.data)
                 logger.debug(profile)
                 self.profiles.append(profile)
+        else:
+            logger.error("CRC validation failed for sector")
 
     def send(self, bytes: bytes) -> None:
         """
@@ -562,6 +563,7 @@ def load_driver(driver_name: str) -> ratbag.drivers.Driver:
 #
 
 
+@attr.s
 class Query(object):
     """
     A query against the device, consisting of a request and a reply from the
@@ -582,106 +584,71 @@ class Query(object):
     LONG_MESSAGE_LENGTH = 20
     SHORT_MESSAGE_LENGTH = 7
 
-    report_id: int = REPORT_ID_SHORT  # override if need be
-    page: Optional[
-        int
-    ] = None  # Override in subclass, self.page has precedence over class.page
-    command: Optional[
-        int
-    ] = None  # Override in subclass, self.page has precedence over class.page
+    device: Hidpp20Device = attr.ib()
+    report_id: int = attr.ib(
+        default=REPORT_ID_SHORT,
+        validator=attr.validators.in_([REPORT_ID_SHORT, REPORT_ID_LONG]),
+    )
+    page: int = attr.ib(default=0x00)
+    command: int = attr.ib(default=0x00)
+    query_spec: List[Spec] = attr.ib(default=attr.Factory(list))
+    reply_spec: List[Spec] = attr.ib(default=attr.Factory(list))
 
-    # a list of tuples that are parsed before parse_reply, see
-    # ratbag.util.attr_from_data for details
-    reply_format: Optional[List[Tuple[str, str]]] = None
+    @page.validator
+    def _check_page(self, attribute, value):
+        if value < 0 or value > 0xFF:
+            raise ValueError("page must be within 0..0xff")
 
-    def __init__(self, device):
-        # We have dynamic queries that change per-device, so we use self.page
-        # before class.page
-        cls = type(self)
-        page = getattr(self, "page", cls.page)
-        command = getattr(self, "command", cls.command)
+    @command.validator
+    def _check_command(self, attribute, value):
+        if value < 0 or value > 0xFF:
+            raise ValueError("command must be within 0..0xff")
 
-        if getattr(self, "reply_format", None) is None:
-            self.reply_format = cls.reply_format
+    def run(self):
+        self.command |= 0x8
+        self._device_index = self.device.index
 
-        assert page is not None
-        assert command is not None
-        assert page <= 0xFF
-        assert command <= 0xFF
-
-        self.device = device
         query_len = {
             REPORT_ID_LONG: Query.LONG_MESSAGE_LENGTH,
             REPORT_ID_SHORT: Query.SHORT_MESSAGE_LENGTH,
-        }[cls.report_id]
-        self.query = [0] * query_len
-        self.query[0] = cls.report_id
-        self.query[1] = device.index
-        self.query[2] = page
-        self.query[3] = command
+        }[self.report_id]
 
-    @property
-    def query_params(self):
-        """
-        Return the query parameters. Consider this a read-only variable, the
-        returned value is a list slice and modifying that slice does not
-        modify the actual query. Instead, do either of ::
+        # header is always the same
+        spec = [
+            Spec("B", "report_id"),
+            Spec("B", "_device_index"),
+            Spec("B", "page"),
+            Spec("B", "command"),
+        ] + self.query_spec
+        query = Parser.from_object(self, spec, pad_to=query_len)
+        self.command &= ~0x8
 
-            self.query_params = [1, 2, 3]  # 0-padded to message length
-            self.set_query_params([1, 2, 3], offset=0)
-        """
-        return self.query[4:]
+        self._repeat = True
+        while self._repeat:
+            self._repeat = False
+            self.device.send(bytes(query))
+            reply = self.device.recv_sync()
 
-    @query_params.setter
-    def query_params(self, params):
-        assert len(params) <= len(self.query_params)
-        self.query = (
-            self.query[:4] + params + [0] * (len(self.query_params) - len(params))
-        )
+            if reply[2] == 0x8F:
+                raise QueryError(self.device, self.bytes)
 
-    def set_query_params(self, new_values, offset=0):
-        """
-        Set the query parameters from the given offset to the new values,
-        leaving all others in place
-        """
-        assert len(new_values) + offset <= len(self.query_params)
-        for v in new_values:
-            self.query[4 + offset] = v
-            offset += 1
+            self.reply = self._autoparse(reply)
+            self.parse_reply()
+        return self
 
-    def set_query_param_be(self, value, bits=16, offset=0):
-        assert bits in [32, 16, 8]
-        shift = bits - 8
-        while True:
-            v = (value >> shift) & 0xFF
-            self.query_params[offset] = v
-            offset += 1
-            if shift == 0:
-                break
-            shift -= 8
-
-    @property
-    def reply_params(self):
-        return self.reply[4:]
-
-    def _autoparse(self):
-        if not self.reply_format:
+    def _autoparse(self, bytes):
+        if not self.reply_spec:
             return
 
-        self._autostr = ""
+        spec = [
+            Spec("B", "report_id"),
+            Spec("B", "_device_index"),
+            Spec("B", "page"),
+            Spec("B", "command"),
+        ] + self.reply_spec
 
-        endian = ">"  # default to BE
-
-        logger.debug(f"autoparse: reply: {as_hex(self.reply_params)}")
-        ratbag.util.attr_from_data(self, self.reply_format, self.reply_params, offset=0)
-
-        self._autostr = " ".join(
-            [
-                f"{name}: {getattr(self, name)}"
-                for _, name in self.reply_format
-                if name not in ["_", "?"]
-            ]
-        )
+        result = Parser.to_object(bytes, spec)
+        return result.object
 
     def parse_reply(self):
         """
@@ -694,44 +661,6 @@ class Query(object):
         ``parse_reply`` is called with the new reply data.
         """
         pass
-
-    def schedule_repeat(self):
-        """
-        Call this from parse_reply if the same command should be issued again
-        to the device. This will call into parse_reply again
-        """
-        self._repeat = True
-
-    def run(self):
-        """
-        Send the request to the device, wait synchronously for the reply to
-        return.
-
-        :return: this Query object
-        """
-        # address is 4 bit MBS: subcommand, 4 bit LSB: SW identifier so the
-        # device knows who to respond to. Kernel uses 0x1
-        assert self.query[3] & 0xF == 0, "Error: SW address is already set"
-        self.query[3] |= 0x8
-
-        self._repeat = True
-        while self._repeat:
-            self._repeat = False
-            self.device.send(bytes(self.query))
-            self.reply = self.device.recv_sync()
-
-            if self.reply[2] == 0x8F:
-                raise QueryError(self.device, self.bytes)
-
-            self._autoparse()
-            self.parse_reply()
-        return self
-
-    def __str__(self):
-        try:
-            return f"{type(self).__name__}: {self._autostr}"
-        except AttributeError:
-            return str(super())
 
 
 class QueryError(Exception):
@@ -762,192 +691,232 @@ class QueryError(Exception):
         self.command = bytes[4]
 
 
+@attr.s
 class QueryProtocolVersion(Query):
-    """
-    .. attribute: major
+    major: int = attr.ib(default=0)
+    minor: int = attr.ib(default=0)
+
+    @classmethod
+    def instance(cls, device):
+        return cls(
+            device=device,
+            page=FeatureName.ROOT.value,
+            command=0x10,
+            # no query spec
+            reply_spec=[Spec("B", "major"), Spec("B", "minor")],
+        )
 
 
-    .. attribute: minor
-    """
-
-    page = FeatureName.ROOT.value
-    command = 0x10  # GET_PROTOCOL_VERSION
-    reply_format = [
-        ("B", "major"),
-        ("B", "minor"),
-    ]
-
-    def __init__(self, device):
-        super().__init__(device)
-        self.version = (0, 0)
-
-
+@attr.s
 class QueryRootGetFeature(Query):
-    page = FeatureName.ROOT.value
-    command = 0x00  # GET_FEATURE
-    reply_format = [
-        ("B", "feature_index"),
-        ("B", "feature_type"),
-        ("B", "feature_version"),
-    ]
+    feature: FeatureName = attr.ib(default=FeatureName.ROOT)
 
-    def __init__(self, device, feature):
-        super().__init__(device)
-        self.feature = feature
-        self.feature_index = None
-        self.feature_type = None
-        self.feature_version = None
-        fbytes = int.to_bytes(feature.value, 2, "big", signed=False)
-        self.set_query_params(list(fbytes))
+    @classmethod
+    def instance(cls, device, feature):
+        return cls(
+            device=device,
+            feature=feature,
+            page=FeatureName.ROOT.value,
+            command=0x00,  # GET_FEATURE
+            query_spec=[
+                Spec("H", "feature", convert_to_data=lambda arg: int(arg.value)),
+            ],
+            reply_spec=[
+                Spec("B", "feature_index"),
+                Spec("B", "feature_type"),
+                Spec("B", "feature_version"),
+            ],
+        )
 
     def __str__(self):
         return (
             f"{type(self).__name__}: {self.feature.name} (0x{self.feature.value:04x}) at index {self.feature_index}, "
-            f"type {self.feature_type} "
-            f"version {self.feature_version}"
+            f"type {self.reply.feature_type} "
+            f"version {self.reply.feature_version}"
         )
 
 
+@attr.s
 class QueryFeatureSetCount(Query):
-    page = None  # Note: dynamic page depending on feature index
-    command = 0x00  # GET_COUNT
-    reply_format = [("B", "count")]
+    feature: FeatureName = attr.ib(default=FeatureName.ROOT)
 
-    def __init__(self, device, root_feature_query):
-        self.page = root_feature_query.feature_index
-        super().__init__(device)
-        self.feature = root_feature_query.feature
-        self.count = None
+    @classmethod
+    def instance(cls, device, root_feature_query):
+        return cls(
+            device=device,
+            page=root_feature_query.reply.feature_index,
+            command=0x00,  # GET_COUNT
+            feature=root_feature_query.feature,
+            # no query spec
+            reply_spec=[Spec("B", "count")],
+        )
 
     def parse_reply(self):
         # feature set count does not include the root feature as documented
         # here:
         # https://6xq.net/git/lars/lshidpp.git/plain/doc/logitech_hidpp_2.0_specificati
         if self.feature == FeatureName.FEATURE_SET:
-            self.count += 1
+            self.reply.count += 1
 
     def __str__(self):
-        return f"{type(self).__name__}: {self.feature.name} (0x{self.feature.value:04x}) count {self.count}"
+        return f"{type(self).__name__}: {self.feature.name} (0x{self.feature.value:04x}) count {self.reply.count}"
 
 
+@attr.s
 class QueryFeatureSetId(Query):
-    page = None  # Note: dynamic page depending on feture index
-    command = 0x10  # GET_FEATURE_ID
-    reply_format = [
-        ("H", "feature_id"),
-        ("B", "feature_type"),
-    ]
+    feature_index: int = attr.ib(default=0x00)
 
-    def __init__(self, device, root_feature_query, index):
-        self.page = root_feature_query.feature_index
-        super().__init__(device)
-        self.feature = root_feature_query.feature
-        self.feature_id = None
-        self.feature_type = None
-        self.query_params = [index]
-
-    def __parse_reply(self):
-        feature_value = int.from_bytes(self.reply_params[:2], byteorder="big")
-        self.feature_id = feature_value
-        self.feature_type = self.reply_params[2]
-
-
-class QueryOnboardProfilesDesc(Query):
-    page = None  # feature index
-    command = 0x00
-    reply_format = [
-        ("B", "memory_model_id"),
-        ("B", "profile_format_id"),
-        ("B", "macro_format_id"),
-        ("B", "profile_count"),
-        ("B", "profile_count_oob"),
-        ("B", "button_count"),
-        ("B", "sector_count"),
-        ("H", "sector_size"),
-        ("B", "mechanical_layout"),
-        ("B", "various_info"),
-        ("ccccc", "_"),
-    ]
-
-    def __init__(self, device):
-        self.page = device.features[FeatureName.ONBOARD_PROFILES].index
-        super().__init__(device)
-
-    def parse_reply(self):
-        self.has_g_shift = (self.mechanical_layout & 0x03) == 0x02
-        self.has_dpi_shift = ((self.mechanical_layout & 0x0C) >> 2) == 0x02
-        self.is_corded = (self.various_info & 0x07) in [1, 4]
-        self.is_wireless = (self.various_info & 0x07) in [2, 4]
-
-    def __str__(self):
-        return (
-            f"{type(self).__name__}: memmodel {self.memory_model_id}, "
-            f"profilefmt {self.profile_format_id}, macrofmt {self.macro_format_id}, "
-            f"profilecount {self.profile_count} oob {self.profile_count_oob}, "
-            f"buttons {self.button_count}, "
-            f"sectors {self.sector_count}@{self.sector_size} bytes, "
-            f"mechlayout {self.mechanical_layout}, various {self.various_info}, "
-            f"gshift {self.has_g_shift} dpishift {self.has_dpi_shift}, "
-            f"corded {self.is_corded} wireless {self.is_wireless}"
+    @classmethod
+    def instance(cls, device, root_feature_query, index):
+        return cls(
+            device=device,
+            page=root_feature_query.reply.feature_index,
+            command=0x10,  # GET_FEATURE_ID
+            feature_index=index,
+            query_spec=[Spec("B", "feature_index")],
+            reply_spec=[
+                Spec("H", "feature_id"),
+                Spec("B", "feature_type"),
+            ],
         )
 
 
-class QueryOnboardProfilesGetMode(Query):
-    page = None  # feature index
-    command = 0x20
-    reply_format = [("B", "mode")]
-
-    def __init__(self, device):
-        self.page = device.features[FeatureName.ONBOARD_PROFILES].index
-        super().__init__(device)
-
-
-class QueryOnboardProfilesMemRead(Query):
-    report_id = REPORT_ID_LONG
-    page = None
-    command = 0x50
-
-    def __init__(self, device, sector, offset=0, sector_size=16):
-        assert sector <= 0xFFFF
-        self.page = device.features[FeatureName.ONBOARD_PROFILES].index
-        super().__init__(device)
-        s = int.to_bytes(sector, 2, "big", signed=False)
-        self.set_query_params(s, offset=0)
-        self._initial_offset = offset
-        self._offset = offset
-        self._sector_size = sector_size
-        self._prep_for_run()
-        self.data = bytes()
-        self.crc_valid = False
-
-    def _prep_for_run(self):
-        off = int.to_bytes(self._offset, 2, "big", signed=False)
-        self.set_query_params(off, offset=2)
+@attr.s
+class QueryOnboardProfilesDesc(Query):
+    @classmethod
+    def instance(cls, device):
+        return cls(
+            device=device,
+            page=device.features[FeatureName.ONBOARD_PROFILES].index,
+            command=0x00,
+            # no query spec
+            reply_spec=[
+                Spec("B", "memory_model_id"),
+                Spec("B", "profile_format_id"),
+                Spec("B", "macro_format_id"),
+                Spec("B", "profile_count"),
+                Spec("B", "profile_count_oob"),
+                Spec("B", "button_count"),
+                Spec("B", "sector_count"),
+                Spec("H", "sector_size"),
+                Spec("B", "mechanical_layout"),
+                Spec("B", "various_info"),
+                Spec("ccccc", "_"),
+            ],
+        )
 
     def parse_reply(self):
-        # Shorten back to offset bytes so we overwrite the last 16 bytes, see
-        # comment below
-        if self._offset < len(self.data):
-            self.data = bytes(list(self.data[: self._offset]))
-        self.data += self.reply_params
-        self._offset += 16
-        if self._offset < self._sector_size:
-            # The firmware replies with an ERR_INVALID_ARGUMENT if we try to
-            # read past sector_size, so when we are left with less than 16
-            # bytes to read we start reading from sector_size - 16
-            if self._sector_size - self._offset < 16:
-                self._offset = self._sector_siZe - 16
-            self._prep_for_run()
-            self.schedule_repeat()
-
-        # The CRC is stored in the last two bytes of the sector, so we only
-        # calculate it if we read those two bytes *and* we have enough data to
-        # actually caculate the crc
-        if len(self.data) >= self._sector_size:
-            expected_crc = self.data[self._sector_size - 2 : 2]
-            self.crc_valid = crc(list(self.data)) == int.from_bytes(
-                expected_crc, byteorder="big"
-            )
+        self.reply.has_g_shift = (self.reply.mechanical_layout & 0x03) == 0x02
+        self.reply.has_dpi_shift = ((self.reply.mechanical_layout & 0x0C) >> 2) == 0x02
+        self.reply.is_corded = (self.reply.various_info & 0x07) in [1, 4]
+        self.reply.is_wireless = (self.reply.various_info & 0x07) in [2, 4]
 
     def __str__(self):
-        return f"{type(self).__name__}: {len(self.data)} bytes from offset {self._initial_offset} (crc: {self.crc_valid})"
+        return (
+            f"{type(self).__name__}: memmodel {self.reply.memory_model_id}, "
+            f"profilefmt {self.reply.profile_format_id}, macrofmt {self.reply.macro_format_id}, "
+            f"profilecount {self.reply.profile_count} oob {self.reply.profile_count_oob}, "
+            f"buttons {self.reply.button_count}, "
+            f"sectors {self.reply.sector_count}@{self.reply.sector_size} bytes, "
+            f"mechlayout {self.reply.mechanical_layout}, various {self.reply.various_info}, "
+            f"gshift {self.reply.has_g_shift} dpishift {self.reply.has_dpi_shift}, "
+            f"corded {self.reply.is_corded} wireless {self.reply.is_wireless}"
+        )
+
+
+@attr.s
+class QueryOnboardProfilesGetMode(Query):
+    @classmethod
+    def instance(cls, device):
+        return cls(
+            device=device,
+            page=device.features[FeatureName.ONBOARD_PROFILES].index,
+            command=0x20,
+            # no query spec
+            reply_spec=[Spec("B", "mode")],
+        )
+
+
+@attr.s
+class QueryOnboardProfilesMemRead(Query):
+    sector: int = attr.ib(default=0)
+    offset: int = attr.ib(default=0)
+
+    @sector.validator
+    def _check_sector(self, attribute, value):
+        if value < 0 or value > 0xFFFF:
+            raise ValueError("sector must be within 0..0xffff")
+
+    @offset.validator
+    def _check_offset(self, attribute, value):
+        if value < 0:
+            raise ValueError("offset must be within 0..0xffff")
+
+    @classmethod
+    def instance(cls, device, sector: int, sector_size: int, offset: int):
+        # The firmware replies with an ERR_INVALID_ARGUMENT if we try to
+        # read past sector_size, so when we are left with less than 16
+        # bytes to read we start reading from sector_size - 16
+        #
+        # 16 == LONG_MESSAGE_LENGTH minus 4 byte header
+        if offset > sector_size - 16:
+            raise ValueError(f"Invalid offset {offset} for sector size {sector_size}")
+        return cls(
+            device=device,
+            report_id=REPORT_ID_LONG,
+            page=device.features[FeatureName.ONBOARD_PROFILES].index,
+            command=0x50,
+            query_spec=[
+                Spec("H", "sector"),
+                Spec("H", "offset"),
+            ],
+            reply_spec=[Spec("B", "data", repeat=16)],
+            sector=sector,
+            offset=offset,
+        )
+
+
+@attr.s
+class QueryOnboardProfilesMemReadSector(Query):
+    _queries = attr.ib(default=attr.Factory(list))
+
+    @classmethod
+    def instance(cls, device, sector: int, sector_size: int):
+        # Note: this class is a helper around the need for sending multiple
+        # queries to the device to get the full sector. Our instance() method
+        # returns a wrapper class that contains all actual queries, when
+        # calling run() those queries are executed and their data is combined
+        # into a single object again.
+
+        # 16 == LONG_MESSAGE_LENGTH minus 4 byte header
+        offset_range = list(range(0, sector_size, 16))
+        # The firmware replies with an ERR_INVALID_ARGUMENT if we try to
+        # read past sector_size, so when we are left with less than 16
+        # bytes to read we start reading from sector_size - 16
+        offset_range[-1] = min(offset_range[-1], sector_size - 16)
+        queries = [
+            QueryOnboardProfilesMemRead.instance(
+                device, sector=sector, sector_size=sector_size, offset=off
+            )
+            for off in offset_range
+        ]
+        return QueryOnboardProfilesMemReadSector(
+            device=device,
+            queries=queries,
+        )
+
+    def run(self):
+        queries = map(lambda x: x.run(), sorted(self._queries, key=lambda x: x.offset))
+        data = []
+        for query in queries:
+            # The special offset handling at the end
+            skip_index = len(data) - query.offset
+            data.extend(query.reply.data[skip_index:])
+
+        obj = Parser.to_object(
+            bytes(data),
+            specs=[Spec("B" * (len(data) - 2), "data"), Spec("H", "checksum")],
+        ).object
+
+        obj.data = bytes(obj.data)
+        return obj

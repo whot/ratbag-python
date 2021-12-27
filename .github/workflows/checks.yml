@@ -11,7 +11,7 @@ jobs:
         uses: libratbag/libratbag/.github/actions/pkginstall@master
         with:
           apt: pkg-config python3-pip python3-gi libgirepository1.0-dev
-          pip: black pyudev pygobject git+https://gitlab.freedesktop.org/libevdev/hid-tools
+          pip: attrs black pyudev pygobject git+https://gitlab.freedesktop.org/libevdev/hid-tools
       - name: run Python black
         run: git ls-files | grep ".py" | xargs black
       - name: diff for changes
@@ -25,7 +25,7 @@ jobs:
         uses: libratbag/libratbag/.github/actions/pkginstall@master
         with:
           apt: pkg-config python3-pip python3-gi libgirepository1.0-dev libevdev2
-          pip: pytest pyudev pygobject libevdev git+https://gitlab.freedesktop.org/libevdev/hid-tools
+          pip: attrs pytest pyudev pygobject libevdev git+https://gitlab.freedesktop.org/libevdev/hid-tools
       - name: run test suite
         run: pytest -v
 
@@ -37,7 +37,7 @@ jobs:
         uses: libratbag/libratbag/.github/actions/pkginstall@master
         with:
           apt: pkg-config python3-pip python3-gi libgirepository1.0-dev libevdev2
-          pip: mypy pytest pyudev pygobject libevdev git+https://gitlab.freedesktop.org/libevdev/hid-tools
+          pip: attrs mypy pytest pyudev pygobject libevdev git+https://gitlab.freedesktop.org/libevdev/hid-tools
       - name: install mypy types
         run: mypy --non-interactive --install-types ratbag tests
       - name: run test suite

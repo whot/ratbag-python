@@ -55,6 +55,12 @@ class _ResultObject(object):
 
 @attr.s
 class Spec(object):
+    @attr.s
+    class ConverterArg:
+        bytes: bytes = attr.ib()
+        value: Any = attr.ib()
+        index: int = attr.ib()
+
     """
     The format specification for a single **logical** in a data set.
     """
@@ -78,7 +84,7 @@ class Spec(object):
     than 1, the resulting attribute is a list with ``repeat`` elements (each
     element may be tuple, see ``format``).
     """
-    convert_to_data: Optional[Callable[[bytes, Any, int], Any]] = attr.ib(default=None, validator=attr.validators.is_callable())
+    convert_to_data: Optional[Callable[[ConverterArg], Any]] = attr.ib(default=None)
     """
     Conversion function of this attribute to data. This function takes the
     data bytes produced so far by :meth:`Parser.from_object` and the current
@@ -197,7 +203,9 @@ class Parser(object):
                 else:
                     val = getattr(obj, spec.name)
                     if spec.convert_to_data is not None:
-                        val = spec.convert_to_data(data[:offset], val, idx)
+                        val = spec.convert_to_data(
+                            Spec.ConverterArg(data[:offset], val, idx)
+                        )
 
                 if spec.repeat > 1:
                     val = val[idx]

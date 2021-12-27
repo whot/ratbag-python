@@ -152,6 +152,11 @@ def test_parser():
     reverse = Parser.from_object(result.object, spec)
     assert reverse == bytes([0] * 11)
 
+    reverse = Parser.from_object(result.object, spec, pad_to=50)
+    assert reverse == bytes([0] * 50)
+    reverse = Parser.from_object(result.object, spec, pad_to=1)
+    assert reverse == bytes([0] * 11)
+
     data = bytes(range(16))
     spec = [
         Spec("H", "something"),

@@ -446,15 +446,7 @@ class Hidpp20Driver(ratbag.drivers.Driver):
         self.device = Hidpp20Device(self.hidraw_device, self.index)
 
         for rec in self.recorders:
-
-            def cb_logtx(device, data):
-                rec.log_tx(data)
-
-            def cb_logrx(device, data):
-                rec.log_rx(data)
-
-            self.hidraw_device.connect("data-from-device", cb_logrx)
-            self.hidraw_device.connect("data-to-device", cb_logtx)
+            self.hidraw_device.connect_to_recorder(rec)
             rec.init(
                 {
                     "name": self.device.name,
@@ -470,7 +462,12 @@ class Hidpp20Driver(ratbag.drivers.Driver):
         # Device probe/start was successful if no exception occurs. Now fill in the
         # ratbag device.
         for idx, profile in enumerate(self.device.profiles):
-            p = ratbag.Profile(self.ratbag_device, idx, name=profile.name)
+            p = ratbag.Profile(
+                self.ratbag_device,
+                idx,
+                name=profile.name,
+                report_rate=profile.report_rate,
+            )
             for dpi_idx, dpi in enumerate(profile.dpi):
                 ratbag.Resolution(p, dpi_idx, (dpi, dpi))
         self.emit("device-added", self.ratbag_device)

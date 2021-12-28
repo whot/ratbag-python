@@ -119,6 +119,8 @@ class Profile(object):
     The memory address where this profile resides
     """
     enabled: bool = attr.ib(default=False)
+    dpi_list: List[int] = attr.ib(default=attr.Factory(list))
+    report_rates: List[int] = attr.ib(default=attr.Factory(list))
     data: bytes = attr.ib(default=bytes())
     """
     The initial data this profile was created from. This data is constant
@@ -370,11 +372,43 @@ class Hidpp20Device(GObject.Object):
                     logger.error(f"CRC validation failed for profile {idx}")
                     continue
 
+                if FeatureName.ADJUSTIBLE_DPI in self.features:
+                    scount_query = QueryAdjustibleDpiGetCount.instance(self).run()
+                    # FIXME: there's a G602 quirk for the two queries in
+                    # libratbag
+                    for idx in range(scount_query.reply.sensor_count):
+                        dpi_list_query = QueryAdjustibleDpiGetDpiList.instance(
+                            self, idx
+                        ).run()
+                        logger.debug(dpi_list_query)
+                        if dpi_list_query.reply.dpi_steps:
+                            steps = dpi_list_query.reply.dpi_steps
+                            dpi_min = min(dpi_list_query.reply.dpis)
+                            dpi_max = max(dpi_list_query.reply.dpis)
+                            dpi_list = list(range(dpi_min, dpi_max + 1, steps))
+                        else:
+                            dpi_list = dpi_list_query.reply.dpis
+
+                        dpi_query = QueryAdjustibleDpiGetDpi.instance(self, idx).run()
+                        logger.debug(dpi_query)
+                else:
+                    dpi_list = []
+
+                # FIXME: this should only be run once per device, no need to
+                # run this per-profile
+                if FeatureName.ADJUSTIBLE_REPORT_RATE in self.features:
+                    rates_query = QueryAdjustibleReportRateGetList.instance(self).run()
+                    report_rates = rates_query.reply.report_rates
+                else:
+                    report_rates = []
+
                 profile = Profile.from_data(
                     address=profile_address.address,
                     enabled=profile_address.enabled,
                     data=profile_query.data,
                 )
+                profile.dpi_list = dpi_list
+                profile.report_rates = report_rates
                 logger.debug(profile)
                 self.profiles.append(profile)
         else:
@@ -467,9 +501,10 @@ class Hidpp20Driver(ratbag.drivers.Driver):
                 idx,
                 name=profile.name,
                 report_rate=profile.report_rate,
+                report_rates=profile.report_rates,
             )
             for dpi_idx, dpi in enumerate(profile.dpi):
-                ratbag.Resolution(p, dpi_idx, (dpi, dpi))
+                ratbag.Resolution(p, dpi_idx, (dpi, dpi), dpi_list=profile.dpi_list)
         self.emit("device-added", self.ratbag_device)
 
     def cb_commit(self, device):
@@ -859,3 +894,104 @@ class QueryOnboardProfilesMemReadSector(Query):
 
         obj.data = bytes(obj.data)
         return obj
+
+
+@attr.s
+class QueryAdjustibleDpiGetCount(Query):
+    @classmethod
+    def instance(cls, device):
+        return cls(
+            device=device,
+            page=device.features[FeatureName.ADJUSTIBLE_DPI].index,
+            command=0x00,  # GET_SENSOR_COUNT
+            # no query spec
+            reply_spec=[Spec("B", "sensor_count")],
+        )
+
+    def __str__(self):
+        return f"{type(self).__name__}: sensor-count {self.reply.sensor_count}"
+
+
+@attr.s
+class QueryAdjustibleDpiGetDpiList(Query):
+    sensor_index: int = attr.ib(default=0)
+
+    @classmethod
+    def instance(cls, device, sensor_index):
+        # FIXME: check
+        return cls(
+            device=device,
+            page=device.features[FeatureName.ADJUSTIBLE_DPI].index,
+            command=0x10,  # GET_SENSOR_DPI_LIST
+            query_spec=[Spec("B", "sensor_index")],
+            reply_spec=[
+                Spec("B", "sensor_index"),
+                Spec("H" * 7, "values", endian="BE"),
+            ],
+        )
+
+    def parse_reply(self):
+        # FIXME: libratbag has a G602 quirk here for the handling
+        try:
+            self.reply.dpi_steps = [
+                v - 0xE000 for v in self.reply.values if v > 0xE000
+            ][0]
+        except IndexError:
+            self.reply.dpi_steps = 0
+        self.reply.dpis = sorted([v for v in self.reply.values if 0 < v < 0xE000])
+
+    def __str__(self):
+        return f"{type(self).__name__}: sensor-index {self.reply.sensor_index} dpis {self.reply.dpis} steps {self.reply.dpi_steps}"
+
+
+@attr.s
+class QueryAdjustibleDpiGetDpi(Query):
+    sensor_index: int = attr.ib(default=0)
+
+    @classmethod
+    def instance(cls, device, sensor_index):
+        return cls(
+            device=device,
+            page=device.features[FeatureName.ADJUSTIBLE_DPI].index,
+            command=0x20,  # GET_SENSOR_DPI
+            query_spec=[Spec("B", "sensor_index")],
+            reply_spec=[
+                Spec("B", "sensor_index"),
+                Spec("H", "dpi", endian="BE"),
+                Spec("H", "default_dpi", endian="BE"),
+            ],
+        )
+
+    def __str__(self):
+        return f"{type(self).__name__}: sensor-index {self.reply.sensor_index} dpi {self.reply.dpi} default_dpi {self.reply.default_dpi}"
+
+
+@attr.s
+class QueryAdjustibleReportRateGetList(Query):
+    @classmethod
+    def instance(cls, device):
+        return cls(
+            device=device,
+            page=device.features[FeatureName.ADJUSTIBLE_REPORT_RATE].index,
+            command=0x00,  # LIST
+            # no query spec
+            reply_spec=[
+                Spec("B", "flags"),
+            ],
+        )
+
+    def parse_reply(self):
+        # we only care about 'standard' rates
+        rates = []
+        if self.reply.flags & 0x80:
+            rates.append(125)
+        if self.reply.flags & 0x8:
+            rates.append(250)
+        if self.reply.flags & 0x2:
+            rates.append(500)
+        if self.reply.flags & 0x1:
+            rates.append(1000)
+        self.reply.report_rates = rates
+
+    def __str__(self):
+        return f"{type(self).__name__}: report-rates {self.reply.report_rates}"

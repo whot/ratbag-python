@@ -129,8 +129,8 @@ class Profile(object):
     """
 
     @property
-    def report_rate(self):
-        return 1000 / max(1, self._report_rate)
+    def report_rate(self) -> int:
+        return 1000 // max(1, self._report_rate)
 
     @property
     def name(self):

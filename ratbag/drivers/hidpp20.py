@@ -133,7 +133,7 @@ class Profile(object):
         return 1000 // max(1, self._report_rate)
 
     @property
-    def name(self):
+    def name(self) -> str:
         try:
             self._name.index(b"\xff")  # type: ignore
         except ValueError:
@@ -229,7 +229,7 @@ class Hidpp20Device(GObject.Object):
         A list of :class:`Profile` instances
     """
 
-    def __init__(self, hidraw_device, device_index):
+    def __init__(self, hidraw_device: ratbag.drivers.Rodent, device_index: int):
         GObject.Object.__init__(self)
         self.index = device_index
         self.hidraw_device = hidraw_device
@@ -348,6 +348,8 @@ class Hidpp20Device(GObject.Object):
                 self.path,
                 f"Device not in Onboard mode ({mode_query.reply.mode})",
             )
+            # FIXME: set the device to onboard mode here instead of throwing
+            # an exception
 
         mem_query = QueryOnboardProfilesMemReadSector.instance(
             self,
@@ -420,7 +422,7 @@ class Hidpp20Device(GObject.Object):
         """
         self.hidraw_device.send(bytes)
 
-    def recv_sync(self) -> bytes:
+    def recv_sync(self) -> Optional[bytes]:
         """
         Wait until the device replies and return that bytestream
         """

@@ -42,3 +42,15 @@ jobs:
         run: mypy --non-interactive --install-types ratbag tests
       - name: run test suite
         run: mypy ratbag tests
+
+  doctest:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        uses: libratbag/libratbag/.github/actions/pkginstall@master
+        with:
+          apt: pkg-config python3-pip python3-gi libgirepository1.0-dev libevdev2
+          pip: attrs mypy pytest pyudev pygobject libevdev git+https://gitlab.freedesktop.org/libevdev/hid-tools
+      - name: run doctest
+        run: python -m doctest $(git ls-files)

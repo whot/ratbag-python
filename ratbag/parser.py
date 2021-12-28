@@ -7,28 +7,29 @@
 """
 A Parser helper function to convert a byte array to a Python object and the
 other way around. The conversion is specified in a list of :class:`Spec`
-instances, for example::
+instances, for example: ::
 
-    data = bytes(range(16))
-    spec = [
-        Spec("B", "zero"),
-        Spec("B", "first"),
-        Spec("H", "second", endian="BE"),
-        Spec("H", "third", endian="le"),
-        Spec("BB", "tuples", repeat=5)
-    ]
-    result = Parser.to_object(data, spec)
-    assert result.size == len(data)
-    assert result.object.zero == 0
-    assert result.object.one == 0x1
-    assert result.object.second == 0x0203
-    assert result.object.third == 0x0504 # little endian
-    assert result.object.tuples == [(6, 7), (8, 9), (10, 11), (12, 13), (14, 15)]
+    >>> data = bytes(range(16))
+    >>> spec = [
+    ...     Spec("B", "zero"),
+    ...     Spec("B", "first"),
+    ...     Spec("H", "second", endian="BE"),
+    ...     Spec("H", "third", endian="le"),
+    ...     Spec("BB", "tuples", repeat=5)
+    ... ]
+    ...
+    >>> result = Parser.to_object(data, spec)
+    >>> assert result.size == len(data)
+    >>> assert result.object.zero == 0
+    >>> assert result.object.first == 0x1
+    >>> assert result.object.second == 0x0203
+    >>> assert result.object.third == 0x0504 # little endian
+    >>> assert result.object.tuples == [(6, 7), (8, 9), (10, 11), (12, 13), (14, 15)]
 
 And likewise, an object can be turned into a bytearray. ::
 
-    new_data = Parser.from_object(result.object, spec)
-    assert new_data == data
+    >>> new_data = Parser.from_object(result.object, spec)
+    >>> assert new_data == data
 
 See the :class:`Spec` documentation for details on the format.
 """
@@ -99,10 +100,10 @@ class Spec(object):
 
     An example for producing a checksum with ``some_crc()``: ::
 
-        specs = []  # other fields
-        checksum_spec("H", "checksum", convert_to_data=lambda bs, v, idx: some_crc(bs))
-        data = Parser.from_object(myobj, specs + checksum_spec)
-        assert data[-2:] == some_crc(data[:-2])
+        >>> specs = []  # other fields
+        >>> checksum_spec("H", "checksum", convert_to_data=lambda bs, v, idx: some_crc(bs))
+        >>> data = Parser.from_object(myobj, specs + checksum_spec)
+        >>> assert data[-2:] == some_crc(data[:-2])
     """
 
     _size: int = attr.ib(init=False)

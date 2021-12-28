@@ -27,7 +27,10 @@ logger_autoparse = logging.getLogger("ratbag.autoparse")
 
 def as_hex(bs: bytes) -> str:
     """
-    Convert the bytes ``bs`` to a ``"ab 12 cd 34"`` string
+    Convert the bytes ``bs`` to a ``"ab 12 cd 34"`` string. ::
+
+        >>> as_hex(bytes([1, 2, 3]))
+        '01 02 03'
     """
     if not bs:
         return "<none>"
@@ -44,14 +47,16 @@ def add_to_sparse_tuple(tpl: Tuple, index: int, new_value) -> Tuple:
         >>> t = add_to_sparse_tuple(('a', 'b'), 5, 'f')
         >>> print(t)
         ('a', 'b', None, None, None, 'f')
-        >>> t = add_to_sparse_tuple(('a', 'b'), 3, 'd')
+        >>> t = add_to_sparse_tuple(t, 3, 'd')
         >>> print(t)
         ('a', 'b', None, 'd', None, 'f')
 
      This function does not replace existing values in the tuple. ::
 
         >>> t = add_to_sparse_tuple(('a', 'b'), 0, 'A')
-        AssertionError blah blah
+        Traceback (most recent call last):
+            ...
+        AssertionError
     """
     l = [None] * max(len(tpl), index + 1)
     for i, v in enumerate(tpl):
@@ -160,10 +165,18 @@ def attr_from_data(
     Endianess defaults to BE. Prefix format with ``<`` or
     ``>`` and all **subsequent** fields use that endianess. ::
 
-        format = [("B", "nprofiles"), (">H", "checksum"), ("<H", "resolution)]
-        obj = MyObject()
-        offset = attr_from_data(obj, format, mybytes, offset=0)
-        print(obj.nprofiles)
+        >>> class MyObject(object):
+        ...     pass
+        >>> mybytes = bytes(range(16))
+        >>> format = [("B", "nprofiles"), (">H", "checksum"), ("<H", "resolution")]
+        >>> obj = MyObject()
+        >>> offset = attr_from_data(obj, format, mybytes, offset=0)
+        >>> print(obj.nprofiles)
+        0
+        >>> hex(obj.checksum)
+        '0x102'
+        >>> hex(obj.resolution)
+        '0x403'
 
     Repeating is possible by prefixing the format string with ``N*`` where
     ``N`` is an integer greater than 1.

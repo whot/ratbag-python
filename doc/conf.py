@@ -32,6 +32,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.ifconfig",
+    "sphinx.ext.doctest",
     "sphinx_autodoc_typehints",
 ]
 

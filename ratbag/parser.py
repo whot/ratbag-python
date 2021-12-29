@@ -7,7 +7,7 @@
 """
 A Parser helper function to convert a byte array to a Python object and the
 other way around. The conversion is specified in a list of :class:`Spec`
-instances, for example: ::
+instances, for example:
 
     >>> data = bytes(range(16))
     >>> spec = [
@@ -26,7 +26,7 @@ instances, for example: ::
     >>> assert result.object.third == 0x0504 # little endian
     >>> assert result.object.tuples == [(6, 7), (8, 9), (10, 11), (12, 13), (14, 15)]
 
-And likewise, an object can be turned into a bytearray. ::
+And likewise, an object can be turned into a bytearray: ::
 
     >>> new_data = Parser.from_object(result.object, spec)
     >>> assert new_data == data
@@ -56,15 +56,29 @@ class _ResultObject(object):
 
 @attr.s
 class Spec(object):
+    """
+    The format specification for a single **logical** in a data set. This is
+    used in :meth:`Parser.to_object` or :meth:`Parser.from_object` to convert
+    from or to a byte stream. For example:
+
+    - ``Spec("B", "myattr")`` is a single byte from/to an object's ``myattr``
+      property
+    - ``Spec("BB", "point")`` is a tuple of two bytes from/to an object's ``myattr``
+      property
+
+    See :meth:`Parser.to_object` and :meth:`Parser.from_object` for details.
+    """
+
     @attr.s
     class ConverterArg:
+        """
+        The argument passed to :attr:`convert_to_data`
+        """
+
         bytes: bytes = attr.ib()
         value: Any = attr.ib()
         index: int = attr.ib()
 
-    """
-    The format specification for a single **logical** in a data set.
-    """
     format: str = attr.ib()
     """
     The format, must be compatible to Python's ``struct`` format specifiers,

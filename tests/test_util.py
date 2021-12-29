@@ -15,20 +15,27 @@ import ratbag.util
 logger = logging.getLogger(__name__)
 
 
+@pytest.mark.skipif(
+    not list(pathlib.Path("/dev").glob("hidraw*")), reason="no /dev/hidraw*"
+)
 def test_find_hidraw_devices():
     devices = ratbag.util.find_hidraw_devices()
+    assert devices != []
     for device in devices:
         assert device.startswith("/dev/hidraw")
 
 
-@pytest.mark.skipif(not pathlib.Path("/dev/hidraw0").exists(), reason="no /dev/hidraw0")
+@pytest.mark.skipif(
+    not list(pathlib.Path("/dev").glob("hidraw*")), reason="no /dev/hidraw*"
+)
 def test_hidraw_info():
-    info = ratbag.util.load_device_info("/dev/hidraw0")
-    assert info["name"] is not None
-    assert info["vid"] is not None
-    assert info["pid"] is not None
-    assert info["bus"] is not None
-    assert info["report_descriptor"] is not None
+    for path in ratbag.util.find_hidraw_devices():
+        info = ratbag.util.load_device_info(path)
+        assert info["name"] is not None
+        assert info["vid"] is not None
+        assert info["pid"] is not None
+        assert info["bus"] is not None
+        assert info["report_descriptor"] is not None
 
 
 def test_attr_from_data():

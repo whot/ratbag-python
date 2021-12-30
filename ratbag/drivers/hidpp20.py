@@ -13,13 +13,11 @@ import logging
 import pathlib
 import struct
 
-import hidtools
-import hidtools.hid
-
 import gi
 from gi.repository import GObject
 
 import ratbag
+import ratbag.hid
 from ratbag.util import as_hex
 from ratbag.parser import Parser, Spec
 
@@ -243,9 +241,12 @@ class Hidpp20Device(GObject.Object):
         return self.hidraw_device.path
 
     def start(self) -> None:
-        supported = self._get_supported_report_types(
-            self.hidraw_device.report_descriptor
-        )
+        supported = [
+            id
+            for id in self.hidraw_device.report_ids["input"]
+            if id in (REPORT_ID_SHORT, REPORT_ID_LONG)
+        ]
+
         required = (REPORT_ID_SHORT, REPORT_ID_LONG)
         if not (set(supported) & set(required)):
             raise ratbag.SomethingIsMissingError(
@@ -257,20 +258,6 @@ class Hidpp20Device(GObject.Object):
         self._init_protocol_version()
         self._init_features()
         self._init_profiles()
-
-    def _get_supported_report_types(self, report_descriptor: bytes):
-        rdesc = hidtools.hid.ReportDescriptor.from_bytes(report_descriptor)
-
-        supported = []
-
-        for report in rdesc.input_reports.values():
-            for field in [
-                f for f in report.fields if (f.usage_page & 0xFF000000) == 0xFF000000
-            ]:
-                if field.report_ID in [REPORT_ID_SHORT, REPORT_ID_LONG]:
-                    supported.append(field.report_ID)
-
-        return set(supported)
 
     def _init_protocol_version(self) -> None:
         # Get the protocol version and our feature set

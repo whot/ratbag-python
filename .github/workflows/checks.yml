@@ -2,6 +2,10 @@ name: checks
 
 on: [ push, pull_request ]
 
+env:
+  UBUNTU_PACKAGES: pkg-config python3-pip python3-gi libgirepository1.0-dev libevdev2
+  PIP_PACKAGES: attrs mypy black pytest pyudev pygobject libevdev
+
 jobs:
   python-black:
     runs-on: ubuntu-20.04
@@ -10,8 +14,8 @@ jobs:
       - name: install dependencies
         uses: libratbag/libratbag/.github/actions/pkginstall@master
         with:
-          apt: pkg-config python3-pip python3-gi libgirepository1.0-dev
-          pip: attrs black pyudev pygobject git+https://gitlab.freedesktop.org/libevdev/hid-tools
+          apt: $UBUNTU_PACKAGES
+          pip: $PIP_PACKAGES
       - name: run Python black
         run: git ls-files | grep ".py" | xargs black
       - name: diff for changes
@@ -24,8 +28,8 @@ jobs:
       - name: install dependencies
         uses: libratbag/libratbag/.github/actions/pkginstall@master
         with:
-          apt: pkg-config python3-pip python3-gi libgirepository1.0-dev libevdev2
-          pip: attrs pytest pyudev pygobject libevdev git+https://gitlab.freedesktop.org/libevdev/hid-tools
+          apt: $UBUNTU_PACKAGES
+          pip: $PIP_PACKAGES
       - name: run test suite
         run: pytest -v
 
@@ -36,8 +40,8 @@ jobs:
       - name: install dependencies
         uses: libratbag/libratbag/.github/actions/pkginstall@master
         with:
-          apt: pkg-config python3-pip python3-gi libgirepository1.0-dev libevdev2
-          pip: attrs mypy pytest pyudev pygobject libevdev git+https://gitlab.freedesktop.org/libevdev/hid-tools
+          apt: $UBUNTU_PACKAGES
+          pip: $PIP_PACKAGES
       - name: install mypy types
         run: mypy --non-interactive --install-types ratbag tests
       - name: run test suite
@@ -50,7 +54,7 @@ jobs:
       - name: install dependencies
         uses: libratbag/libratbag/.github/actions/pkginstall@master
         with:
-          apt: pkg-config python3-pip python3-gi libgirepository1.0-dev libevdev2
-          pip: attrs mypy pytest pyudev pygobject libevdev git+https://gitlab.freedesktop.org/libevdev/hid-tools
+          apt: $UBUNTU_PACKAGES
+          pip: $PIP_PACKAGES
       - name: run doctest
         run: python -m doctest $(git ls-files)

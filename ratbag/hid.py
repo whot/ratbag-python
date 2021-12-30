@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 
+import attr
 import enum
 import libevdev
+import struct
+
+from typing import Dict, Iterator, Tuple
 
 
 class Collection(enum.IntEnum):
@@ -1186,3 +1190,148 @@ class _ConsumerControlEvdevMapping:
         ConsumerControl.CC_AC_DISRIBUTE_HORIZONTALLY: 0,
         ConsumerControl.CC_AC_DISTRIBUTE_VERTICALLY: 0,
     }
+
+
+@attr.frozen
+class Item:
+    class Type(enum.IntEnum):
+        MAIN = 0b0000
+        GLOBAL = 0b0100
+        LOCAL = 0b1000
+        RESERVED = 0b1100
+
+    """
+    One item as described in a HID Report Descriptor.
+    """
+    size: int = attr.ib(validator=attr.validators.in_((0, 1, 2, 4)))
+    """
+    The size in bytes, always one of 0, 1, 2, or 4
+    """
+    hid: int = attr.ib()
+    """
+    The HID usage of this field (the upper 6 bits of the prefix byte)
+    """
+    value: int = attr.ib()
+
+    @hid.validator
+    def _hid_validator(self, attribute, value):
+        if value & 0x3:
+            raise ValueError("Lowest two bits must be zero")
+
+    @property
+    def bTag(self) -> int:
+        """
+        The upper 4 bits of the prefix byte, "bTag" in the HID spec. Note that
+        this includes the lower 4 bits set to zero, so the value is
+        always >= 16.
+        """
+        return self.hid & 0b11110000
+
+    @property
+    def bType(self):
+        """
+        Returns one of :class:`Item.Type`
+        """
+        return Item.Type(self.hid & 0b00001100)
+
+
+@attr.s
+class Report:
+    class Type(enum.IntEnum):
+        INPUT = 0b10000000
+        OUTPUT = 0b10010000
+        FEATURE = 0b10110000
+
+    """
+    A HID Report as described in the Report Descriptor
+    """
+
+    report_id: int = attr.ib()
+    type: Type = attr.ib()
+    _bitsize: int = attr.ib(default=8)  # 1 byte default size for report ID
+
+    @property
+    def size(self):
+        """
+        Size in bytes
+        """
+        return self._bitsize // 8
+
+
+@attr.s
+class ReportDescriptor:
+    """
+    A minimal report descriptor parser, sufficient for the use of ratbag.
+    """
+
+    _reports: Dict[Report.Type, Dict[int, Report]] = attr.ib()
+    """
+    A tuple of the HID :class:`Report` described in this Report Descriptor
+    """
+
+    @property
+    def input_reports(self):
+        return self._reports[Report.Type.INPUT].values()
+
+    @property
+    def output_reports(self):
+        return self._reports[Report.Type.OUTPUT].values()
+
+    @property
+    def feature_reports(self):
+        return self._reports[Report.Type.FEATURE].values()
+
+    @staticmethod
+    def items(data: bytes) -> Iterator[Item]:
+        """
+        Iterate ``data``, yielding all :class:`Item` within this report
+        descriptor.
+        """
+        idx = 0
+        datalen = len(data)
+        while idx < datalen:
+            header = data[idx]
+            sz = (0, 1, 2, 4)[header & 0x3]
+            assert idx + sz < datalen
+
+            fmt = (None, "B", ">H", None, ">I")[sz]
+            if fmt is not None:
+                value = struct.unpack_from(fmt, data, idx + 1)[0]
+            else:
+                value = 0
+
+            yield Item(size=sz, hid=header & 0xFC, value=value)
+            idx += 1 + sz
+
+    @staticmethod
+    def from_bytes(data: bytes) -> "ReportDescriptor":
+        """
+        Create a new report descriptor from the given bytes array.
+        """
+        rsize = 0
+        rcount = 0
+        current_report_id = None
+        reports: Dict[Report.Type, Dict[int, Report]] = {
+            Report.Type.INPUT: {},
+            Report.Type.OUTPUT: {},
+            Report.Type.FEATURE: {},
+        }
+        for item in ReportDescriptor.items(data):
+            if item.hid == 0b10000100:  # HID Report ID
+                current_report_id = item.value
+            elif item.hid == 0b10010100:  # HID Report Count
+                rcount = item.value
+            elif item.hid == 0b01110100:  # HID Report Size
+                rsize = item.value
+            elif item.hid in (0b10000000, 0b10010000, 0b10110000):  # Hid Main Input
+                if current_report_id is None:
+                    raise NotImplementedError("This HID parser requires HID report IDs")
+                rtype = Report.Type(item.hid)
+                r = reports[rtype].get(
+                    current_report_id,
+                    Report(current_report_id, type=Report.Type(item.hid)),
+                )
+                r._bitsize += rcount * rsize
+                reports[rtype][current_report_id] = r
+
+        return ReportDescriptor(reports=reports)

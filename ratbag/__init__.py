@@ -199,7 +199,7 @@ class Ratbag(GObject.Object):
     def _add_device(self, path: str) -> None:
         try:
             info = ratbag.util.load_device_info(path)
-            driver, config = self._find_driver(path, info)
+            driver, config = self._find_driver(info)
 
             def cb_device_disconnected(device, ratbag):
                 logger.info(f"disconnected {device.name}")
@@ -232,14 +232,13 @@ class Ratbag(GObject.Object):
             logger.error(f"Unable to open device at {path}: {e}")
 
     def _find_driver(
-        self, device_path: str, info: Dict[str, Any]
+        self, info: Dict[str, Any]
     ) -> Tuple["ratbag.drivers.Driver", Dict[str, Any]]:
         """
         Load the driver assigned to the bus/VID/PID match. If a matching
         driver is found, that driver's :func:`LOAD_DRIVER_FUNC` is called with
         the *static* information about the device.
 
-        :param device_path: the path to the device node
         :param info: a dict of various info collected for this device
         :return: a tuple of ``(driver, configdict)`` for a
                 :class:`ratbag.drivers.Driver` and a config dict from the data file
@@ -279,7 +278,7 @@ class Ratbag(GObject.Object):
             # not all drivers have custom options
             driver_config = {}
 
-        logger.debug(f"Loading driver {driver_name} for {match} ({device_path})")
+        logger.debug(f"Loading driver {driver_name} for {match}")
         try:
             return self._load_driver_by_name(driver_name), driver_config
         except UnsupportedDeviceError as e:

@@ -428,6 +428,11 @@ class Hidpp20Device(GObject.Object):
         """
         return self.hidraw_device.recv()
 
+    def cb_commit(
+        self, ratbag_device: ratbag.Device, callback: ratbag.CommitCallback, cookie: str
+    ):
+        raise NotImplementedError
+
 
 class Hidpp20Driver(ratbag.drivers.Driver):
     """
@@ -456,10 +461,7 @@ class Hidpp20Driver(ratbag.drivers.Driver):
     def __init__(self):
         super().__init__()
 
-        self.device = None
-
     def probe(self, device, info, config):
-        self.config = config
         for key in ("Buttons", "DeviceIndex", "Leds", "ReportRate"):
             try:
                 val = config[key]
@@ -470,36 +472,36 @@ class Hidpp20Driver(ratbag.drivers.Driver):
         quirk = config.get("Quirk", None)
         if quirk is not None:
             try:
-                self.quirk = [x for x in Hidpp20Driver.Quirk if x.value == quirk][0]
+                quirk = [x for x in Hidpp20Driver.Quirk if x.value == quirk][0]
             except IndexError:
                 raise ratbag.ConfigError(f"Invalid quirk value '{quirk}'")
 
         # Usually we default to the receiver IDX and let the kernel sort it
         # out, but some devices need to have the index hardcoded in the data
         # files
-        self.index = config.get("deviceindex", RECEIVER_IDX)
-        self.hidraw_device = ratbag.drivers.Rodent.from_device(device)
-        self.device = Hidpp20Device(self.hidraw_device, self.index)
+        index = config.get("deviceindex", RECEIVER_IDX)
+        hidraw_device = ratbag.drivers.Rodent.from_device(device)
+        device = Hidpp20Device(hidraw_device, index)
 
         for rec in self.recorders:
-            self.hidraw_device.connect_to_recorder(rec)
+            hidraw_device.connect_to_recorder(rec)
             rec.init(
                 {
-                    "name": self.device.name,
+                    "name": device.name,
                     "driver": "hidpp20",
-                    "path": self.device.path,
-                    "report_descriptor": self.hidraw_device.report_descriptor,
+                    "path": device.path,
+                    "report_descriptor": hidraw_device.report_descriptor,
                 }
             )
 
-        self.ratbag_device = ratbag.Device(self, self.device.path, self.device.name)
-        self.ratbag_device.connect("commit", self.cb_commit)
-        self.device.start()
+        ratbag_device = ratbag.Device(self, device.path, device.name)
+        ratbag_device.connect("commit", device.cb_commit)
+        device.start()
         # Device probe/start was successful if no exception occurs. Now fill in the
         # ratbag device.
-        for idx, profile in enumerate(self.device.profiles):
+        for idx, profile in enumerate(device.profiles):
             p = ratbag.Profile(
-                self.ratbag_device,
+                ratbag_device,
                 idx,
                 name=profile.name,
                 report_rate=profile.report_rate,
@@ -507,10 +509,7 @@ class Hidpp20Driver(ratbag.drivers.Driver):
             )
             for dpi_idx, dpi in enumerate(profile.dpi):
                 ratbag.Resolution(p, dpi_idx, (dpi, dpi), dpi_list=profile.dpi_list)
-        self.emit("device-added", self.ratbag_device)
-
-    def cb_commit(self, device):
-        pass
+        self.emit("device-added", ratbag_device)
 
 
 def load_driver(driver_name: str) -> ratbag.drivers.Driver:

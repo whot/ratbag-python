@@ -28,6 +28,14 @@ ratbag.hid module
    :undoc-members:
    :show-inheritance:
 
+ratbag.parser module
+--------------------
+
+.. automodule:: ratbag.parser
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 ratbag.recorder module
 ----------------------
 

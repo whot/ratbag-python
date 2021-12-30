@@ -55,6 +55,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ratbag.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.html#module-ratbag.emulator">ratbag.emulator module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.html#ratbag-hid-module">ratbag.hid module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ratbag.html#module-ratbag.parser">ratbag.parser module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.html#module-ratbag.recorder">ratbag.recorder module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.html#module-ratbag.util">ratbag.util module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.html#module-ratbag">Module contents</a></li>
@@ -69,6 +70,7 @@
 <li class="toctree-l3"><a class="reference internal" href="ratbag.html#submodules">Submodules</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ratbag.html#module-ratbag.emulator">ratbag.emulator module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ratbag.html#ratbag-hid-module">ratbag.hid module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ratbag.html#module-ratbag.parser">ratbag.parser module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ratbag.html#module-ratbag.recorder">ratbag.recorder module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ratbag.html#module-ratbag.util">ratbag.util module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ratbag.html#module-ratbag">Module contents</a></li>
@@ -163,7 +165,7 @@ sources (system, data files, etc).</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.FeatureName">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">FeatureName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.FeatureName" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
 <p>An enumeration.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.FeatureName.ROOT">
@@ -361,72 +363,132 @@ sources (system, data files, etc).</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.crc">
 <span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">crc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.crc" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Feature">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">Feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Feature" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Feature.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.drivers.hidpp20.FeatureName" title="ratbag.drivers.hidpp20.FeatureName"><span class="pre">ratbag.drivers.hidpp20.FeatureName</span></a></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Feature.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Feature.index">
+<span class="sig-name descname"><span class="pre">index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Feature.index" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Feature.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Feature.type" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Color">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">Color</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Color" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">Color</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">red</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">green</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blue</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Color" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Color.red">
+<span class="sig-name descname"><span class="pre">red</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Color.red" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Color.green">
+<span class="sig-name descname"><span class="pre">green</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Color.green" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Color.blue">
+<span class="sig-name descname"><span class="pre">blue</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Color.blue" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Profile">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">Profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">addr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">Profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_rates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">b''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A HID++ 2.0 profile on a device.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Profile.address">
-<span class="sig-name descname"><span class="pre">address</span></span><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.address" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">address</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.address" title="Permalink to this definition"></a></dt>
 <dd><p>The memory address where this profile resides</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Profile.enabled">
-<span class="sig-name descname"><span class="pre">enabled</span></span><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.enabled" title="Permalink to this definition"></a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if enabled, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise</p>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">enabled</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.enabled" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Profile.name">
-<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.name" title="Permalink to this definition"></a></dt>
-<dd><p>The name of the profile. This name is never <code class="docutils literal notranslate"><span class="pre">None</span></code>, the driver fills
-in an autogenerated value if no name is configured on the device.</p>
-</dd></dl>
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Profile.dpi_list">
+<span class="sig-name descname"><span class="pre">dpi_list</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.dpi_list" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Profile.dpi">
-<span class="sig-name descname"><span class="pre">dpi</span></span><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.dpi" title="Permalink to this definition"></a></dt>
-<dd><p>A duple of DPI values configured for this profile</p>
-</dd></dl>
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Profile.report_rates">
+<span class="sig-name descname"><span class="pre">report_rates</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.report_rates" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Profile.data">
-<span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.data" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.data" title="Permalink to this definition"></a></dt>
 <dd><p>The initial data this profile was created from. This data is constant
 for the life of the profile and can be used to restore the profile to
 its original state.</p>
 </dd></dl>
 
-<dl class="py attribute">
+<dl class="py property">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Profile.report_rate">
-<span class="sig-name descname"><span class="pre">report_rate</span></span><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.report_rate" title="Permalink to this definition"></a></dt>
-<dd><p>The report rate in Hz</p>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">report_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.report_rate" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Profile.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.name" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Profile.from_data">
-<span class="sig-name descname"><span class="pre">from_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.from_data" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enabled</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.from_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.ProfileAddress">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">ProfileAddress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enabled</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.ProfileAddress" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.ProfileAddress.address">
+<span class="sig-name descname"><span class="pre">address</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.ProfileAddress.address" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.ProfileAddress.enabled">
+<span class="sig-name descname"><span class="pre">enabled</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.ProfileAddress.enabled" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Profile.from_sector">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_sector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Profile.from_sector" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.ProfileAddress.from_sector">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_sector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.ProfileAddress.from_sector" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -471,44 +533,61 @@ but are ignored.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Hidpp20Device.name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#ratbag.drivers.hidpp20.Hidpp20Device.name" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Hidpp20Device.name" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Hidpp20Device.path">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">path</span></span><a class="headerlink" href="#ratbag.drivers.hidpp20.Hidpp20Device.path" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Hidpp20Device.path" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Hidpp20Device.start">
 <span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Hidpp20Device.start" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Hidpp20Device.send">
 <span class="sig-name descname"><span class="pre">send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Hidpp20Device.send" title="Permalink to this definition"></a></dt>
 <dd><p>Send the bytestream to the device</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Hidpp20Device.recv_sync">
 <span class="sig-name descname"><span class="pre">recv_sync</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Hidpp20Device.recv_sync" title="Permalink to this definition"></a></dt>
 <dd><p>Wait until the device replies and return that bytestream</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Hidpp20Device.send_and_recv_sync">
-<span class="sig-name descname"><span class="pre">send_and_recv_sync</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Hidpp20Device.send_and_recv_sync" title="Permalink to this definition"></a></dt>
-<dd><p>Send a bytestream to the device and wait for a reply that matches our
-message. Note that messages that are not a reply to our message are
-discarded.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Hidpp20Driver">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">Hidpp20Driver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quirk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Hidpp20Driver" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">Hidpp20Driver</span></span><a class="headerlink" href="#ratbag.drivers.hidpp20.Hidpp20Driver" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.Driver" title="ratbag.drivers.Driver"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.Driver</span></code></a></p>
 <p>Implementation of the Logitech HID++ 2.0 protocol.</p>
 <p>Driver options supported:</p>
@@ -552,16 +631,8 @@ discarded.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Hidpp20Driver.add_recorder">
-<span class="sig-name descname"><span class="pre">add_recorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recorder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Hidpp20Driver.add_recorder" title="Permalink to this definition"></a></dt>
-<dd><p>Instruct the driver to add <code class="docutils literal notranslate"><span class="pre">recorder</span></code> to log driver communication to
-the device. It is up to the driver to determine what communication is
-notable enough to be recorder for later replay.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Hidpp20Driver.probe">
-<span class="sig-name descname"><span class="pre">probe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Hidpp20Driver.probe" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">probe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Hidpp20Driver.probe" title="Permalink to this definition"></a></dt>
 <dd><p>Probe the device for information. On success, the driver will create a
 <a class="reference internal" href="ratbag.html#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a> with at least one profile and the appropriate
 number of buttons/leds/resolutions and emit the <code class="docutils literal notranslate"><span class="pre">device-added</span></code>
@@ -596,13 +667,13 @@ sources (system, data files, etc).</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">Query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Query" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">Query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Query" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A query against the device, consisting of a request and a reply from the
 device.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>device</strong> – The device to query</p>
+<dd class="field-odd"><p><strong>device</strong> (<a class="reference internal" href="#ratbag.drivers.hidpp20.Hidpp20Device" title="ratbag.drivers.hidpp20.Hidpp20Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hidpp20Device</span></code></a>) – The device to query</p>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -616,82 +687,49 @@ device.</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query.device">
+<span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.drivers.hidpp20.Hidpp20Device" title="ratbag.drivers.hidpp20.Hidpp20Device"><span class="pre">ratbag.drivers.hidpp20.Hidpp20Device</span></a></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.device" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query.report_id">
-<span class="sig-name descname"><span class="pre">report_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">16</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.report_id" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">report_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.report_id" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query.page">
-<span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.page" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.page" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query.command">
-<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.command" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.command" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query.reply_format">
-<span class="sig-name descname"><span class="pre">reply_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.reply_format" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query.query_spec">
+<span class="sig-name descname"><span class="pre">query_spec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ratbag.html#ratbag.parser.Spec" title="ratbag.parser.Spec"><span class="pre">ratbag.parser.Spec</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.query_spec" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query.query_params">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">query_params</span></span><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.query_params" title="Permalink to this definition"></a></dt>
-<dd><p>Return the query parameters. Consider this a read-only variable, the
-returned value is a list slice and modifying that slice does not
-modify the actual query. Instead, do either of</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">query_params</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>  <span class="c1"># 0-padded to message length</span>
-<span class="bp">self</span><span class="o">.</span><span class="n">set_query_params</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query.set_query_params">
-<span class="sig-name descname"><span class="pre">set_query_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.set_query_params" title="Permalink to this definition"></a></dt>
-<dd><p>Set the query parameters from the given offset to the new values,
-leaving all others in place</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query.set_query_param_be">
-<span class="sig-name descname"><span class="pre">set_query_param_be</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.set_query_param_be" title="Permalink to this definition"></a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query.reply_spec">
+<span class="sig-name descname"><span class="pre">reply_spec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ratbag.html#ratbag.parser.Spec" title="ratbag.parser.Spec"><span class="pre">ratbag.parser.Spec</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.reply_spec" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query.reply_params">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reply_params</span></span><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.reply_params" title="Permalink to this definition"></a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.run" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query.parse_reply">
 <span class="sig-name descname"><span class="pre">parse_reply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.parse_reply" title="Permalink to this definition"></a></dt>
-<dd><p>Override this in the subclass if <a class="reference internal" href="#ratbag.drivers.hidpp20.Query.reply_format" title="ratbag.drivers.hidpp20.Query.reply_format"><code class="xref py py-attr docutils literal notranslate"><span class="pre">reply_format</span></code></a> autoparsing is
+<dd><p>Override this in the subclass if <code class="xref py py-attr docutils literal notranslate"><span class="pre">reply_format</span></code> autoparsing is
 insufficient. Parse the given bytes and set the required instance
 attributes. <code class="xref py py-attr docutils literal notranslate"><span class="pre">reply</span></code> is set with the bytes from the reply.</p>
-<p>If the caller calls <a class="reference internal" href="#ratbag.drivers.hidpp20.Query.schedule_repeat" title="ratbag.drivers.hidpp20.Query.schedule_repeat"><code class="xref py py-meth docutils literal notranslate"><span class="pre">schedule_repeat()</span></code></a> during <code class="docutils literal notranslate"><span class="pre">parse_reply</span></code>,
+<p>If the caller calls <code class="xref py py-meth docutils literal notranslate"><span class="pre">schedule_repeat()</span></code> during <code class="docutils literal notranslate"><span class="pre">parse_reply</span></code>,
 same command is issued again once <code class="docutils literal notranslate"><span class="pre">parse_reply</span></code> completes and
 <code class="docutils literal notranslate"><span class="pre">parse_reply</span></code> is called with the new reply data.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query.schedule_repeat">
-<span class="sig-name descname"><span class="pre">schedule_repeat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.schedule_repeat" title="Permalink to this definition"></a></dt>
-<dd><p>Call this from parse_reply if the same command should be issued again
-to the device. This will call into parse_reply again</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.Query.run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.Query.run" title="Permalink to this definition"></a></dt>
-<dd><p>Send the request to the device, wait synchronously for the reply to
-return.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>this Query object</p>
-</dd>
-</dl>
 </dd></dl>
 
 </dd></dl>
@@ -705,69 +743,59 @@ return.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryProtocolVersion">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryProtocolVersion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryProtocolVersion" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryProtocolVersion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">major</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryProtocolVersion" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.hidpp20.Query" title="ratbag.drivers.hidpp20.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.hidpp20.Query</span></code></a></p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryProtocolVersion.page">
-<span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryProtocolVersion.page" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryProtocolVersion.major">
+<span class="sig-name descname"><span class="pre">major</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryProtocolVersion.major" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryProtocolVersion.command">
-<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">16</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryProtocolVersion.command" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryProtocolVersion.minor">
+<span class="sig-name descname"><span class="pre">minor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryProtocolVersion.minor" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryProtocolVersion.reply_format">
-<span class="sig-name descname"><span class="pre">reply_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('B',</span> <span class="pre">'major'),</span> <span class="pre">('B',</span> <span class="pre">'minor')]</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryProtocolVersion.reply_format" title="Permalink to this definition"></a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryProtocolVersion.instance">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryProtocolVersion.instance" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryRootGetFeature">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryRootGetFeature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryRootGetFeature" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryRootGetFeature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">FeatureName.ROOT</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryRootGetFeature" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.hidpp20.Query" title="ratbag.drivers.hidpp20.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.hidpp20.Query</span></code></a></p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryRootGetFeature.page">
-<span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryRootGetFeature.page" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryRootGetFeature.feature">
+<span class="sig-name descname"><span class="pre">feature</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.drivers.hidpp20.FeatureName" title="ratbag.drivers.hidpp20.FeatureName"><span class="pre">ratbag.drivers.hidpp20.FeatureName</span></a></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryRootGetFeature.feature" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryRootGetFeature.command">
-<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryRootGetFeature.command" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryRootGetFeature.reply_format">
-<span class="sig-name descname"><span class="pre">reply_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('B',</span> <span class="pre">'feature_index'),</span> <span class="pre">('B',</span> <span class="pre">'feature_type'),</span> <span class="pre">('B',</span> <span class="pre">'feature_version')]</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryRootGetFeature.reply_format" title="Permalink to this definition"></a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryRootGetFeature.instance">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryRootGetFeature.instance" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryFeatureSetCount">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryFeatureSetCount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_feature_query</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryFeatureSetCount" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryFeatureSetCount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">FeatureName.ROOT</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryFeatureSetCount" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.hidpp20.Query" title="ratbag.drivers.hidpp20.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.hidpp20.Query</span></code></a></p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryFeatureSetCount.command">
-<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryFeatureSetCount.command" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryFeatureSetCount.feature">
+<span class="sig-name descname"><span class="pre">feature</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.drivers.hidpp20.FeatureName" title="ratbag.drivers.hidpp20.FeatureName"><span class="pre">ratbag.drivers.hidpp20.FeatureName</span></a></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryFeatureSetCount.feature" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryFeatureSetCount.reply_format">
-<span class="sig-name descname"><span class="pre">reply_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('B',</span> <span class="pre">'count')]</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryFeatureSetCount.reply_format" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryFeatureSetCount.page">
-<span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryFeatureSetCount.page" title="Permalink to this definition"></a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryFeatureSetCount.instance">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_feature_query</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryFeatureSetCount.instance" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryFeatureSetCount.parse_reply">
 <span class="sig-name descname"><span class="pre">parse_reply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryFeatureSetCount.parse_reply" title="Permalink to this definition"></a></dt>
-<dd><p>Override this in the subclass if <a class="reference internal" href="#ratbag.drivers.hidpp20.QueryFeatureSetCount.reply_format" title="ratbag.drivers.hidpp20.QueryFeatureSetCount.reply_format"><code class="xref py py-attr docutils literal notranslate"><span class="pre">reply_format</span></code></a> autoparsing is
+<dd><p>Override this in the subclass if <code class="xref py py-attr docutils literal notranslate"><span class="pre">reply_format</span></code> autoparsing is
 insufficient. Parse the given bytes and set the required instance
 attributes. <code class="xref py py-attr docutils literal notranslate"><span class="pre">reply</span></code> is set with the bytes from the reply.</p>
 <p>If the caller calls <code class="xref py py-meth docutils literal notranslate"><span class="pre">schedule_repeat()</span></code> during <code class="docutils literal notranslate"><span class="pre">parse_reply</span></code>,
@@ -779,100 +807,32 @@ same command is issued again once <code class="docutils literal notranslate"><sp
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryFeatureSetId">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryFeatureSetId</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_feature_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryFeatureSetId" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryFeatureSetId</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryFeatureSetId" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.hidpp20.Query" title="ratbag.drivers.hidpp20.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.hidpp20.Query</span></code></a></p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryFeatureSetId.command">
-<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">16</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryFeatureSetId.command" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryFeatureSetId.feature_index">
+<span class="sig-name descname"><span class="pre">feature_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryFeatureSetId.feature_index" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryFeatureSetId.reply_format">
-<span class="sig-name descname"><span class="pre">reply_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('H',</span> <span class="pre">'feature_id'),</span> <span class="pre">('B',</span> <span class="pre">'feature_type')]</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryFeatureSetId.reply_format" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryFeatureSetId.page">
-<span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryFeatureSetId.page" title="Permalink to this definition"></a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryFeatureSetId.instance">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_feature_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryFeatureSetId.instance" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesDesc">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryOnboardProfilesDesc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryOnboardProfilesDesc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.hidpp20.Query" title="ratbag.drivers.hidpp20.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.hidpp20.Query</span></code></a></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.command">
-<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.command" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.reply_format">
-<span class="sig-name descname"><span class="pre">reply_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('B',</span> <span class="pre">'memory_model_id'),</span> <span class="pre">('B',</span> <span class="pre">'profile_format_id'),</span> <span class="pre">('B',</span> <span class="pre">'macro_format_id'),</span> <span class="pre">('B',</span> <span class="pre">'profile_count'),</span> <span class="pre">('B',</span> <span class="pre">'profile_count_oob'),</span> <span class="pre">('B',</span> <span class="pre">'button_count'),</span> <span class="pre">('B',</span> <span class="pre">'sector_count'),</span> <span class="pre">('H',</span> <span class="pre">'sector_size'),</span> <span class="pre">('B',</span> <span class="pre">'mechanical_layout'),</span> <span class="pre">('B',</span> <span class="pre">'various_info'),</span> <span class="pre">('ccccc',</span> <span class="pre">'_')]</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.reply_format" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.page">
-<span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.page" title="Permalink to this definition"></a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.instance">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.instance" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.parse_reply">
 <span class="sig-name descname"><span class="pre">parse_reply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.parse_reply" title="Permalink to this definition"></a></dt>
-<dd><p>Override this in the subclass if <a class="reference internal" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.reply_format" title="ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.reply_format"><code class="xref py py-attr docutils literal notranslate"><span class="pre">reply_format</span></code></a> autoparsing is
-insufficient. Parse the given bytes and set the required instance
-attributes. <code class="xref py py-attr docutils literal notranslate"><span class="pre">reply</span></code> is set with the bytes from the reply.</p>
-<p>If the caller calls <code class="xref py py-meth docutils literal notranslate"><span class="pre">schedule_repeat()</span></code> during <code class="docutils literal notranslate"><span class="pre">parse_reply</span></code>,
-same command is issued again once <code class="docutils literal notranslate"><span class="pre">parse_reply</span></code> completes and
-<code class="docutils literal notranslate"><span class="pre">parse_reply</span></code> is called with the new reply data.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryOnboardProfilesGetMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.hidpp20.Query" title="ratbag.drivers.hidpp20.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.hidpp20.Query</span></code></a></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.command">
-<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">32</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.command" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.reply_format">
-<span class="sig-name descname"><span class="pre">reply_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[('B',</span> <span class="pre">'mode')]</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.reply_format" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.page">
-<span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.page" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryOnboardProfilesMemRead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.hidpp20.Query" title="ratbag.drivers.hidpp20.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.hidpp20.Query</span></code></a></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.report_id">
-<span class="sig-name descname"><span class="pre">report_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">17</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.report_id" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.command">
-<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">80</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.command" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.page">
-<span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.page" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.parse_reply">
-<span class="sig-name descname"><span class="pre">parse_reply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.parse_reply" title="Permalink to this definition"></a></dt>
 <dd><p>Override this in the subclass if <code class="xref py py-attr docutils literal notranslate"><span class="pre">reply_format</span></code> autoparsing is
 insufficient. Parse the given bytes and set the required instance
 attributes. <code class="xref py py-attr docutils literal notranslate"><span class="pre">reply</span></code> is set with the bytes from the reply.</p>
@@ -880,6 +840,280 @@ attributes. <code class="xref py py-attr docutils literal notranslate"><span cla
 same command is issued again once <code class="docutils literal notranslate"><span class="pre">parse_reply</span></code> completes and
 <code class="docutils literal notranslate"><span class="pre">parse_reply</span></code> is called with the new reply data.</p>
 </dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.device">
+<span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.drivers.hidpp20.Hidpp20Device" title="ratbag.drivers.hidpp20.Hidpp20Device"><span class="pre">ratbag.drivers.hidpp20.Hidpp20Device</span></a></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.device" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.report_id">
+<span class="sig-name descname"><span class="pre">report_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.report_id" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.page">
+<span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.page" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.command">
+<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.command" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.query_spec">
+<span class="sig-name descname"><span class="pre">query_spec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ratbag.html#ratbag.parser.Spec" title="ratbag.parser.Spec"><span class="pre">ratbag.parser.Spec</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.query_spec" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.reply_spec">
+<span class="sig-name descname"><span class="pre">reply_spec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ratbag.html#ratbag.parser.Spec" title="ratbag.parser.Spec"><span class="pre">ratbag.parser.Spec</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.reply_spec" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryOnboardProfilesGetMode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.hidpp20.Query" title="ratbag.drivers.hidpp20.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.hidpp20.Query</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.instance">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.instance" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.device">
+<span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.drivers.hidpp20.Hidpp20Device" title="ratbag.drivers.hidpp20.Hidpp20Device"><span class="pre">ratbag.drivers.hidpp20.Hidpp20Device</span></a></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.device" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.report_id">
+<span class="sig-name descname"><span class="pre">report_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.report_id" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.page">
+<span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.page" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.command">
+<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.command" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.query_spec">
+<span class="sig-name descname"><span class="pre">query_spec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ratbag.html#ratbag.parser.Spec" title="ratbag.parser.Spec"><span class="pre">ratbag.parser.Spec</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.query_spec" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.reply_spec">
+<span class="sig-name descname"><span class="pre">reply_spec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ratbag.html#ratbag.parser.Spec" title="ratbag.parser.Spec"><span class="pre">ratbag.parser.Spec</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.reply_spec" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryOnboardProfilesMemRead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.hidpp20.Query" title="ratbag.drivers.hidpp20.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.hidpp20.Query</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.sector">
+<span class="sig-name descname"><span class="pre">sector</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.sector" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.offset">
+<span class="sig-name descname"><span class="pre">offset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.offset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.instance">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.instance" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryOnboardProfilesMemReadSector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.hidpp20.Query" title="ratbag.drivers.hidpp20.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.hidpp20.Query</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.instance">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sector_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.instance" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.run" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.device">
+<span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.drivers.hidpp20.Hidpp20Device" title="ratbag.drivers.hidpp20.Hidpp20Device"><span class="pre">ratbag.drivers.hidpp20.Hidpp20Device</span></a></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.device" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.report_id">
+<span class="sig-name descname"><span class="pre">report_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.report_id" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.page">
+<span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.page" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.command">
+<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.command" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.query_spec">
+<span class="sig-name descname"><span class="pre">query_spec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ratbag.html#ratbag.parser.Spec" title="ratbag.parser.Spec"><span class="pre">ratbag.parser.Spec</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.query_spec" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.reply_spec">
+<span class="sig-name descname"><span class="pre">reply_spec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ratbag.html#ratbag.parser.Spec" title="ratbag.parser.Spec"><span class="pre">ratbag.parser.Spec</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.reply_spec" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryAdjustibleDpiGetCount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.hidpp20.Query" title="ratbag.drivers.hidpp20.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.hidpp20.Query</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.instance">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.instance" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.device">
+<span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.drivers.hidpp20.Hidpp20Device" title="ratbag.drivers.hidpp20.Hidpp20Device"><span class="pre">ratbag.drivers.hidpp20.Hidpp20Device</span></a></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.device" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.report_id">
+<span class="sig-name descname"><span class="pre">report_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.report_id" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.page">
+<span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.page" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.command">
+<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.command" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.query_spec">
+<span class="sig-name descname"><span class="pre">query_spec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ratbag.html#ratbag.parser.Spec" title="ratbag.parser.Spec"><span class="pre">ratbag.parser.Spec</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.query_spec" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.reply_spec">
+<span class="sig-name descname"><span class="pre">reply_spec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ratbag.html#ratbag.parser.Spec" title="ratbag.parser.Spec"><span class="pre">ratbag.parser.Spec</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.reply_spec" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpiList">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryAdjustibleDpiGetDpiList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpiList" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.hidpp20.Query" title="ratbag.drivers.hidpp20.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.hidpp20.Query</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpiList.sensor_index">
+<span class="sig-name descname"><span class="pre">sensor_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpiList.sensor_index" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpiList.instance">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor_index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpiList.instance" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpiList.parse_reply">
+<span class="sig-name descname"><span class="pre">parse_reply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpiList.parse_reply" title="Permalink to this definition"></a></dt>
+<dd><p>Override this in the subclass if <code class="xref py py-attr docutils literal notranslate"><span class="pre">reply_format</span></code> autoparsing is
+insufficient. Parse the given bytes and set the required instance
+attributes. <code class="xref py py-attr docutils literal notranslate"><span class="pre">reply</span></code> is set with the bytes from the reply.</p>
+<p>If the caller calls <code class="xref py py-meth docutils literal notranslate"><span class="pre">schedule_repeat()</span></code> during <code class="docutils literal notranslate"><span class="pre">parse_reply</span></code>,
+same command is issued again once <code class="docutils literal notranslate"><span class="pre">parse_reply</span></code> completes and
+<code class="docutils literal notranslate"><span class="pre">parse_reply</span></code> is called with the new reply data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpi">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryAdjustibleDpiGetDpi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpi" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.hidpp20.Query" title="ratbag.drivers.hidpp20.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.hidpp20.Query</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpi.sensor_index">
+<span class="sig-name descname"><span class="pre">sensor_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpi.sensor_index" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpi.instance">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensor_index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpi.instance" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp20.</span></span><span class="sig-name descname"><span class="pre">QueryAdjustibleReportRateGetList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">command</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.hidpp20.Query" title="ratbag.drivers.hidpp20.Query"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.hidpp20.Query</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.instance">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.instance" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.parse_reply">
+<span class="sig-name descname"><span class="pre">parse_reply</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.parse_reply" title="Permalink to this definition"></a></dt>
+<dd><p>Override this in the subclass if <code class="xref py py-attr docutils literal notranslate"><span class="pre">reply_format</span></code> autoparsing is
+insufficient. Parse the given bytes and set the required instance
+attributes. <code class="xref py py-attr docutils literal notranslate"><span class="pre">reply</span></code> is set with the bytes from the reply.</p>
+<p>If the caller calls <code class="xref py py-meth docutils literal notranslate"><span class="pre">schedule_repeat()</span></code> during <code class="docutils literal notranslate"><span class="pre">parse_reply</span></code>,
+same command is issued again once <code class="docutils literal notranslate"><span class="pre">parse_reply</span></code> completes and
+<code class="docutils literal notranslate"><span class="pre">parse_reply</span></code> is called with the new reply data.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.device">
+<span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.drivers.hidpp20.Hidpp20Device" title="ratbag.drivers.hidpp20.Hidpp20Device"><span class="pre">ratbag.drivers.hidpp20.Hidpp20Device</span></a></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.device" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.report_id">
+<span class="sig-name descname"><span class="pre">report_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.report_id" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.page">
+<span class="sig-name descname"><span class="pre">page</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.page" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.command">
+<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.command" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.query_spec">
+<span class="sig-name descname"><span class="pre">query_spec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ratbag.html#ratbag.parser.Spec" title="ratbag.parser.Spec"><span class="pre">ratbag.parser.Spec</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.query_spec" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.reply_spec">
+<span class="sig-name descname"><span class="pre">reply_spec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ratbag.html#ratbag.parser.Spec" title="ratbag.parser.Spec"><span class="pre">ratbag.parser.Spec</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.reply_spec" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 

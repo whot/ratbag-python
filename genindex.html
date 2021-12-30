@@ -87,6 +87,7 @@
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  | <a href="#Y"><strong>Y</strong></a>
  
@@ -119,19 +120,19 @@
 </li>
       </ul></li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.Driver.add_recorder">add_recorder() (ratbag.drivers.Driver method)</a>
-
-      <ul>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Hidpp20Driver.add_recorder">(ratbag.drivers.hidpp20.Hidpp20Driver method)</a>
 </li>
-      </ul></li>
       <li><a href="ratbag.html#ratbag.util.add_to_sparse_tuple">add_to_sparse_tuple() (in module ratbag.util)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.emulator.Reply.add_value">add_value() (ratbag.emulator.Reply method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ratbag.html#ratbag.emulator.Reply.add_value">add_value() (ratbag.emulator.Reply method)</a>
-</li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Profile.address">address (ratbag.drivers.hidpp20.Profile attribute)</a>
+
+      <ul>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.ProfileAddress.address">(ratbag.drivers.hidpp20.ProfileAddress attribute)</a>
 </li>
+      </ul></li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.FeatureName.ADJUSTIBLE_DPI">ADJUSTIBLE_DPI (ratbag.drivers.hidpp20.FeatureName attribute)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.FeatureName.ADJUSTIBLE_REPORT_RATE">ADJUSTIBLE_REPORT_RATE (ratbag.drivers.hidpp20.FeatureName attribute)</a>
@@ -172,6 +173,8 @@
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.FeatureName.BATTERY_VOLTAGE">BATTERY_VOLTAGE (ratbag.drivers.hidpp20.FeatureName attribute)</a>
 </li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Color.blue">blue (ratbag.drivers.hidpp20.Color attribute)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Led.Mode.BREATHING">BREATHING (ratbag.Led.Mode attribute)</a>
 </li>
   </ul></td>
@@ -185,6 +188,8 @@
       <li><a href="ratbag.html#ratbag.ActionButton.button">button (ratbag.ActionButton property)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Profile.buttons">buttons (ratbag.Profile property)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.parser.Spec.ConverterArg.bytes">bytes (ratbag.parser.Spec.ConverterArg attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -211,19 +216,15 @@
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.command">command (ratbag.drivers.hidpp20.Query attribute)</a>
 
       <ul>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryFeatureSetCount.command">(ratbag.drivers.hidpp20.QueryFeatureSetCount attribute)</a>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.command">(ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount attribute)</a>
 </li>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryFeatureSetId.command">(ratbag.drivers.hidpp20.QueryFeatureSetId attribute)</a>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.command">(ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList attribute)</a>
 </li>
         <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.command">(ratbag.drivers.hidpp20.QueryOnboardProfilesDesc attribute)</a>
 </li>
         <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.command">(ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode attribute)</a>
 </li>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.command">(ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead attribute)</a>
-</li>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryProtocolVersion.command">(ratbag.drivers.hidpp20.QueryProtocolVersion attribute)</a>
-</li>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryRootGetFeature.command">(ratbag.drivers.hidpp20.QueryRootGetFeature attribute)</a>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.command">(ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -239,6 +240,8 @@
       <li><a href="ratbag.drivers.html#ratbag.drivers.Rodent.connect_to_recorder">connect_to_recorder() (ratbag.drivers.Rodent method)</a>
 </li>
       <li><a href="ratbag.html#ratbag.ProtocolError.conversation">conversation (ratbag.ProtocolError attribute)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.parser.Spec.convert_to_data">convert_to_data (ratbag.parser.Spec attribute)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.crc">crc() (in module ratbag.drivers.hidpp20)</a>
 </li>
@@ -260,8 +263,22 @@
       </ul></li>
       <li><a href="ratbag.html#ratbag.Device">Device (class in ratbag)</a>
 </li>
-      <li><a href="ratbag.html#ratbag.Feature.device">device (ratbag.Feature attribute)</a>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.device">device (ratbag.drivers.hidpp20.Query attribute)</a>
+
+      <ul>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.device">(ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount attribute)</a>
 </li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.device">(ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList attribute)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.device">(ratbag.drivers.hidpp20.QueryOnboardProfilesDesc attribute)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.device">(ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode attribute)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.device">(ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector attribute)</a>
+</li>
+        <li><a href="ratbag.html#ratbag.Feature.device">(ratbag.Feature attribute)</a>
+</li>
+      </ul></li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.FeatureName.DEVICE_INFO">DEVICE_INFO (ratbag.drivers.hidpp20.FeatureName attribute)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.FeatureName.DEVICE_NAME">DEVICE_NAME (ratbag.drivers.hidpp20.FeatureName attribute)</a>
@@ -306,14 +323,14 @@
       </ul></li>
       <li><a href="ratbag.html#ratbag.ActionSpecial.Special.DOUBLECLICK">DOUBLECLICK (ratbag.ActionSpecial.Special attribute)</a>
 </li>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Profile.dpi">dpi (ratbag.drivers.hidpp20.Profile attribute)</a>
+      <li><a href="ratbag.html#ratbag.Resolution.dpi">dpi (ratbag.Resolution attribute)</a>
+</li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Profile.dpi_list">dpi_list (ratbag.drivers.hidpp20.Profile attribute)</a>
 
       <ul>
-        <li><a href="ratbag.html#ratbag.Resolution.dpi">(ratbag.Resolution attribute)</a>
+        <li><a href="ratbag.html#ratbag.Resolution.dpi_list">(ratbag.Resolution property)</a>
 </li>
       </ul></li>
-      <li><a href="ratbag.html#ratbag.Resolution.dpi_list">dpi_list (ratbag.Resolution property)</a>
-</li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.Driver">Driver (class in ratbag.drivers)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.Driver.DRIVER_LOAD_FUNC">DRIVER_LOAD_FUNC (ratbag.drivers.Driver attribute)</a>
@@ -329,6 +346,8 @@
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Profile.enabled">enabled (ratbag.drivers.hidpp20.Profile attribute)</a>
 
       <ul>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.ProfileAddress.enabled">(ratbag.drivers.hidpp20.ProfileAddress attribute)</a>
+</li>
         <li><a href="ratbag.html#ratbag.Profile.enabled">(ratbag.Profile attribute)</a>
 </li>
         <li><a href="ratbag.html#ratbag.Resolution.enabled">(ratbag.Resolution attribute)</a>
@@ -339,6 +358,8 @@
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.OnboardProfile.Sector.ENABLED_INDEX">ENABLED_INDEX (ratbag.drivers.hidpp20.OnboardProfile.Sector attribute)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.OnboardProfile.Sector.END_OF_PROFILE_DIRECTORY">END_OF_PROFILE_DIRECTORY (ratbag.drivers.hidpp20.OnboardProfile.Sector attribute)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.parser.Spec.endian">endian (ratbag.parser.Spec attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.ActionMacro.events">events (ratbag.ActionMacro property)</a>
 </li>
@@ -354,23 +375,35 @@
         <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Feature">(class in ratbag.drivers.hidpp20)</a>
 </li>
       </ul></li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryFeatureSetCount.feature">feature (ratbag.drivers.hidpp20.QueryFeatureSetCount attribute)</a>
+
+      <ul>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryRootGetFeature.feature">(ratbag.drivers.hidpp20.QueryRootGetFeature attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryFeatureSetId.feature_index">feature_index (ratbag.drivers.hidpp20.QueryFeatureSetId attribute)</a>
+</li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.FeatureName.FEATURE_SET">FEATURE_SET (ratbag.drivers.hidpp20.FeatureName attribute)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.FeatureName">FeatureName (class in ratbag.drivers.hidpp20)</a>
 </li>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Hidpp20Device.features">features (ratbag.drivers.hidpp20.Hidpp20Device attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Hidpp20Device.features">features (ratbag.drivers.hidpp20.Hidpp20Device attribute)</a>
+</li>
       <li><a href="ratbag.html#ratbag.emulator.Reply.finalize">finalize() (ratbag.emulator.Reply method)</a>
 </li>
       <li><a href="ratbag.html#ratbag.util.find_hidraw_devices">find_hidraw_devices() (in module ratbag.util)</a>
 </li>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Profile.from_data">from_data() (ratbag.drivers.hidpp20.Profile method)</a>
+      <li><a href="ratbag.html#ratbag.parser.Spec.format">format (ratbag.parser.Spec attribute)</a>
+</li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Profile.from_data">from_data() (ratbag.drivers.hidpp20.Profile class method)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.Rodent.from_device">from_device() (ratbag.drivers.Rodent class method)</a>
 </li>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Profile.from_sector">from_sector() (ratbag.drivers.hidpp20.Profile class method)</a>
+      <li><a href="ratbag.html#ratbag.parser.Parser.from_object">from_object() (ratbag.parser.Parser class method)</a>
+</li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.ProfileAddress.from_sector">from_sector() (ratbag.drivers.hidpp20.ProfileAddress class method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -397,6 +430,8 @@
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.OnboardProfile.ProfileType.G900">G900 (ratbag.drivers.hidpp20.OnboardProfile.ProfileType attribute)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.OnboardProfile.ProfileType.G915">G915 (ratbag.drivers.hidpp20.OnboardProfile.ProfileType attribute)</a>
+</li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Color.green">green (ratbag.drivers.hidpp20.Color attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -434,10 +469,14 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Hidpp20Device.index">index (ratbag.drivers.hidpp20.Hidpp20Device attribute)</a>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Feature.index">index (ratbag.drivers.hidpp20.Feature attribute)</a>
 
       <ul>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Hidpp20Device.index">(ratbag.drivers.hidpp20.Hidpp20Device attribute)</a>
+</li>
         <li><a href="ratbag.html#ratbag.Feature.index">(ratbag.Feature property)</a>
+</li>
+        <li><a href="ratbag.html#ratbag.parser.Spec.ConverterArg.index">(ratbag.parser.Spec.ConverterArg attribute)</a>
 </li>
       </ul></li>
       <li><a href="ratbag.html#ratbag.Profile.Capability.INDIVIDUAL_REPORT_RATE">INDIVIDUAL_REPORT_RATE (ratbag.Profile.Capability attribute)</a>
@@ -446,6 +485,32 @@
 
       <ul>
         <li><a href="ratbag.html#ratbag.recorder.YamlDeviceRecorder.init">(ratbag.recorder.YamlDeviceRecorder method)</a>
+</li>
+      </ul></li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.instance">instance() (ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount class method)</a>
+
+      <ul>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpi.instance">(ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpi class method)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpiList.instance">(ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpiList class method)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.instance">(ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList class method)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryFeatureSetCount.instance">(ratbag.drivers.hidpp20.QueryFeatureSetCount class method)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryFeatureSetId.instance">(ratbag.drivers.hidpp20.QueryFeatureSetId class method)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.instance">(ratbag.drivers.hidpp20.QueryOnboardProfilesDesc class method)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.instance">(ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode class method)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.instance">(ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead class method)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.instance">(ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector class method)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryProtocolVersion.instance">(ratbag.drivers.hidpp20.QueryProtocolVersion class method)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryRootGetFeature.instance">(ratbag.drivers.hidpp20.QueryRootGetFeature class method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -518,6 +583,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ratbag.html#ratbag.Action.Type.MACRO">MACRO (ratbag.Action.Type attribute)</a>
 </li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryProtocolVersion.major">major (ratbag.drivers.hidpp20.QueryProtocolVersion attribute)</a>
+</li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.Message">Message (class in ratbag.drivers)</a>
 </li>
       <li><a href="ratbag.html#ratbag.ConfigError.message">message (ratbag.ConfigError attribute)</a>
@@ -527,6 +594,8 @@
 </li>
       </ul></li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.Message.Direction">Message.Direction (class in ratbag.drivers)</a>
+</li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryProtocolVersion.minor">minor (ratbag.drivers.hidpp20.QueryProtocolVersion attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Led.mode">mode (ratbag.Led attribute)</a>
 </li>
@@ -545,6 +614,8 @@
         <li><a href="ratbag.drivers.html#module-ratbag.drivers.hidpp20">ratbag.drivers.hidpp20</a>
 </li>
         <li><a href="ratbag.html#module-ratbag.emulator">ratbag.emulator</a>
+</li>
+        <li><a href="ratbag.html#module-ratbag.parser">ratbag.parser</a>
 </li>
         <li><a href="ratbag.html#module-ratbag.recorder">ratbag.recorder</a>
 </li>
@@ -575,14 +646,20 @@
       </ul></li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp10.Hidpp10Driver.NAME">NAME (ratbag.drivers.hidpp10.Hidpp10Driver attribute)</a>
 </li>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Hidpp20Device.name">name (ratbag.drivers.hidpp20.Hidpp20Device property)</a>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Feature.name">name (ratbag.drivers.hidpp20.Feature attribute)</a>
+
+      <ul>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Hidpp20Device.name">(ratbag.drivers.hidpp20.Hidpp20Device property)</a>
 </li>
+      </ul></li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Hidpp20Driver.NAME">NAME (ratbag.drivers.hidpp20.Hidpp20Driver attribute)</a>
 </li>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Profile.name">name (ratbag.drivers.hidpp20.Profile attribute)</a>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Profile.name">name (ratbag.drivers.hidpp20.Profile property)</a>
 
       <ul>
         <li><a href="ratbag.drivers.html#ratbag.drivers.Rodent.name">(ratbag.drivers.Rodent attribute)</a>
+</li>
+        <li><a href="ratbag.html#ratbag.parser.Spec.name">(ratbag.parser.Spec attribute)</a>
 </li>
         <li><a href="ratbag.html#ratbag.Profile.name">(ratbag.Profile attribute)</a>
 </li>
@@ -609,7 +686,11 @@
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ratbag.html#ratbag.parser.Result.object">object (ratbag.parser.Result attribute)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Led.Mode.OFF">OFF (ratbag.Led.Mode attribute)</a>
+</li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.offset">offset (ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Led.Mode.ON">ON (ratbag.Led.Mode attribute)</a>
 </li>
@@ -617,10 +698,10 @@
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.FeatureName.ONBOARD_PROFILES">ONBOARD_PROFILES (ratbag.drivers.hidpp20.FeatureName attribute)</a>
 </li>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.OnboardProfile">OnboardProfile (class in ratbag.drivers.hidpp20)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.OnboardProfile">OnboardProfile (class in ratbag.drivers.hidpp20)</a>
+</li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.OnboardProfile.MacroType">OnboardProfile.MacroType (class in ratbag.drivers.hidpp20)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.OnboardProfile.MemoryType">OnboardProfile.MemoryType (class in ratbag.drivers.hidpp20)</a>
@@ -640,19 +721,15 @@
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.page">page (ratbag.drivers.hidpp20.Query attribute)</a>
 
       <ul>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryFeatureSetCount.page">(ratbag.drivers.hidpp20.QueryFeatureSetCount attribute)</a>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.page">(ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount attribute)</a>
 </li>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryFeatureSetId.page">(ratbag.drivers.hidpp20.QueryFeatureSetId attribute)</a>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.page">(ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList attribute)</a>
 </li>
         <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.page">(ratbag.drivers.hidpp20.QueryOnboardProfilesDesc attribute)</a>
 </li>
         <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.page">(ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode attribute)</a>
 </li>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.page">(ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead attribute)</a>
-</li>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryProtocolVersion.page">(ratbag.drivers.hidpp20.QueryProtocolVersion attribute)</a>
-</li>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryRootGetFeature.page">(ratbag.drivers.hidpp20.QueryRootGetFeature attribute)</a>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.page">(ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector attribute)</a>
 </li>
       </ul></li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.FeatureName.PAGE_RESET">PAGE_RESET (ratbag.drivers.hidpp20.FeatureName attribute)</a>
@@ -660,13 +737,17 @@
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.parse_reply">parse_reply() (ratbag.drivers.hidpp20.Query method)</a>
 
       <ul>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpiList.parse_reply">(ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpiList method)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.parse_reply">(ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList method)</a>
+</li>
         <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryFeatureSetCount.parse_reply">(ratbag.drivers.hidpp20.QueryFeatureSetCount method)</a>
 </li>
         <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.parse_reply">(ratbag.drivers.hidpp20.QueryOnboardProfilesDesc method)</a>
 </li>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.parse_reply">(ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead method)</a>
-</li>
       </ul></li>
+      <li><a href="ratbag.html#ratbag.parser.Parser">Parser (class in ratbag.parser)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Device.path">path (ratbag.Device attribute)</a>
 
       <ul>
@@ -707,6 +788,8 @@
 </li>
       <li><a href="ratbag.html#ratbag.ActionSpecial.Special.PROFILE_UP">PROFILE_UP (ratbag.ActionSpecial.Special attribute)</a>
 </li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.ProfileAddress">ProfileAddress (class in ratbag.drivers.hidpp20)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Device.profiles">profiles (ratbag.Device property)</a>
 
       <ul>
@@ -725,7 +808,29 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query">Query (class in ratbag.drivers.hidpp20)</a>
 </li>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.query_params">query_params (ratbag.drivers.hidpp20.Query property)</a>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.query_spec">query_spec (ratbag.drivers.hidpp20.Query attribute)</a>
+
+      <ul>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.query_spec">(ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount attribute)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.query_spec">(ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList attribute)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.query_spec">(ratbag.drivers.hidpp20.QueryOnboardProfilesDesc attribute)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.query_spec">(ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode attribute)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.query_spec">(ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount">QueryAdjustibleDpiGetCount (class in ratbag.drivers.hidpp20)</a>
+</li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpi">QueryAdjustibleDpiGetDpi (class in ratbag.drivers.hidpp20)</a>
+</li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpiList">QueryAdjustibleDpiGetDpiList (class in ratbag.drivers.hidpp20)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList">QueryAdjustibleReportRateGetList (class in ratbag.drivers.hidpp20)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryError">QueryError</a>
 </li>
@@ -733,13 +838,13 @@
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryFeatureSetId">QueryFeatureSetId (class in ratbag.drivers.hidpp20)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc">QueryOnboardProfilesDesc (class in ratbag.drivers.hidpp20)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode">QueryOnboardProfilesGetMode (class in ratbag.drivers.hidpp20)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead">QueryOnboardProfilesMemRead (class in ratbag.drivers.hidpp20)</a>
+</li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector">QueryOnboardProfilesMemReadSector (class in ratbag.drivers.hidpp20)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryProtocolVersion">QueryProtocolVersion (class in ratbag.drivers.hidpp20)</a>
 </li>
@@ -789,6 +894,13 @@
 </li>
       </ul></li>
       <li>
+    ratbag.parser
+
+      <ul>
+        <li><a href="ratbag.html#module-ratbag.parser">module</a>
+</li>
+      </ul></li>
+      <li>
     ratbag.recorder
 
       <ul>
@@ -814,46 +926,58 @@
       </ul></li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Hidpp20Device.recv_sync">recv_sync() (ratbag.drivers.hidpp20.Hidpp20Device method)</a>
 </li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Color.red">red (ratbag.drivers.hidpp20.Color attribute)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.parser.Spec.repeat">repeat (ratbag.parser.Spec attribute)</a>
+</li>
       <li><a href="ratbag.html#ratbag.emulator.Reply">Reply (class in ratbag.emulator)</a>
 </li>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.reply_format">reply_format (ratbag.drivers.hidpp20.Query attribute)</a>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.reply_spec">reply_spec (ratbag.drivers.hidpp20.Query attribute)</a>
 
       <ul>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryFeatureSetCount.reply_format">(ratbag.drivers.hidpp20.QueryFeatureSetCount attribute)</a>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.reply_spec">(ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount attribute)</a>
 </li>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryFeatureSetId.reply_format">(ratbag.drivers.hidpp20.QueryFeatureSetId attribute)</a>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.reply_spec">(ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList attribute)</a>
 </li>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.reply_format">(ratbag.drivers.hidpp20.QueryOnboardProfilesDesc attribute)</a>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.reply_spec">(ratbag.drivers.hidpp20.QueryOnboardProfilesDesc attribute)</a>
 </li>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.reply_format">(ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode attribute)</a>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.reply_spec">(ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode attribute)</a>
 </li>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryProtocolVersion.reply_format">(ratbag.drivers.hidpp20.QueryProtocolVersion attribute)</a>
-</li>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryRootGetFeature.reply_format">(ratbag.drivers.hidpp20.QueryRootGetFeature attribute)</a>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.reply_spec">(ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector attribute)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.reply_params">reply_params (ratbag.drivers.hidpp20.Query property)</a>
-</li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.Rodent.report_descriptor">report_descriptor (ratbag.drivers.Rodent attribute)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.report_id">report_id (ratbag.drivers.hidpp20.Query attribute)</a>
 
       <ul>
-        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.report_id">(ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead attribute)</a>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount.report_id">(ratbag.drivers.hidpp20.QueryAdjustibleDpiGetCount attribute)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList.report_id">(ratbag.drivers.hidpp20.QueryAdjustibleReportRateGetList attribute)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesDesc.report_id">(ratbag.drivers.hidpp20.QueryOnboardProfilesDesc attribute)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode.report_id">(ratbag.drivers.hidpp20.QueryOnboardProfilesGetMode attribute)</a>
+</li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.report_id">(ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector attribute)</a>
 </li>
       </ul></li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.Rodent.report_ids">report_ids (ratbag.drivers.Rodent property)</a>
 </li>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Profile.report_rate">report_rate (ratbag.drivers.hidpp20.Profile attribute)</a>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Profile.report_rate">report_rate (ratbag.drivers.hidpp20.Profile property)</a>
 
       <ul>
         <li><a href="ratbag.html#ratbag.Profile.report_rate">(ratbag.Profile attribute)</a>
 </li>
       </ul></li>
-      <li><a href="ratbag.html#ratbag.Profile.report_rates">report_rates (ratbag.Profile property)</a>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Profile.report_rates">report_rates (ratbag.drivers.hidpp20.Profile attribute)</a>
+
+      <ul>
+        <li><a href="ratbag.html#ratbag.Profile.report_rates">(ratbag.Profile property)</a>
 </li>
+      </ul></li>
       <li><a href="ratbag.html#ratbag.Resolution">Resolution (class in ratbag)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Resolution.Capability">Resolution.Capability (class in ratbag)</a>
@@ -872,6 +996,8 @@
 </li>
       <li><a href="ratbag.html#ratbag.Profile.resolutions">resolutions (ratbag.Profile property)</a>
 </li>
+      <li><a href="ratbag.html#ratbag.parser.Result">Result (class in ratbag.parser)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Led.Colordepth.RGB_111">RGB_111 (ratbag.Led.Colordepth attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Led.Colordepth.RGB_888">RGB_888 (ratbag.Led.Colordepth attribute)</a>
@@ -885,7 +1011,11 @@
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.FeatureName.ROOT">ROOT (ratbag.drivers.hidpp20.FeatureName attribute)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.run">run() (ratbag.drivers.hidpp20.Query method)</a>
+
+      <ul>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector.run">(ratbag.drivers.hidpp20.QueryOnboardProfilesMemReadSector method)</a>
 </li>
+      </ul></li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.Message.Direction.RX">RX (ratbag.drivers.Message.Direction attribute)</a>
 </li>
   </ul></td>
@@ -894,9 +1024,9 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.schedule_repeat">schedule_repeat() (ratbag.drivers.hidpp20.Query method)</a>
-</li>
       <li><a href="ratbag.html#ratbag.ActionSpecial.Special.SECOND_MODE">SECOND_MODE (ratbag.ActionSpecial.Special attribute)</a>
+</li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead.sector">sector (ratbag.drivers.hidpp20.QueryOnboardProfilesMemRead attribute)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Hidpp20Device.send">send() (ratbag.drivers.hidpp20.Hidpp20Device method)</a>
 
@@ -906,8 +1036,12 @@
         <li><a href="ratbag.html#ratbag.emulator.YamlDevice.send">(ratbag.emulator.YamlDevice method)</a>
 </li>
       </ul></li>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Hidpp20Device.send_and_recv_sync">send_and_recv_sync() (ratbag.drivers.hidpp20.Hidpp20Device method)</a>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpi.sensor_index">sensor_index (ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpi attribute)</a>
+
+      <ul>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpiList.sensor_index">(ratbag.drivers.hidpp20.QueryAdjustibleDpiGetDpiList attribute)</a>
 </li>
+      </ul></li>
       <li><a href="ratbag.html#ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION">SEPARATE_XY_RESOLUTION (ratbag.Resolution.Capability attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Button.set_action">set_action() (ratbag.Button method)</a>
@@ -944,15 +1078,17 @@
       </ul></li>
       <li><a href="ratbag.html#ratbag.Led.set_mode">set_mode() (ratbag.Led method)</a>
 </li>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.set_query_param_be">set_query_param_be() (ratbag.drivers.hidpp20.Query method)</a>
-</li>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.set_query_params">set_query_params() (ratbag.drivers.hidpp20.Query method)</a>
-</li>
       <li><a href="ratbag.html#ratbag.Profile.set_report_rate">set_report_rate() (ratbag.Profile method)</a>
 </li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Query.SHORT_MESSAGE_LENGTH">SHORT_MESSAGE_LENGTH (ratbag.drivers.hidpp20.Query attribute)</a>
 </li>
+      <li><a href="ratbag.html#ratbag.parser.Result.size">size (ratbag.parser.Result attribute)</a>
+</li>
       <li><a href="ratbag.html#ratbag.SomethingIsMissingError">SomethingIsMissingError</a>
+</li>
+      <li><a href="ratbag.html#ratbag.parser.Spec">Spec (class in ratbag.parser)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.parser.Spec.ConverterArg">Spec.ConverterArg (class in ratbag.parser)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Action.Type.SPECIAL">SPECIAL (ratbag.Action.Type attribute)</a>
 </li>
@@ -982,12 +1118,18 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ratbag.html#ratbag.SomethingIsMissingError.thing">thing (ratbag.SomethingIsMissingError attribute)</a>
 </li>
+      <li><a href="ratbag.html#ratbag.parser.Parser.to_object">to_object() (ratbag.parser.Parser class method)</a>
+</li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.Message.Direction.TX">TX (ratbag.drivers.Message.Direction attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ratbag.html#ratbag.Action.type">type (ratbag.Action property)</a>
+
+      <ul>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp20.Feature.type">(ratbag.drivers.hidpp20.Feature attribute)</a>
 </li>
+      </ul></li>
       <li><a href="ratbag.html#ratbag.Button.types">types (ratbag.Button property)</a>
 </li>
   </ul></td>
@@ -1015,6 +1157,14 @@
         <li><a href="ratbag.html#module-util">module</a>
 </li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ratbag.html#ratbag.parser.Spec.ConverterArg.value">value (ratbag.parser.Spec.ConverterArg attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 

@@ -15,8 +15,6 @@ import struct
 
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import hidtools.hid
-
 from gi.repository import GObject
 
 import ratbag
@@ -188,7 +186,7 @@ class Rodent(GObject.Object):
 
         rdesc = getattr(self, "report_descriptor", None)
         if rdesc is not None:
-            self._rdesc = hidtools.hid.ReportDescriptor.from_bytes(rdesc)
+            self._rdesc = ratbag.hid.ReportDescriptor.from_bytes(rdesc)
 
     @property
     def report_ids(self) -> Dict[str, Tuple[int, ...]]:
@@ -203,9 +201,9 @@ class Rodent(GObject.Object):
             "feature": tuple(),
         }
         if self.report_descriptor is not None:
-            ids["input"] = tuple(self._rdesc.input_reports)
-            ids["output"] = tuple(self._rdesc.output_reports)
-            ids["feature"] = tuple(self._rdesc.feature_reports)
+            ids["input"] = tuple([r.report_id for r in self._rdesc.input_reports])
+            ids["output"] = tuple([r.report_id for r in self._rdesc.output_reports])
+            ids["feature"] = tuple([r.report_id for r in self._rdesc.feature_reports])
         return ids
 
     def start(self) -> None:

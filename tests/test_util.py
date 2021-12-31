@@ -28,14 +28,15 @@ def test_find_hidraw_devices():
 @pytest.mark.skipif(
     not list(pathlib.Path("/dev").glob("hidraw*")), reason="no /dev/hidraw*"
 )
-def test_hidraw_info():
+def test_device_info():
     for path in ratbag.util.find_hidraw_devices():
-        info = ratbag.util.load_device_info(path)
-        assert info["name"] is not None
-        assert info["vid"] is not None
-        assert info["pid"] is not None
-        assert info["bus"] is not None
-        assert info["report_descriptor"] is not None
+        info = ratbag.drivers.DeviceInfo.from_path(path)
+        assert info.path == path
+        assert info.name is not None
+        assert info.vid is not None
+        assert info.pid is not None
+        assert info.bus is not None
+        assert info.report_descriptor is not None
 
 
 def test_attr_from_data():

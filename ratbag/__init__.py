@@ -4,12 +4,13 @@
 #
 # This file is formatted with Python Black
 
+import attr
 import enum
 import logging
 import pyudev
 import uuid
 
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 CommitCallback = Callable[["ratbag.Device", bool, str], None]
 
@@ -177,7 +178,12 @@ class Ratbag(GObject.Object):
 
         for emulator in self._config.get("emulators", []):
             driver = self._load_driver_by_name(emulator.driver)
-            driver.probe(emulator, {}, {})
+            info = ratbag.drivers.DeviceInfo(
+                name=emulator.name,
+                syspath=Path("/sys/does/not/exist"),
+                path=emulator.path,
+            )
+            driver.probe(emulator, info, {})
 
     def _install_udev_monitor(self) -> None:
         context = pyudev.Context()
@@ -198,7 +204,9 @@ class Ratbag(GObject.Object):
 
     def _add_device(self, path: str) -> None:
         try:
-            info = ratbag.util.load_device_info(path)
+            from ratbag.drivers import DeviceInfo
+
+            info = DeviceInfo.from_path(Path(path))
             driver, config = self._find_driver(info)
 
             def cb_device_disconnected(device, ratbag):
@@ -232,7 +240,8 @@ class Ratbag(GObject.Object):
             logger.error(f"Unable to open device at {path}: {e}")
 
     def _find_driver(
-        self, info: Dict[str, Any]
+        self,
+        info: "ratbag.drivers.DeviceInfo",
     ) -> Tuple["ratbag.drivers.Driver", Dict[str, Any]]:
         """
         Load the driver assigned to the bus/VID/PID match. If a matching
@@ -245,12 +254,8 @@ class Ratbag(GObject.Object):
                 with driver-specific configuration
         :raises: UnsupportedDeviceError, NotImplementedError
         """
-        name = info.get("name", None)
-        bus = info.get("bus", None)
-        vid = info.get("vid", None)
-        pid = info.get("pid", None)
 
-        match = f"{bus}:{vid:04x}:{pid:04x}"
+        match = f"{info.bus}:{info.vid:04x}:{info.pid:04x}"
         # FIXME: this needs to use the install path
         path = Path("data")
         if not path.exists():
@@ -263,7 +268,7 @@ class Ratbag(GObject.Object):
         try:
             datafile = datafiles[match]
         except KeyError:
-            raise UnsupportedDeviceError(name, path)
+            raise UnsupportedDeviceError(info.name, info.path)
 
         # Flatten the config file to a dict of device info and
         # a dict of driver-specific configurations
@@ -271,7 +276,8 @@ class Ratbag(GObject.Object):
         # Append any extra information to the info dict
         for k, v in datafile["Device"].items():
             if k not in ["Driver", "DeviceMatch"]:
-                info[k] = v
+                if getattr(info, k, None):
+                    setattr(info, k, v)
         try:
             driver_config = {k: v for k, v in datafile[f"Driver/{driver_name}"].items()}
         except KeyError:
@@ -282,8 +288,8 @@ class Ratbag(GObject.Object):
         try:
             return self._load_driver_by_name(driver_name), driver_config
         except UnsupportedDeviceError as e:
-            e.name = name
-            e.path = path
+            e.name = info.name
+            e.path = info.path
             raise e
 
     def _load_driver_by_name(self, driver_name: str) -> "ratbag.drivers.Driver":

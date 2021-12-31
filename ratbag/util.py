@@ -9,6 +9,7 @@
 
 """
 
+import attr
 import binascii
 import configparser
 import logging
@@ -102,44 +103,6 @@ def load_data_files(path) -> Dict[str, configparser.ConfigParser]:
         raise FileNotFoundError("Unable to find data files")
 
     return files
-
-
-def load_device_info(devnode: Union[Path, str]) -> Dict[str, Any]:
-    """
-    :return: a dictionary with information about the device at `devnode`
-    """
-    context = pyudev.Context()
-    device = pyudev.Devices.from_device_file(context, devnode)
-
-    def find_prop(device, prop: str) -> Optional[str]:
-        try:
-            return device.properties[prop]
-        except KeyError:
-            try:
-                return find_prop(next(device.ancestors), prop)
-            except StopIteration:
-                return None
-
-    info: Dict[str, Any] = {}
-    info["name"] = find_prop(device, "HID_NAME")
-    info["vid"] = int(find_prop(device, "ID_VENDOR_ID") or 0, 16)  # type: ignore
-    info["pid"] = int(find_prop(device, "ID_MODEL_ID") or 0, 16)  # type: ignore
-    info["bus"] = find_prop(device, "ID_BUS")
-    info["syspath"] = device.sys_path
-
-    def find_report_descriptor(device) -> Optional[bytes]:
-        try:
-            with open(Path(device.sys_path) / "report_descriptor", "rb") as fd:
-                return fd.read()
-        except FileNotFoundError:
-            try:
-                return find_report_descriptor(next(device.ancestors))
-            except StopIteration:
-                return None
-
-    info["report_descriptor"] = find_report_descriptor(device)
-
-    return info
 
 
 def attr_from_data(

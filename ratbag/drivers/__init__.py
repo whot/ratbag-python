@@ -5,10 +5,12 @@
 # This file is formatted with Python Black
 #
 
+import attr
 import enum
 import fcntl
 import logging
 import pathlib
+import pyudev
 import os
 import select
 import struct
@@ -60,6 +62,74 @@ class Message(GObject.Object):
         else:
             subtype = ""
         return f"{self.msgtype}{subtype} {self.direction.name} ({len(self.bytes)}): {bytestr}"
+
+
+@attr.s
+class DeviceInfo:
+    """
+    Information about a device. This is information collected about a device
+    that can help in picking which driver to load, listing the device for the
+    user, etc.
+
+    Information collected is (usually) done without opening the device.
+    """
+
+    path: pathlib.Path = attr.ib()
+    syspath: pathlib.Path = attr.ib()
+    name: str = attr.ib(default="Unnamed device")
+    bus: str = attr.ib(
+        default="usb", validator=attr.validators.in_(("bluetooth", "usb"))
+    )
+    vid: int = attr.ib(default=0)
+    pid: int = attr.ib(default=0)
+    report_descriptor: Optional[bytes] = attr.ib(default=None)
+
+    @staticmethod
+    def from_path(path: pathlib.Path) -> "DeviceInfo":
+        context = pyudev.Context()
+        device = pyudev.Devices.from_device_file(context, path)
+
+        def find_prop(device, prop: str) -> Optional[str]:
+            try:
+                return device.properties[prop]
+            except KeyError:
+                try:
+                    return find_prop(next(device.ancestors), prop)
+                except StopIteration:
+                    return None
+
+        vid = int(find_prop(device, "ID_VENDOR_ID") or 0, 16)  # type: ignore
+        pid = int(find_prop(device, "ID_MODEL_ID") or 0, 16)  # type: ignore
+        name = (
+            find_prop(device, "HID_NAME") or f"Unnamed HID device {vid:04x}:{pid:04x}"
+        )
+        bus = find_prop(device, "ID_BUS")
+        assert bus
+        syspath = device.sys_path
+
+        def find_report_descriptor(device) -> Optional[bytes]:
+            try:
+                with open(
+                    pathlib.Path(device.sys_path) / "report_descriptor", "rb"
+                ) as fd:
+                    return fd.read()
+            except FileNotFoundError:
+                try:
+                    return find_report_descriptor(next(device.ancestors))
+                except StopIteration:
+                    return None
+
+        report_descriptor = find_report_descriptor(device)
+
+        return DeviceInfo(
+            path=path,
+            syspath=syspath,
+            name=name,
+            bus=bus,
+            vid=vid,
+            pid=pid,
+            report_descriptor=report_descriptor,
+        )
 
 
 class Rodent(GObject.Object):
@@ -178,9 +248,9 @@ class Rodent(GObject.Object):
 
         if path is not None:
             self.path = path
-            info = ratbag.util.load_device_info(path)
-            self.name = info["name"] or "Unnamed device"
-            self.report_descriptor = info.get("report_descriptor", None)
+            info = DeviceInfo.from_path(path)
+            self.name = info.name
+            self.report_descriptor = info.report_descriptor
             self._fd = open(path, "r+b", buffering=0)
             os.set_blocking(self._fd.fileno(), False)
 
@@ -347,7 +417,7 @@ class Driver(GObject.Object):
     def probe(
         self,
         device: Union["ratbag.drivers.Rodent", pathlib.Path],
-        device_info: Dict[str, Any] = {},
+        device_info: DeviceInfo,
         config: Dict[str, Any] = {},
     ) -> None:
         """

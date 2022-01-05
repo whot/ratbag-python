@@ -386,9 +386,6 @@ def _init_logger(conf=None, verbose=False):
     else:
         lvl = logging.DEBUG if verbose else logging.INFO
         logging.basicConfig(format="%(levelname)s: %(name)s: %(message)s", level=lvl)
-    # hidtools uses parse which spams at debug level, so as soon as we
-    # import hidtools, we get logspam.
-    logging.getLogger("parse").setLevel(logging.CRITICAL)
 
 
 def _init_recorders(outfile):

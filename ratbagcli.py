@@ -279,21 +279,44 @@ class Config(object):
         if self.empty or not self._matches(device):
             return
 
+        def err_non_existing(what, pidx, fidx=None):
+            if fidx is not None:
+                idx = f"{pidx}.{fidx}"
+            else:
+                idx = f"{pidx}"
+            click.secho(f"Config references nonexisting {what} {idx}", fg="blue")
+
+        def err_differs(what, pidx, fidx, item, expected, got):
+            what = what.capitalize()
+            if fidx is not None:
+                idx = f"{pidx}.{fidx}"
+            else:
+                idx = f"{pidx}"
+            click.secho(f"{what} {idx} {item} expected {expected}, is {got}", fg="red")
+
+        def err_is_enabled(what, pidx, fidx=None):
+            err_differs(what, pidx, fidx, "", "disabled", "enabled")
+
         for pconf in self.profiles:
             pidx = pconf["index"]
             try:
                 profile = device.profiles[pidx]
             except IndexError:
-                print(f"Config references nonexisting profile {pidx}")
+                err_non_existing("profile", pidx)
                 continue
 
             if pconf.get("disable", False) and profile.enabled:
-                print(f"Profile {pidx} expected disabled, is enabled")
+                err_is_enabled("profile", pidx)
 
             report_rate = pconf.get("report-rate", profile.report_rate)
             if report_rate != profile.report_rate:
-                print(
-                    f"Profile {pidx} report rate expected {pconf['report-rate']}, is {profile.report_rate}"
+                err_differs(
+                    "profile",
+                    pidx,
+                    None,
+                    "report-rate",
+                    pconf["report-rate"],
+                    profile.report_rate,
                 )
 
             for rconf in pconf.get("resolutions", []):
@@ -301,17 +324,22 @@ class Config(object):
                 try:
                     resolution = profile.resolutions[ridx]
                 except IndexError:
-                    print(f"Config references nonexisting resolution {pidx}.{ridx}")
+                    err_non_existing("resolution", pidx, ridx)
                     continue
 
                 if rconf.get("disable", False) and resolution.enabled:
-                    print(f"Resolution {pidx}.{ridx} expected disabled, is enabled")
+                    err_is_enabled("resolution", pidx, ridx)
                     continue
 
                 dpis = rconf.get("dpi", None)
                 if dpis and tuple(dpis) != resolution.dpi:
-                    print(
-                        f"Resolution {pidx}.{ridx} expected dpi ({dpis[0]}, {dpis[1]}), is ({resolution.dpi[0]}, {resolution.dpi[1]})"
+                    err_differs(
+                        "resolution",
+                        pidx,
+                        ridx,
+                        "dpi",
+                        tuple(dpis),
+                        tuple(resolution.dpi),
                     )
 
             for bconf in pconf.get("buttons", []):
@@ -319,14 +347,14 @@ class Config(object):
                 try:
                     button = profile.buttons[bidx]
                 except IndexError:
-                    print(f"Config references nonexisting button {pidx}.{bidx}")
+                    err_non_existing("button", pidx, bidx)
                     continue
 
                 if (
                     bconf.get("disable", False)
                     and button.action.type != ratbag.Action.Type.NONE
                 ):
-                    print(f"Button {pidx}.{bidx} expected disabled, is enabled")
+                    err_is_enabled("button", pidx, bidx)
                     continue
 
                 bstring = {
@@ -340,16 +368,12 @@ class Config(object):
                 # Button numbers
                 bnumber = bconf.get("button", 0)
                 if bnumber > 0 and button.action != ratbag.ActionButton(None, bnumber):
-                    print(
-                        f"Button {pidx}.{bidx} expected button {bnumber}, is {bstring}"
-                    )
+                    err_differs("button", pidx, bidx, "button", bnumber, bstring)
                     continue
 
                 special = bconf.get("special", None)
                 if special and button.action != ratbag.ActionSpecial(None, special):
-                    print(
-                        f"Button {pidx}.{bidx} expected button {bnumber}, is {bstring}"
-                    )
+                    err_differs("button", pidx, bidx, "special", special, bstring)
                     continue
 
                 macro = bconf.get("macro", {})
@@ -367,9 +391,7 @@ class Config(object):
                     if button.action != ratbag.ActionMacro(
                         None, name=None, events=events
                     ):
-                        print(
-                            f"Button {pidx}.{bidx} expected macro {events}, is {bstring}"
-                        )
+                        err_differs("button", pidx, bidx, "macro", events, bstring)
                         continue
 
 
@@ -444,7 +466,7 @@ def ratbagcli_apply_config(ctx, nocommit: bool, config: Path, name: Optional[str
     try:
         user_config = Config(config, nocommit)
     except Config.Error as e:
-        print(f"Config error in {config}: {str(e)}. Aborting")
+        click.secho(f"Config error in {config}: {str(e)}. Aborting", fg="red")
         sys.exit(1)
 
     try:
@@ -480,7 +502,7 @@ def ratbagcli_verify_config(ctx, config: Path, name: Optional[str]):
     try:
         user_config = Config(config, False)
     except Config.Error as e:
-        print(f"Config error in {config}: {str(e)}. Aborting")
+        click.secho(f"Config error in {config}: {str(e)}. Aborting", fg="red")
         sys.exit(1)
 
     try:
@@ -512,7 +534,7 @@ def ratbagcli_show(ctx, name: str):
         def cb_device_added(ratbagcli, device):
             if name is None or name in device.name:
                 device_dict = device.as_dict()
-                print(yaml.dump(device_dict, default_flow_style=None))
+                click.echo(yaml.dump(device_dict, default_flow_style=None))
 
         ratbagd.connect("device-added", cb_device_added)
         ratbagd.start()
@@ -530,10 +552,10 @@ def ratbagcli_list(ctx):
         mainloop = GLib.MainLoop()
         ratbagd = ratbag.Ratbag(ctx.obj)
 
-        print("devices:")
+        click.echo("devices:")
 
         def cb_device_added(ratbagcli, device):
-            print(f"- {device.name}")
+            click.echo(f"- {device.name}")
 
         ratbagd.connect("device-added", cb_device_added)
         ratbagd.start()

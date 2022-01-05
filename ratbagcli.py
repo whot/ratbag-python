@@ -4,13 +4,15 @@
 #
 # This file is formatted with Python Black
 
-import argparse
+import click
 import logging
 import logging.config
 import os
 import re
 import sys
 import yaml
+
+from typing import Optional
 
 try:
     from gi.repository import GLib
@@ -396,75 +398,151 @@ def _init_emulators(infile):
     return [ratbag.emulator.YamlDevice(infile)]
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser("A ratbag commandline tool")
-    parser.add_argument(
-        "--verbose", help="Enable debug logging", action="store_true", default=False
-    )
-    parser.add_argument(
-        "--logger-config", help="Path to the logger config file", type=str, default=None
-    )
-    parser.add_argument(
-        "--record", help="Path to the file to record to", type=str, default=None
-    )
-    parser.add_argument(
-        "--replay", help="Path to a device recording", type=str, default=None
-    )
-    parser.add_argument(
-        "--apply-config",
-        help="Apply the given config to all matching devices",
-        type=str,
-        default=None,
-    )
-    parser.add_argument(
-        "--verify-config",
-        help="Verify the given config was applied to all matching devices",
-        type=str,
-        default=None,
-    )
-    parser.add_argument(
-        "--nocommit",
-        help="Never invoke commit() on the device",
-        action="store_true",
-        default=False,
-    )
+@click.group()
+@click.option("--verbose", count=True, help="Enable debug logging")
+@click.option(
+    "--log-config",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Path to the logger config file",
+)
+@click.option(
+    "--record", type=click.Path(dir_okay=False), help="Path to the file to record to"
+)
+@click.option(
+    "--replay",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Path to the device recording",
+)
+@click.pass_context
+def ratbagcli(ctx, verbose: int, log_config: Path, record: Path, replay: Path):
+    global logger
 
-    ns = parser.parse_args()
-
-    _init_logger(ns.logger_config, ns.verbose)
+    _init_logger(log_config, verbose >= 1)
     logger = logging.getLogger("ratbagcli")
 
-    config = {}
-    if ns.replay:
-        config["emulators"] = _init_emulators(ns.replay)
-    if ns.record:
-        config["recorders"] = _init_recorders(ns.record)
+    ctx.obj = {}
+    if record:
+        ctx.obj["recorders"] = _init_recorders(record)
+    if replay:
+        ctx.obj["emulators"] = _init_emulators(replay)
 
-    try:
-        user_config = Config(ns.apply_config, ns.nocommit)
-    except Config.Error as e:
-        print(f"Config error in {ns.apply_config}: {str(e)}. Aborting")
-        sys.exit(1)
 
+@ratbagcli.command(name="apply-config")
+@click.option(
+    "--nocommit", type=bool, is_flag=True, help="Never invoke commit() on the device"
+)
+@click.argument("config", type=click.Path(exists=True, dir_okay=False))
+@click.argument("name", required=False)
+@click.pass_context
+def ratbagcli_apply_config(ctx, nocommit: bool, config: Path, name: Optional[str]):
+    """
+    Apply the given config to the device.
+
+    If a name is given, all device names are matched for this substring and
+    only matching devices are compared.
+    """
     try:
-        verify_config = Config(ns.verify_config, ns.nocommit)
+        user_config = Config(config, nocommit)
     except Config.Error as e:
-        print(f"Config error in {ns.verify_config}: {str(e)}. Aborting")
+        print(f"Config error in {config}: {str(e)}. Aborting")
         sys.exit(1)
 
     try:
         mainloop = GLib.MainLoop()
-        ratbagd = ratbag.Ratbag(config)
+        ratbagd = ratbag.Ratbag(ctx.obj)
 
         def cb_device_added(ratbagcli, device):
-            device_dict = device.as_dict()
-            print(yaml.dump(device_dict, default_flow_style=None))
-            user_config.apply(device)
-            verify_config.verify(device)
+            if name is None or name in device.name:
+                user_config.apply(device)
+                mainloop.quit()
 
         ratbagd.connect("device-added", cb_device_added)
         ratbagd.start()
 
+        GLib.timeout_add(1000, lambda: mainloop.quit())
         mainloop.run()
     except KeyboardInterrupt:
         pass
+
+
+@ratbagcli.command(name="verify-config")
+@click.argument("config", type=click.Path(), required=True)
+@click.argument("name", type=str, required=False)
+@click.pass_context
+def ratbagcli_verify_config(ctx, config: Path, name: Optional[str]):
+    """
+    Compare differences between the given config and the current configuration
+    stored on the device.
+
+    If a name is given, all device names are matched for this substring and
+    only matching devices are compared.
+    """
+    try:
+        user_config = Config(config, False)
+    except Config.Error as e:
+        print(f"Config error in {config}: {str(e)}. Aborting")
+        sys.exit(1)
+
+    try:
+        mainloop = GLib.MainLoop()
+        ratbagd = ratbag.Ratbag(ctx.obj)
+
+        def cb_device_added(ratbagcli, device):
+            if name is None or name in device.name:
+                user_config.verify(device)
+                mainloop.quit()
+
+        ratbagd.connect("device-added", cb_device_added)
+        ratbagd.start()
+
+        GLib.timeout_add(1000, lambda: mainloop.quit())
+        mainloop.run()
+    except KeyboardInterrupt:
+        pass
+
+
+@ratbagcli.command(name="show")
+@click.argument("name", required=False)
+@click.pass_context
+def ratbagcli_show(ctx, name: str):
+    try:
+        mainloop = GLib.MainLoop()
+        ratbagd = ratbag.Ratbag(ctx.obj)
+
+        def cb_device_added(ratbagcli, device):
+            if name is None or name in device.name:
+                device_dict = device.as_dict()
+                print(yaml.dump(device_dict, default_flow_style=None))
+
+        ratbagd.connect("device-added", cb_device_added)
+        ratbagd.start()
+
+        GLib.timeout_add(1000, lambda: mainloop.quit())
+        mainloop.run()
+    except KeyboardInterrupt:
+        pass
+
+
+@ratbagcli.command(name="list")
+@click.pass_context
+def ratbagcli_list(ctx):
+    try:
+        mainloop = GLib.MainLoop()
+        ratbagd = ratbag.Ratbag(ctx.obj)
+
+        print("devices:")
+
+        def cb_device_added(ratbagcli, device):
+            print(f"- {device.name}")
+
+        ratbagd.connect("device-added", cb_device_added)
+        ratbagd.start()
+
+        GLib.timeout_add(1000, lambda: mainloop.quit())
+        mainloop.run()
+    except KeyboardInterrupt:
+        pass
+
+
+if __name__ == "__main__":
+    ratbagcli()

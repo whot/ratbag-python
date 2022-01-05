@@ -737,6 +737,9 @@ class RoccatDriver(ratbag.drivers.Driver):
                     "name": device.name,
                     "driver": "roccat",
                     "path": device.path,
+                    "syspath": info.path,
+                    "vid": info.vid,
+                    "pid": info.pid,
                     "report_descriptor": self.hidraw_device.report_descriptor,
                 }
             )

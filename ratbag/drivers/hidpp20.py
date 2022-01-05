@@ -477,6 +477,9 @@ class Hidpp20Driver(ratbag.drivers.Driver):
                     "name": device.name,
                     "driver": "hidpp20",
                     "path": device.path,
+                    "syspath": info.path,
+                    "vid": info.vid,
+                    "pid": info.pid,
                     "report_descriptor": hidraw_device.report_descriptor,
                 }
             )

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/software/polkit/policyconfig-1.dtd">
+<policyconfig>
+    <vendor>🐭 The libratbag Project 🐭</vendor>
+    <vendor_url>https://github.com/libratbag</vendor_url>
+    <action id="org.freedesktop.ratbag.open-hidraw-device">
+        <message>🐭 Authentication is required to open a hidraw device for use by ratbag</message>
+        <defaults>
+            <allow_any>no</allow_any>
+            <allow_inactive>no</allow_inactive>
+            <allow_active>auth_admin</allow_active>
+        </defaults>
+	<!--
+        <annotate key="org.freedesktop.policykit.exec.path">/usr/bin/python3</annotate>
+	<annotate key="org.freedesktop.policykit.exec.argv1">/home/whot/code/ratbag/ratbag-python/ratbag-open-hidraw</annotate>
+	-->
+    </action>
+</policyconfig>

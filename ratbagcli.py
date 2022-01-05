@@ -429,15 +429,12 @@ if __name__ == "__main__":
         default=False,
     )
 
-    parser.add_argument("devices", nargs="*", default=[])
     ns = parser.parse_args()
 
     _init_logger(ns.logger_config, ns.verbose)
     logger = logging.getLogger("ratbagcli")
 
     config = {}
-    if ns.devices:
-        config["device-paths"] = ns.devices
     if ns.replay:
         config["emulators"] = _init_emulators(ns.replay)
     if ns.record:

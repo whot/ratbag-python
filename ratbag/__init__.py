@@ -137,7 +137,6 @@ class Ratbag(GObject.Object):
 
     Supported keys in ``config``:
 
-    - ``device-paths``: a list of device paths to initialize (if any)
     - ``emulators``: a list of :class:`ratbag.emulator.YamlDevice` or similar
       to emulate a device
     - ``recorders``: a list of :class:`ratbag.recorder.SimpleRecorder` or
@@ -168,12 +167,9 @@ class Ratbag(GObject.Object):
         """
         Add the devices and/or start monitoring udev for new devices.
         """
-        paths = self._config.get("device-paths", None)
-        if not paths:
-            logger.debug("Installing udev monitor")
-            self._install_udev_monitor()
-            paths = ratbag.util.find_hidraw_devices()
-        for path in paths:
+        logger.debug("Installing udev monitor")
+        self._install_udev_monitor()
+        for path in ratbag.util.find_hidraw_devices():
             self._add_device(path=path)
 
         for emulator in self._config.get("emulators", []):

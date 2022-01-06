@@ -161,10 +161,12 @@
 </li>
       <li><a href="ratbag.html#ratbag.Led.brightness">brightness (ratbag.Led attribute)</a>
 </li>
-      <li><a href="ratbag.html#ratbag.Button">Button (class in ratbag)</a>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.DeviceInfo.bus">bus (ratbag.drivers.DeviceInfo attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ratbag.html#ratbag.Button">Button (class in ratbag)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Action.Type.BUTTON">BUTTON (ratbag.Action.Type attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.ActionButton.button">button (ratbag.ActionButton property)</a>
@@ -222,6 +224,8 @@
       <li><a href="ratbag.html#ratbag.Device">Device (class in ratbag)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Feature.device">device (ratbag.Feature attribute)</a>
+</li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.DeviceInfo">DeviceInfo (class in ratbag.drivers)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Device.dirty">dirty (ratbag.Device attribute)</a>
 
@@ -311,6 +315,8 @@
 </li>
       <li><a href="ratbag.html#ratbag.parser.Parser.from_object">from_object() (ratbag.parser.Parser class method)</a>
 </li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.DeviceInfo.from_path">from_path() (ratbag.drivers.DeviceInfo static method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -389,8 +395,6 @@
 </li>
       <li><a href="ratbag.html#ratbag.util.load_data_files">load_data_files() (in module ratbag.util)</a>
 </li>
-      <li><a href="ratbag.html#ratbag.util.load_device_info">load_device_info() (in module ratbag.util)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ratbag.html#ratbag.recorder.YamlDeviceRecorder.log_ioctl_rx">log_ioctl_rx() (ratbag.recorder.YamlDeviceRecorder method)</a>
@@ -467,6 +471,8 @@
       <ul>
         <li><a href="ratbag.html#ratbag.Device.name">(ratbag.Device attribute)</a>
 </li>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.DeviceInfo.name">(ratbag.drivers.DeviceInfo attribute)</a>
+</li>
       </ul></li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp10.Hidpp10Driver.NAME">NAME (ratbag.drivers.hidpp10.Hidpp10Driver attribute)</a>
 </li>
@@ -517,6 +523,8 @@
       <li><a href="ratbag.html#ratbag.Device.path">path (ratbag.Device attribute)</a>
 
       <ul>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.DeviceInfo.path">(ratbag.drivers.DeviceInfo attribute)</a>
+</li>
         <li><a href="ratbag.drivers.html#ratbag.drivers.Rodent.path">(ratbag.drivers.Rodent attribute)</a>
 </li>
         <li><a href="ratbag.html#ratbag.ProtocolError.path">(ratbag.ProtocolError attribute)</a>
@@ -524,16 +532,18 @@
         <li><a href="ratbag.html#ratbag.UnsupportedDeviceError.path">(ratbag.UnsupportedDeviceError attribute)</a>
 </li>
       </ul></li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.DeviceInfo.pid">pid (ratbag.drivers.DeviceInfo attribute)</a>
+</li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.Driver.probe">probe() (ratbag.drivers.Driver method)</a>
 
       <ul>
         <li><a href="ratbag.drivers.html#ratbag.drivers.hidpp10.Hidpp10Driver.probe">(ratbag.drivers.hidpp10.Hidpp10Driver method)</a>
 </li>
       </ul></li>
-      <li><a href="ratbag.html#ratbag.Profile">Profile (class in ratbag)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ratbag.html#ratbag.Profile">Profile (class in ratbag)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Button.profile">profile (ratbag.Button attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Profile.Capability">Profile.Capability (class in ratbag)</a>
@@ -617,14 +627,18 @@
         <li><a href="ratbag.html#ratbag.emulator.YamlDevice.recv">(ratbag.emulator.YamlDevice method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ratbag.html#ratbag.parser.Spec.repeat">repeat (ratbag.parser.Spec attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ratbag.html#ratbag.emulator.Reply">Reply (class in ratbag.emulator)</a>
 </li>
-      <li><a href="ratbag.drivers.html#ratbag.drivers.Rodent.report_descriptor">report_descriptor (ratbag.drivers.Rodent attribute)</a>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.DeviceInfo.report_descriptor">report_descriptor (ratbag.drivers.DeviceInfo attribute)</a>
+
+      <ul>
+        <li><a href="ratbag.drivers.html#ratbag.drivers.Rodent.report_descriptor">(ratbag.drivers.Rodent attribute)</a>
 </li>
+      </ul></li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.Rodent.report_ids">report_ids (ratbag.drivers.Rodent property)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Profile.report_rate">report_rate (ratbag.Profile attribute)</a>
@@ -733,6 +747,8 @@
       </ul></li>
       <li><a href="ratbag.drivers.html#ratbag.drivers.Message.SUBTYPE">SUBTYPE (ratbag.drivers.Message attribute)</a>
 </li>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.DeviceInfo.syspath">syspath (ratbag.drivers.DeviceInfo attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -781,6 +797,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ratbag.html#ratbag.parser.Spec.ConverterArg.value">value (ratbag.parser.Spec.ConverterArg attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ratbag.drivers.html#ratbag.drivers.DeviceInfo.vid">vid (ratbag.drivers.DeviceInfo attribute)</a>
 </li>
   </ul></td>
 </tr></table>

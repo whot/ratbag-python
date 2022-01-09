@@ -11,14 +11,11 @@ import attr
 import enum
 import logging
 import pathlib
-import struct
 
-import gi
 from gi.repository import GObject
 
 import ratbag
 import ratbag.hid
-from ratbag.util import as_hex
 from ratbag.parser import Parser, Spec
 
 logger = logging.getLogger(__name__)

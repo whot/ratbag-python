@@ -8,11 +8,10 @@ import attr
 import enum
 import logging
 import pyudev
-import uuid
 
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-CommitCallback = Callable[["ratbag.Device", bool, str], None]
+CommitCallback = Callable[["ratbag.Device", bool, int], None]
 
 from pathlib import Path
 
@@ -386,6 +385,7 @@ class Device(GObject.Object):
         self._profiles: Tuple[Profile, ...] = tuple()
         self._driver = driver
         self._dirty = False
+        self._seqno = 1
 
     @property
     def profiles(self) -> Tuple["ratbag.Profile", ...]:
@@ -397,20 +397,23 @@ class Device(GObject.Object):
         # modify it.
         return self._profiles
 
-    def commit(self, callback: CommitCallback = None) -> str:
+    def commit(self, callback: CommitCallback = None) -> int:
         """
         Write the current changes to the driver. This is an asynchronous
-        operation (maybe in a separate thread). Once complete the
+        operation (maybe in a separate thread). Once complete, the
         driver calls the specified callback function with a boolean status. ::
 
-            def commit_complete(device, status, cookie):
+            def commit_complete(device, status, sequence_number):
                 if status:
                     print("Commit was successful")
 
-            device.commit(commit_complete)
+            seqno = device.commit(commit_complete)
 
-        The cookie parameter is a unique token to filter out subsequent
-        ``resync`` signals, see below.
+        The returned sequence number can be used to identify the specific
+        invocation of :meth:`commit`. This number increases by an unspecified
+        amount every time the device state changes, a ``resync`` signal with a
+        sequence number lower than returned by this method is thus from an
+        earlier device change.
 
         The :attr:`dirty` status of the device's features is reset to
         ``False`` immediately before the callback is invoked but not before
@@ -422,22 +425,23 @@ class Device(GObject.Object):
 
         If any device state changes in response to :meth:`commit`, the driver
         emits a ``resync`` signal to notify all other listeners. This signal
-        includes the same cookie as passed to the callback to allow for
+        includes the same sequence as passed to the callback to allow for
         filtering signals.
 
-        :returns: a unique string for this transaction
+        :returns: a sequence number for this transaction
         """
-        cookie = str(uuid.uuid1())
-        GLib.idle_add(self._cb_idle_commit, callback, cookie)
-        return cookie
 
-    def _cb_idle_commit(self, callback: CommitCallback, cookie: str) -> bool:
+        self._seqno += 1
+        GLib.idle_add(self._cb_idle_commit, callback, self._seqno)
+        return self._seqno
+
+    def _cb_idle_commit(self, callback: CommitCallback, seqno: int) -> bool:
         if not self.dirty:
             # well, that was easy
-            callback(self, True, cookie)
+            callback(self, True, seqno)
             return False  # don't reschedule idle func
 
-        def callback_wrapper(device: ratbag.Device, status: bool, cookie: str) -> None:
+        def callback_wrapper(device: ratbag.Device, status: bool, seqno: int) -> None:
             def clean(x: "ratbag.Feature") -> None:
                 x.dirty = False  # type: ignore
 
@@ -448,10 +452,10 @@ class Device(GObject.Object):
                 map(clean, p.leds)
                 p.dirty = False  # type: ignore
             self.dirty = False  # type: ignore
-            callback(self, status, cookie)
+            callback(self, status, seqno)
 
         logger.debug("Writing current changes to device")
-        self.emit("commit", callback_wrapper, cookie)
+        self.emit("commit", callback_wrapper, seqno)
 
         return False  # don't reschedule idle func
 

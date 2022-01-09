@@ -73,11 +73,11 @@ class RoccatTestDevice(ratbag.drivers.Rodent):
         self.profiles = [RoccatTestDevice.Profile() for _ in range(roccat.MAX_PROFILES)]
         self.active_profile = 0
         self.expected_commit_status = True
-        self.commits = []  # the cookies
+        self.commits = []  # the seqnos
 
-    def commit_callback(self, device, status, cookie):
+    def commit_callback(self, device, status, seqno):
         assert status == self.expected_commit_status
-        self.commits.append(cookie)
+        self.commits.append(seqno)
 
     def hid_get_feature(self, report_id):
         try:
@@ -304,11 +304,11 @@ class TestRoccatDriver(object):
         device = self.ratbag_device
         button = device.profiles[3].buttons[2]
         button.set_action(ratbag.ActionButton(button, 1))  # change to left button
-        cookie = device.commit(dev.commit_callback)
+        seqno = device.commit(dev.commit_callback)
         self.mainloop()
 
         assert len(dev.commits) == 1
-        assert dev.commits[0] == cookie
+        assert dev.commits[0] == seqno
         assert dev.profiles[3].buttons[2] == 1
 
     def test_dpi_change(self, driver):
@@ -322,10 +322,10 @@ class TestRoccatDriver(object):
         res.set_dpi((1300, 1300))
         res = device.profiles[1].resolutions[1]
         res.set_dpi((1400, 1400))
-        cookie = device.commit(dev.commit_callback)
+        seqno = device.commit(dev.commit_callback)
         self.mainloop()
 
         assert len(dev.commits) == 1
-        assert dev.commits[0] == cookie
+        assert dev.commits[0] == seqno
         assert dev.profiles[1].resolutions[1] == (1400, 1400)
         assert dev.profiles[2].resolutions[4] == (1300, 1300)

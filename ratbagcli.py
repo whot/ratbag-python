@@ -265,7 +265,7 @@ class Config(object):
 
         if not self.nocommit:
 
-            def cb_commit_complete(device, success, cookie):
+            def cb_commit_complete(device, success, seqno):
                 if not success:
                     logger.error("Failed to write changes to the device")
                 else:

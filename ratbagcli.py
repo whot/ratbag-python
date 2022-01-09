@@ -38,11 +38,6 @@ class Config(object):
         pass
 
     def __init__(self, filename, nocommit=False):
-        # An empty config object so we don't have to ifdef the caller
-        self.empty = filename is None
-        if self.empty:
-            return
-
         self.nocommit = nocommit
 
         with open(filename) as fd:
@@ -157,7 +152,7 @@ class Config(object):
         return False
 
     def apply(self, device):
-        if self.empty or not self._matches(device):
+        if not self._matches(device):
             return
 
         for pconf in self.profiles:
@@ -276,7 +271,7 @@ class Config(object):
 
     def verify(self, device):
         logger.info(f"Verifying config against {device.name}")
-        if self.empty or not self._matches(device):
+        if not self._matches(device):
             return
 
         def err_non_existing(what, pidx, fidx=None):

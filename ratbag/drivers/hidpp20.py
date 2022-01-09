@@ -695,7 +695,7 @@ class QueryRootGetFeature(Query):
 
     def __str__(self):
         return (
-            f"{type(self).__name__}: {self.feature.name} (0x{self.feature.value:04x}) at index {self.feature_index}, "
+            f"{type(self).__name__}: {self.feature.name} (0x{self.feature.value:04x}) at index {self.reply.feature_index}, "
             f"type {self.reply.feature_type} "
             f"version {self.reply.feature_version}"
         )

@@ -202,6 +202,12 @@ class Ratbag(GObject.Object):
             info = DeviceInfo.from_path(Path(path))
             driver, config = self._find_driver(info)
 
+            if driver is None:
+                logger.info(
+                    f"Skipping device {info.name} ({info.path}), no driver assigned"
+                )
+                return
+
             def cb_device_disconnected(device, ratbag):
                 logger.info(f"disconnected {device.name}")
                 self._devices.remove(device)
@@ -235,7 +241,7 @@ class Ratbag(GObject.Object):
     def _find_driver(
         self,
         info: "ratbag.drivers.DeviceInfo",
-    ) -> Tuple["ratbag.drivers.Driver", Dict[str, Any]]:
+    ) -> Tuple[Optional["ratbag.drivers.Driver"], Dict[str, Any]]:
         """
         Load the driver assigned to the bus/VID/PID match. If a matching
         driver is found, that driver's :func:`LOAD_DRIVER_FUNC` is called with
@@ -261,7 +267,7 @@ class Ratbag(GObject.Object):
         try:
             datafile = datafiles[match]
         except KeyError:
-            raise UnsupportedDeviceError(info.name, info.path)
+            return None, {}
 
         # Flatten the config file to a dict of device info and
         # a dict of driver-specific configurations

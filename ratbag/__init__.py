@@ -4,20 +4,18 @@
 #
 # This file is formatted with Python Black
 
-import attr
+from pathlib import Path
+from gi.repository import GLib, GObject
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
 import enum
 import logging
 import pyudev
 
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+import ratbag.util
+
 
 CommitCallback = Callable[["ratbag.Device", bool, int], None]
-
-from pathlib import Path
-
-from gi.repository import GLib, GObject
-
-import ratbag.util
 
 logger = logging.getLogger(__name__)
 

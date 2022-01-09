@@ -116,7 +116,7 @@ class Profile(object):
     enabled: bool = attr.ib(default=False)
     dpi_list: List[int] = attr.ib(default=attr.Factory(list))
     report_rates: List[int] = attr.ib(default=attr.Factory(list))
-    data: bytes = attr.ib(default=bytes())
+    initial_data: bytes = attr.ib(default=bytes())
     """
     The initial data this profile was created from. This data is constant
     for the life of the profile and can be used to restore the profile to
@@ -139,7 +139,7 @@ class Profile(object):
 
     @classmethod
     def from_data(cls, address: int, enabled: bool, data: bytes):
-        profile = cls(address, enabled, data=data)
+        profile = cls(address, enabled, initial_data=data)
         spec = [
             Spec("B", "_report_rate"),
             Spec("B", "default_dpi"),

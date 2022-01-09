@@ -900,17 +900,20 @@ is used by drivers.</p></li>
 <dt class="sig sig-object py" id="ratbag.Device.commit">
 <span class="sig-name descname"><span class="pre">commit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Device.commit" title="Permalink to this definition"></a></dt>
 <dd><p>Write the current changes to the driver. This is an asynchronous
-operation (maybe in a separate thread). Once complete the
+operation (maybe in a separate thread). Once complete, the
 driver calls the specified callback function with a boolean status.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">commit_complete</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">cookie</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">commit_complete</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">sequence_number</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">status</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Commit was successful&quot;</span><span class="p">)</span>
 
-<span class="n">device</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">commit_complete</span><span class="p">)</span>
+<span class="n">seqno</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">commit_complete</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The cookie parameter is a unique token to filter out subsequent
-<code class="docutils literal notranslate"><span class="pre">resync</span></code> signals, see below.</p>
+<p>The returned sequence number can be used to identify the specific
+invocation of <a class="reference internal" href="#ratbag.Device.commit" title="ratbag.Device.commit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">commit()</span></code></a>. This number increases by an unspecified
+amount every time the device state changes, a <code class="docutils literal notranslate"><span class="pre">resync</span></code> signal with a
+sequence number lower than returned by this method is thus from an
+earlier device change.</p>
 <p>The <a class="reference internal" href="#ratbag.Device.dirty" title="ratbag.Device.dirty"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dirty</span></code></a> status of the device’s features is reset to
 <code class="docutils literal notranslate"><span class="pre">False</span></code> immediately before the callback is invoked but not before
 the driver handles the state changes. In other words, a caller must
@@ -919,14 +922,14 @@ callback.</p>
 <p>If an error occurs, the driver calls the callback with a <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 <p>If any device state changes in response to <a class="reference internal" href="#ratbag.Device.commit" title="ratbag.Device.commit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">commit()</span></code></a>, the driver
 emits a <code class="docutils literal notranslate"><span class="pre">resync</span></code> signal to notify all other listeners. This signal
-includes the same cookie as passed to the callback to allow for
+includes the same sequence as passed to the callback to allow for
 filtering signals.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>a unique string for this transaction</p>
+<dd class="field-even"><p>a sequence number for this transaction</p>
 </dd>
 </dl>
 </dd></dl>

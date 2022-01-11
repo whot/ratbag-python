@@ -471,7 +471,7 @@ def ratbagcli_apply_config(ctx, nocommit: bool, config: Path, name: Optional[str
         def cb_device_added(ratbagcli, device):
             if name is None or name in device.name:
                 user_config.apply(device)
-                mainloop.quit()
+                GLib.idle_add(lambda: mainloop.quit())
 
         ratbagd.connect("device-added", cb_device_added)
         ratbagd.start()
@@ -507,7 +507,7 @@ def ratbagcli_verify_config(ctx, config: Path, name: Optional[str]):
         def cb_device_added(ratbagcli, device):
             if name is None or name in device.name:
                 user_config.verify(device)
-                mainloop.quit()
+                GLib.idle_add(lambda: mainloop.quit())
 
         ratbagd.connect("device-added", cb_device_added)
         ratbagd.start()

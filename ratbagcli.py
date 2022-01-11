@@ -528,7 +528,7 @@ def ratbagcli_show(ctx, name: str):
 
         def cb_device_added(ratbagcli, device):
             if name is None or name in device.name:
-                device_dict = device.as_dict()
+                device_dict = {"devices": [device.as_dict()]}
                 click.echo(yaml.dump(device_dict, default_flow_style=None))
 
         ratbagd.connect("device-added", cb_device_added)

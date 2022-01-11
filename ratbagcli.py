@@ -547,16 +547,22 @@ def ratbagcli_list(ctx):
         mainloop = GLib.MainLoop()
         ratbagd = ratbag.Ratbag(ctx.obj)
 
-        click.echo("devices:")
+        devices = []
 
-        def cb_device_added(ratbagcli, device):
-            click.echo(f"- {device.name}")
+        def cb_device_added(ratbagcli, device, devices):
+            if not devices:
+                click.echo("devices:")
+                devices.append(device)
+            click.echo(f"- name: {device.name}")
 
-        ratbagd.connect("device-added", cb_device_added)
+        ratbagd.connect("device-added", cb_device_added, devices)
         ratbagd.start()
 
         GLib.timeout_add(1000, lambda: mainloop.quit())
         mainloop.run()
+
+        if not devices:
+            click.echo("# No devices available")
     except KeyboardInterrupt:
         pass
 

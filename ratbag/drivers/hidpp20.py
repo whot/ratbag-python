@@ -493,6 +493,7 @@ class Hidpp20Driver(ratbag.drivers.Driver):
                 name=profile.name,
                 report_rate=profile.report_rate,
                 report_rates=profile.report_rates,
+                active=idx == 0,  # FIXME
             )
             for dpi_idx, dpi in enumerate(profile.dpi):
                 ratbag.Resolution(p, dpi_idx, (dpi, dpi), dpi_list=profile.dpi_list)

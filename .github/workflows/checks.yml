@@ -4,7 +4,7 @@ on: [ push, pull_request ]
 
 env:
   UBUNTU_PACKAGES: pkg-config python3-pip python3-gi libgirepository1.0-dev libevdev2
-  PIP_PACKAGES: attrs mypy black pytest pyudev pygobject libevdev
+  PIP_PACKAGES: attrs mypy black pytest pyudev pygobject libevdev dbus-next
 
 jobs:
   python-black:

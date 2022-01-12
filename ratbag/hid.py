@@ -1324,8 +1324,12 @@ class ReportDescriptor:
             elif item.hid == 0b01110100:  # HID Report Size
                 rsize = item.value
             elif item.hid in (0b10000000, 0b10010000, 0b10110000):  # Hid Main Input
+                # If we never got a report ID, we just use a report ID of -1.
+                # No device we care about will check for that so we will
+                # always fail in the driver when the required reports aren't
+                # available.
                 if current_report_id is None:
-                    raise NotImplementedError("This HID parser requires HID report IDs")
+                    current_report_id = -1
                 rtype = Report.Type(item.hid)
                 r = reports[rtype].get(
                     current_report_id,

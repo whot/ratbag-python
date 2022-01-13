@@ -481,7 +481,7 @@ class Hidpp20Driver(ratbag.drivers.Driver):
                 }
             )
 
-        ratbag_device = ratbag.Device(self, device.path, device.name)
+        ratbag_device = ratbag.Device(self, device.path, device.name, rodent.model)
         ratbag_device.connect("commit", device.cb_commit)
         device.start()
         # Device probe/start was successful if no exception occurs. Now fill in the

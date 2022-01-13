@@ -380,11 +380,14 @@ class Device(GObject.Object):
         "resync": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
     }
 
-    def __init__(self, driver: "ratbag.drivers.Driver", path: str, name: str):
+    def __init__(
+        self, driver: "ratbag.drivers.Driver", path: str, name: str, model: str
+    ):
         GObject.Object.__init__(self)
         self.driver = driver
         self.path = path
         self.name = name
+        self.model = model
         self._profiles: Tuple[Profile, ...] = tuple()
         self._driver = driver
         self._dirty = False

@@ -13,7 +13,7 @@ import pytest
 @pytest.fixture
 def device():
     fake_driver = object()
-    return ratbag.Device(fake_driver, "test device", "nopath")
+    return ratbag.Device(fake_driver, "test device", "nopath", "model")
 
 
 def test_resolution(device):

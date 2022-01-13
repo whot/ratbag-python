@@ -556,7 +556,9 @@ class RoccatDevice(GObject.Object):
         self.driver = driver
         self.hidraw_device = rodent
         self.profiles = []
-        self.ratbag_device = ratbag.Device(self.driver, self.path, self.name)
+        self.ratbag_device = ratbag.Device(
+            self.driver, self.path, self.name, rodent.model
+        )
         self.ratbag_device.connect("commit", self.cb_commit)
 
     @property
@@ -737,6 +739,7 @@ class RoccatDriver(ratbag.drivers.Driver):
             rec.init(
                 {
                     "name": rodent.name,
+                    "model": rodent.model,
                     "driver": "roccat",
                     "path": rodent.path,
                     "syspath": rodent.path,

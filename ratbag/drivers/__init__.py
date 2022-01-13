@@ -84,6 +84,14 @@ class DeviceInfo:
     pid: int = attr.ib(default=0)
     report_descriptor: Optional[bytes] = attr.ib(default=None)
 
+    @property
+    def model(self):
+        #  change this when we have a need for it, i.e. when we start
+        #  supporting devices where the USB ID gets reused. Until then we can
+        #  just hardcode the version to 0
+        version = 0
+        return f"{self.bus}:{self.vid:04x}:{self.pid:04x}:{version}"
+
     @staticmethod
     def from_path(path: pathlib.Path) -> "DeviceInfo":
         context = pyudev.Context()

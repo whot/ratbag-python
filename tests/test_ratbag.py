@@ -10,8 +10,13 @@ import ratbag
 import pytest
 
 
-def test_resolution():
-    device = ratbag.Device(object(), "test device", "nopath")
+@pytest.fixture
+def device():
+    fake_driver = object()
+    return ratbag.Device(fake_driver, "test device", "nopath")
+
+
+def test_resolution(device):
     profile = ratbag.Profile(device, 0)
 
     # invalid index
@@ -74,8 +79,7 @@ def test_resolution():
     assert r.dpi == (100, 200)
 
 
-def test_resolution_set_default():
-    device = ratbag.Device(object(), "test device", "nopath")
+def test_resolution_set_default(device):
     for i in range(5):
         profile = ratbag.Profile(device, i)
         for j in range(5):
@@ -127,8 +131,7 @@ def test_resolution_set_default():
     assert [r.dirty for r in device.profiles[2].resolutions].count(True) == 2
 
 
-def test_resolution_set_active():
-    device = ratbag.Device(object(), "test device", "nopath")
+def test_resolution_set_active(device):
     for i in range(5):
         profile = ratbag.Profile(device, i)
         for j in range(5):
@@ -180,8 +183,7 @@ def test_resolution_set_active():
     assert [r.dirty for r in device.profiles[2].resolutions].count(True) == 2
 
 
-def test_led():
-    device = ratbag.Device(object(), "test device", "nopath")
+def test_led(device):
     profile = ratbag.Profile(device, 0)
     led = ratbag.Led(profile, 0)
 
@@ -248,8 +250,7 @@ def test_led():
         assert led.mode == m
 
 
-def test_profile_set_active():
-    device = ratbag.Device(object(), "test device", "nopath")
+def test_profile_set_active(device):
     for i in range(5):
         ratbag.Profile(device, i)
 
@@ -274,8 +275,7 @@ def test_profile_set_active():
     assert [p.dirty for p in device.profiles].count(True) == 2
 
 
-def test_profile_set_enabled():
-    device = ratbag.Device(object(), "test device", "nopath")
+def test_profile_set_enabled(device):
     for i in range(5):
         ratbag.Profile(device, i, capabilities=[ratbag.Profile.Capability.DISABLE])
 
@@ -303,8 +303,7 @@ def test_profile_set_enabled():
         p.set_enabled(False)
 
 
-def test_profile_set_default():
-    device = ratbag.Device(object(), "test device", "nopath")
+def test_profile_set_default(device):
     for i in range(5):
         ratbag.Profile(device, i, capabilities=[ratbag.Profile.Capability.SET_DEFAULT])
 
@@ -329,8 +328,7 @@ def test_profile_set_default():
     assert [p.dirty for p in device.profiles].count(True) == 2
 
 
-def test_profile_out_of_order():
-    device = ratbag.Device(object(), "test device", "nopath")
+def test_profile_out_of_order(device):
     p3 = ratbag.Profile(device, 3)
     p1 = ratbag.Profile(device, 1)
 

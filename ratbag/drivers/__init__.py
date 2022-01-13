@@ -146,20 +146,6 @@ class Rodent(GObject.Object):
 
     .. note:: The name Rodent was chosen to avoid confusion with :class:`ratbag.Device`.
 
-    .. attribute:: name
-
-        The device's name (as advertized by the device itself)
-
-    .. attribute:: path
-
-        The device's path
-
-    .. attribute:: report_descriptor
-
-        The bytes for this hidraw device's report descriptor (if this device
-        is a hidraw device, otherwise ``None``)
-
-
     GObject Signals:
         - ``data-to-device``, ``data-from-device``: the ``bytes`` that have
           been written to or read from the device.
@@ -231,6 +217,12 @@ class Rodent(GObject.Object):
             self.subtype = name
 
     @classmethod
+    def from_device_info(cls, info: DeviceInfo) -> "ratbag.drivers.Rodent":
+        r = Rodent(info)
+        r.open()
+        return r
+
+    @classmethod
     def from_device(cls, device: Union[pathlib.Path, "ratbag.drivers.Rodent"]):
         """
         A simplification for drivers. If the given device is already a
@@ -239,24 +231,37 @@ class Rodent(GObject.Object):
         instance for the given device path.
         """
         if isinstance(device, pathlib.Path):
-            return Rodent(device)
+            info = DeviceInfo.from_path(device)
+            return Rodent(info)
         else:
             return device
 
-    def __init__(self, path: Optional[pathlib.Path] = None):
+    def __init__(self, info: DeviceInfo):
         GObject.Object.__init__(self)
 
-        if path is not None:
-            self.path = path
-            info = DeviceInfo.from_path(path)
-            self.name = info.name
-            self.report_descriptor = info.report_descriptor
-            self._fd = open(path, "r+b", buffering=0)
-            os.set_blocking(self._fd.fileno(), False)
+        self._info = info
+        if info.report_descriptor:
+            self._rdesc = ratbag.hid.ReportDescriptor.from_bytes(info.report_descriptor)
 
-        rdesc = getattr(self, "report_descriptor", None)
-        if rdesc is not None:
-            self._rdesc = ratbag.hid.ReportDescriptor.from_bytes(rdesc)
+    def open(self):
+        self._fd = open(self.path, "r+b", buffering=0)
+        os.set_blocking(self._fd.fileno(), False)
+
+    @property
+    def name(self):
+        return self._info.name
+
+    @property
+    def model(self):
+        return self._info.model
+
+    @property
+    def path(self):
+        return self._info.path
+
+    @property
+    def report_descriptor(self):
+        return self._info.report_descriptor
 
     @property
     def report_ids(self) -> Dict[str, Tuple[int, ...]]:
@@ -382,7 +387,7 @@ class Driver(GObject.Object):
     contain at least the following code: ::
 
         class MyDriver(ratbag.Driver):
-            def probe(self, device, info, config):
+            def probe(self, rodent, config):
                 pass
 
         def load_driver(driver_name=""):
@@ -416,8 +421,7 @@ class Driver(GObject.Object):
 
     def probe(
         self,
-        device: Union["ratbag.drivers.Rodent", pathlib.Path],
-        device_info: DeviceInfo,
+        rodent: "ratbag.drivers.Rodent",
         config: Dict[str, Any] = {},
     ) -> None:
         """

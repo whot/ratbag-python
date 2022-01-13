@@ -61,10 +61,16 @@ class RoccatTestDevice(ratbag.drivers.Rodent):
     """
 
     def __init__(self):
-        self.report_descriptor = ROCCAT_HID_REPORT
-        super().__init__()
-        self.name = f"{type(self).__name__}"
-        self.path = "/testdevice"
+        info = ratbag.drivers.DeviceInfo(
+            path="/does/not/exist",
+            syspath="/sys/does/not/exist",
+            name=f"{type(self).__name__}",
+            bus="usb",
+            vid=0x1234,
+            pid=0xABCD,
+            report_descriptor=ROCCAT_HID_REPORT,
+        )
+        super().__init__(info)
         # See hid_set_select_profile
         self.current_profile = 0
         self.subcommand = None
@@ -209,7 +215,7 @@ class TestRoccatDriver(object):
         # **we** define for this device (not the driver)
         dev = RoccatTestDevice()
         driver.connect("device-added", self.cb_device_added)
-        driver.probe(dev, {}, {})
+        driver.probe(dev, {})
         self.mainloop()
 
         assert self.ratbag_device is not None
@@ -240,7 +246,7 @@ class TestRoccatDriver(object):
         dev = RoccatTestDevice()
         dev.profiles[1].buttons[5] = 36  # ConsumerControl.CC_STOP
         driver.connect("device-added", self.cb_device_added)
-        driver.probe(dev, {}, {})
+        driver.probe(dev, {})
         self.mainloop()
 
         device = self.ratbag_device
@@ -269,7 +275,7 @@ class TestRoccatDriver(object):
             (kcA, 0x00, 400),
         ]
         driver.connect("device-added", self.cb_device_added)
-        driver.probe(dev, {}, {})
+        driver.probe(dev, {})
         self.mainloop()
 
         device = self.ratbag_device
@@ -298,7 +304,7 @@ class TestRoccatDriver(object):
     def test_button_change_action(self, driver):
         dev = RoccatTestDevice()
         driver.connect("device-added", self.cb_device_added)
-        driver.probe(dev, {}, {})
+        driver.probe(dev, {})
         self.mainloop()
 
         device = self.ratbag_device
@@ -314,7 +320,7 @@ class TestRoccatDriver(object):
     def test_dpi_change(self, driver):
         dev = RoccatTestDevice()
         driver.connect("device-added", self.cb_device_added)
-        driver.probe(dev, {}, {})
+        driver.probe(dev, {})
         self.mainloop()
 
         device = self.ratbag_device

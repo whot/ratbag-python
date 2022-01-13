@@ -445,7 +445,7 @@ class Hidpp20Driver(ratbag.drivers.Driver):
     def __init__(self):
         super().__init__()
 
-    def probe(self, device, info, config):
+    def probe(self, rodent, config):
         for key in ("Buttons", "DeviceIndex", "Leds", "ReportRate"):
             try:
                 val = config[key]
@@ -464,20 +464,20 @@ class Hidpp20Driver(ratbag.drivers.Driver):
         # out, but some devices need to have the index hardcoded in the data
         # files
         index = config.get("deviceindex", RECEIVER_IDX)
-        hidraw_device = ratbag.drivers.Rodent.from_device(device)
-        device = Hidpp20Device(hidraw_device, index)
+        device = Hidpp20Device(rodent, index)
 
         for rec in self.recorders:
-            hidraw_device.connect_to_recorder(rec)
+            rodent.connect_to_recorder(rec)
             rec.init(
                 {
                     "name": device.name,
+                    "model": info.model,
                     "driver": "hidpp20",
                     "path": device.path,
                     "syspath": info.path,
                     "vid": info.vid,
                     "pid": info.pid,
-                    "report_descriptor": hidraw_device.report_descriptor,
+                    "report_descriptor": rodent.report_descriptor,
                 }
             )
 

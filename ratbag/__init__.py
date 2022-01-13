@@ -171,12 +171,7 @@ class Ratbag(GObject.Object):
 
         for emulator in self._config.get("emulators", []):
             driver = self._load_driver_by_name(emulator.driver)
-            info = ratbag.drivers.DeviceInfo(
-                name=emulator.name,
-                syspath=Path("/sys/does/not/exist"),
-                path=emulator.path,
-            )
-            driver.probe(emulator, info, {})
+            driver.probe(emulator, {})
 
     def _install_udev_monitor(self) -> None:
         context = pyudev.Context()
@@ -197,7 +192,7 @@ class Ratbag(GObject.Object):
 
     def _add_device(self, path: str) -> None:
         try:
-            from ratbag.drivers import DeviceInfo
+            from ratbag.drivers import DeviceInfo, Rodent
 
             info = DeviceInfo.from_path(Path(path))
             drivername, config = self._find_driver(info)
@@ -233,7 +228,9 @@ class Ratbag(GObject.Object):
                 driver.add_recorder(rec)
 
             driver.connect("device-added", cb_device_added)
-            driver.probe(Path(path), info, config)
+
+            rodent = Rodent.from_device_info(info)
+            driver.probe(rodent, config)
         except UnsupportedDeviceError as e:
             logger.info(f"Skipping unsupported device {e.name} ({e.path})")
         except SomethingIsMissingError as e:

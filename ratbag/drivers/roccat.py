@@ -11,7 +11,7 @@ import struct
 import time
 import traceback
 
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from gi.repository import GObject
 
@@ -551,10 +551,10 @@ class RoccatKeyMapping(object):
 
 
 class RoccatDevice(GObject.Object):
-    def __init__(self, driver, device):
+    def __init__(self, driver, rodent):
         GObject.Object.__init__(self)
         self.driver = driver
-        self.hidraw_device = device
+        self.hidraw_device = rodent
         self.profiles = []
         self.ratbag_device = ratbag.Device(self.driver, self.path, self.name)
         self.ratbag_device.connect("commit", self.cb_commit)
@@ -721,25 +721,27 @@ class RoccatDriver(ratbag.drivers.Driver):
     def __init__(self):
         super().__init__()
 
-    def probe(self, device, info, config):
-        hidraw_device = ratbag.drivers.Rodent.from_device(device)
-
+    def probe(
+        self,
+        rodent: ratbag.drivers.Rodent,
+        config: Dict[str, Any] = {},
+    ) -> None:
         # This is the device that will handle everything for us
-        roccat_device = RoccatDevice(self, hidraw_device)
+        roccat_device = RoccatDevice(self, rodent)
 
         # The driver is in charge of connecting the recorders though, we only
         # have generic ones so far anyway. This needs to be done before
         # device.start() so we don't miss any communication.
         for rec in self.recorders:
-            hidraw_device.connect_to_recorder(rec)
+            rodent.connect_to_recorder(rec)
             rec.init(
                 {
-                    "name": device.name,
+                    "name": rodent.name,
                     "driver": "roccat",
-                    "path": device.path,
-                    "syspath": info.path,
-                    "vid": info.vid,
-                    "pid": info.pid,
+                    "path": rodent.path,
+                    "syspath": rodent.path,
+                    "vid": rodent.vid,
+                    "pid": rodent.pid,
                     "report_descriptor": self.hidraw_device.report_descriptor,
                 }
             )

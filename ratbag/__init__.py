@@ -569,19 +569,19 @@ class Profile(Feature):
 
     """
 
-    class Capability(enum.Enum):
+    class Capability(enum.IntEnum):
         """
         Capabilities specific to profiles.
         """
 
-        SET_DEFAULT = enum.auto()
+        SET_DEFAULT = 101
         """
         This profile can be set as the default profile. The default profile is
         the one used immediately after the device has been plugged in. If this
         capability is missing, the device typically picks either the last-used
         profile or the first available profile.
         """
-        DISABLE = enum.auto()
+        DISABLE = 102
         """
         The profile can be disabled and enabled. Profiles are not
         immediately deleted after being disabled, it is not guaranteed
@@ -593,7 +593,7 @@ class Profile(Feature):
         specific profile may still fail to be disabled, e.g. when it is
         the last enabled profile on the device.
         """
-        WRITE_ONLY = enum.auto()
+        WRITE_ONLY = 103
         """
         The profile information cannot be queried from the hardware.
         Where this capability is present, libratbag cannot
@@ -609,7 +609,7 @@ class Profile(Feature):
         once a client has sent a full configuration to the device
         libratbag can be used to query the device as normal.
         """
-        INDIVIDUAL_REPORT_RATE = enum.auto()
+        INDIVIDUAL_REPORT_RATE = 104
         """
         The report rate applies per-profile. On devices without this
         capability changing the report rate on one profile also changes it on
@@ -804,12 +804,12 @@ class Resolution(Feature):
 
     """
 
-    class Capability(enum.Enum):
+    class Capability(enum.IntEnum):
         """
         Capabilities specific to resolutions.
         """
 
-        SEPARATE_XY_RESOLUTION = enum.auto()
+        SEPARATE_XY_RESOLUTION = 1
         """
         The device can adjust x and y resolution independently. If this
         capability is **not** present, the arguments to :meth:`set_dpi` must
@@ -970,12 +970,13 @@ class Resolution(Feature):
 
 
 class Action(GObject.Object):
-    class Type(enum.Enum):
-        NONE = enum.auto()
-        BUTTON = enum.auto()
-        MACRO = enum.auto()
-        SPECIAL = enum.auto()
-        UNKNOWN = enum.auto()
+    class Type(enum.IntEnum):
+        NONE = 0
+        BUTTON = 1
+        SPECIAL = 2
+        # KEY is 3 in libratbag
+        MACRO = 4
+        UNKNOWN = 1000
 
     def __init__(self, parent):
         GObject.Object.__init__(self)
@@ -1056,30 +1057,30 @@ class ActionSpecial(Action):
     given device may not support all special events.
     """
 
-    class Special(enum.Enum):
-        UNKNOWN = enum.auto()
-        DOUBLECLICK = enum.auto()
+    class Special(enum.IntEnum):
+        UNKNOWN = 0x80000000
+        DOUBLECLICK = 0x80000001
 
-        WHEEL_LEFT = enum.auto()
-        WHEEL_RIGHT = enum.auto()
-        WHEEL_UP = enum.auto()
-        WHEEL_DOWN = enum.auto()
-        RATCHET_MODE_SWITCH = enum.auto()
+        WHEEL_LEFT = 0x80000002
+        WHEEL_RIGHT = 0x80000003
+        WHEEL_UP = 0x80000004
+        WHEEL_DOWN = 0x80000005
+        RATCHET_MODE_SWITCH = 0x80000006
 
-        RESOLUTION_UP = enum.auto()
-        RESOLUTION_DOWN = enum.auto()
-        RESOLUTION_CYCLE_UP = enum.auto()
-        RESOLUTION_CYCLE_DOWN = enum.auto()
-        RESOLUTION_ALTERNATE = enum.auto()
-        RESOLUTION_DEFAULT = enum.auto()
+        RESOLUTION_CYCLE_UP = 0x80000007
+        RESOLUTION_CYCLE_DOWN = 0x80000008
+        RESOLUTION_UP = 0x80000009
+        RESOLUTION_DOWN = 0x8000000A
+        RESOLUTION_ALTERNATE = 0x8000000B
+        RESOLUTION_DEFAULT = 0x8000000C
 
-        PROFILE_CYCLE_UP = enum.auto()
-        PROFILE_CYCLE_DOWN = enum.auto()
-        PROFILE_UP = enum.auto()
-        PROFILE_DOWN = enum.auto()
+        PROFILE_CYCLE_UP = 0x8000000D
+        PROFILE_CYCLE_DOWN = 0x8000000E
+        PROFILE_UP = 0x8000000F
+        PROFILE_DOWN = 0x80000010
 
-        SECOND_MODE = enum.auto()
-        BATTERY_LEVEL = enum.auto()
+        SECOND_MODE = 0x80000011
+        BATTERY_LEVEL = 0x80000012
 
     def __init__(self, parent, special: Special):
         super().__init__(parent)
@@ -1112,12 +1113,12 @@ class ActionMacro(Action):
     macro and limitations on what keys can be used are device-specific.
     """
 
-    class Event(enum.Enum):
-        INVALID = enum.auto()
-        NONE = enum.auto()
-        KEY_PRESS = enum.auto()
-        KEY_RELEASE = enum.auto()
-        WAIT_MS = enum.auto()
+    class Event(enum.IntEnum):
+        INVALID = -1
+        NONE = 0
+        KEY_PRESS = 1
+        KEY_RELEASE = 2
+        WAIT_MS = 3
 
     def __init__(
         self,
@@ -1248,16 +1249,16 @@ class Button(Feature):
 
 
 class Led(Feature):
-    class Colordepth(enum.Enum):
-        MONOCHROME = enum.auto()
-        RGB_111 = enum.auto()
-        RGB_888 = enum.auto()
+    class Colordepth(enum.IntEnum):
+        MONOCHROME = 0
+        RGB_888 = 1
+        RGB_111 = 2
 
-    class Mode(enum.Enum):
-        OFF = enum.auto()
-        ON = enum.auto()
-        CYCLE = enum.auto()
-        BREATHING = enum.auto()
+    class Mode(enum.IntEnum):
+        OFF = 0
+        ON = 1
+        CYCLE = 2
+        BREATHING = 3
 
     def __init__(
         self,

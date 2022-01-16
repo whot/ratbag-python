@@ -27,6 +27,7 @@ from pathlib import Path
 
 
 import ratbag
+
 import ratbag.emulator
 import ratbag.recorder
 
@@ -412,7 +413,7 @@ def _init_recorders(outfile):
 
 
 def _init_emulators(infile):
-    return [ratbag.emulator.YamlDevice(infile)]
+    return [ratbag.emulator.YamlEmulator(infile)]
 
 
 @click.group()
@@ -467,6 +468,8 @@ def ratbagcli_apply_config(ctx, nocommit: bool, config: Path, name: Optional[str
     try:
         mainloop = GLib.MainLoop()
         ratbagd = ratbag.Ratbag(ctx.obj)
+        for e in ctx.obj.get("emulators", []):
+            e.setup()
 
         def cb_device_added(ratbagcli, device):
             if name is None or name in device.name:
@@ -503,6 +506,8 @@ def ratbagcli_verify_config(ctx, config: Path, name: Optional[str]):
     try:
         mainloop = GLib.MainLoop()
         ratbagd = ratbag.Ratbag(ctx.obj)
+        for e in ctx.obj.get("emulators", []):
+            e.setup()
 
         def cb_device_added(ratbagcli, device):
             if name is None or name in device.name:
@@ -525,6 +530,8 @@ def ratbagcli_show(ctx, name: str):
     try:
         mainloop = GLib.MainLoop()
         ratbagd = ratbag.Ratbag(ctx.obj)
+        for e in ctx.obj.get("emulators", []):
+            e.setup()
 
         def cb_device_added(ratbagcli, device):
             if name is None or name in device.name:
@@ -546,6 +553,8 @@ def ratbagcli_list(ctx):
     try:
         mainloop = GLib.MainLoop()
         ratbagd = ratbag.Ratbag(ctx.obj)
+        for e in ctx.obj.get("emulators", []):
+            e.setup()
 
         devices = []
 

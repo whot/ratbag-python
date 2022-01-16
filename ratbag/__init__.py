@@ -8,6 +8,7 @@ from pathlib import Path
 from gi.repository import GLib, GObject
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+import attr
 import enum
 import logging
 import pyudev
@@ -114,12 +115,8 @@ class ProtocolError(Exception):
 class Ratbag(GObject.Object):
     """
     An instance managing one or more ratbag devices. This is the entry point
-    for all ratbag clients. The ratbag object can be instantiated with a
-    static device path (or several) or, the default, support for udev. In the
-    latter case, devices are added/removed as they appear.
-
-    Where static device paths are given, the device must be present and
-    removal of that device will not re-add this device in the future.
+    for all ratbag clients. This context loads the data files and instantiates
+    the drivers accordingly.
 
     Example: ::
 
@@ -131,6 +128,9 @@ class Ratbag(GObject.Object):
     :class:`ratbag.Ratbag` requires a GLib mainloop.
 
     :param config: a dictionary with configuration information
+    :param load_data_files: ``True`` if the data files should be loaded. There
+        is rarely a need for setting this to ``False`` outside specific test
+        cases.
 
     Supported keys in ``config``:
 
@@ -147,6 +147,11 @@ class Ratbag(GObject.Object):
     """
 
     __gsignals__ = {
+        "start": (
+            GObject.SignalFlags.RUN_FIRST,
+            None,
+            (),
+        ),  # this is an internally used signal
         "device-added": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
         "device-removed": (
             GObject.SignalFlags.RUN_FIRST,
@@ -155,110 +160,28 @@ class Ratbag(GObject.Object):
         ),
     }
 
-    def __init__(self, config: Dict[str, Any] = {}):
+    def __init__(self, /, config: Dict[str, Any] = {}, load_data_files=True):
         super().__init__()
         self._devices: List[Device] = []
         self._config = config
+        if load_data_files:
+            self._load_data_files()
 
-    def start(self) -> None:
+    def _load_data_files(self):
         """
-        Add the devices and/or start monitoring udev for new devices.
-        """
-        logger.debug("Installing udev monitor")
-        self._install_udev_monitor()
-        for path in ratbag.util.find_hidraw_devices():
-            self._add_device(path=path)
+        Load all data files, extract the driver name and the match and compile
+        a list of the matches and any driver-specific configuration.
+        Then load all the drivers so they can set up the monitors as needed.
 
-        for emulator in self._config.get("emulators", []):
-            driver = self._load_driver_by_name(emulator.driver)
-            driver.probe(emulator, {})
-
-    def _install_udev_monitor(self) -> None:
-        context = pyudev.Context()
-        monitor = pyudev.Monitor.from_netlink(context)
-        monitor.filter_by(subsystem="hidraw")
-
-        def udev_monitor_callback(source, condition, monitor):
-            device = monitor.poll(0)
-            while device:
-                logger.debug(f"udev monitor: {device.action} {device.device_node}")
-                if device.action == "add":
-                    self._add_device(device.device_node)
-                device = monitor.poll(0)
-            return True  # keep the callback
-
-        GObject.io_add_watch(monitor, GObject.IO_IN, udev_monitor_callback, monitor)
-        monitor.start()
-
-    def _add_device(self, path: str) -> None:
-        try:
-            from ratbag.drivers import DeviceInfo, Rodent
-
-            info = DeviceInfo.from_path(Path(path))
-            drivername, config = self._find_driver(info)
-
-            if drivername is None:
-                logger.info(
-                    f"Skipping device {info.name} ({info.path}), no driver assigned"
-                )
-                return
-
-            try:
-                driver = self._load_driver_by_name(drivername)
-            except UnsupportedDeviceError as e:
-                e.name = info.name
-                e.path = info.path
-                raise e
-
-            def cb_device_disconnected(device, ratbag):
-                logger.info(f"disconnected {device.name}")
-                self._devices.remove(device)
-                self.emit("device-removed", device)
-
-            def cb_device_added(driver, device):
-                self._devices.append(device)
-                device.connect("disconnected", cb_device_disconnected)
-                self.emit("device-added", device)
-
-            # If we're recording, tell the driver about the logger. Eventually
-            # we may have multiple loggers depending on what we need to know
-            # but for now we just have a simple YAML logger for all data
-            # in/out
-            for rec in self._config.get("recorders", []):
-                driver.add_recorder(rec)
-
-            driver.connect("device-added", cb_device_added)
-
-            rodent = Rodent.from_device_info(info)
-            driver.probe(rodent, config)
-        except UnsupportedDeviceError as e:
-            logger.info(f"Skipping unsupported device {e.name} ({e.path})")
-        except SomethingIsMissingError as e:
-            logger.info(f"Skipping device {e.name} ({e.path}): missing {e.thing}")
-        except ProtocolError as e:
-            logger.info(
-                f"Skipping device {e.name} ({e.path}): protocol error: {e.message}"
-            )
-        except PermissionError as e:
-            logger.error(f"Unable to open device at {path}: {e}")
-
-    def _find_driver(
-        self,
-        info: "ratbag.drivers.DeviceInfo",
-    ) -> Tuple[Optional[str], Dict[str, Any]]:
-        """
-        Load the driver assigned to the bus/VID/PID match. If a matching
-        driver is found, that driver's :func:`LOAD_DRIVER_FUNC` is called with
-        the *static* information about the device.
-
-        :param info: a dict of various info collected for this device
-        :return: a tuple of ``(driver, configdict)`` for a
-                :class:`ratbag.drivers.Driver` and a config dict from the data file
-                with driver-specific configuration
-        :raises: UnsupportedDeviceError, NotImplementedError
+        This approach is inefficient (since we load all drivers even when
+        we're likely to only have one device that needs one driver), but it
+        pushes device discovery into the drivers, making them independent of
+        the context and thus more flexible for future drivers that don't just
+        hook onto hidraw devices.
         """
 
-        match = f"{info.bus}:{info.vid:04x}:{info.pid:04x}"
+        from ratbag.drivers import DeviceConfig
+
         # FIXME: this needs to use the install path
         path = Path("data")
         if not path.exists():
@@ -268,47 +191,71 @@ class Ratbag(GObject.Object):
                     "Missing data files: none in /usr/share/libratbag, none in $PWD/data"
                 )
         datafiles = ratbag.util.load_data_files(path)
-        try:
-            datafile = datafiles[match]
-        except KeyError:
-            return None, {}
 
-        # Flatten the config file to a dict of device info and
-        # a dict of driver-specific configurations
-        driver_name = datafile["Device"]["Driver"]
-        # Append any extra information to the info dict
-        for k, v in datafile["Device"].items():
-            if k not in ["Driver", "DeviceMatch"]:
-                if getattr(info, k, None):
-                    setattr(info, k, v)
-        try:
-            driver_config = {k: v for k, v in datafile[f"Driver/{driver_name}"].items()}
-        except KeyError:
-            # not all drivers have custom options
-            driver_config = {}
+        # drivers want the list of all entries passed as one, so we need to
+        # extract them first, into a dict of "drivername" : [dev1, dev2, ...]
+        drivers: Dict[str, List["ratbag.drivers.DeviceConfig"]] = {}
+        for f in datafiles:
+            drivername = f["Device"]["Driver"]
+            match = f["Device"]["DeviceMatch"]
+            try:
+                config = f["Driver/{drivername}"]
+            except KeyError:
+                config: Dict[str, Any] = {}
 
-        logger.debug(f"Found driver {driver_name} for {match}")
-        return driver_name, driver_config
+            for match in map(lambda x: x.strip(), match.split(";")):
+                if not match:
+                    continue
+                supported_devices = drivers.get(drivername, [])
+                supported_devices.append(DeviceConfig(match, config))
+                drivers[drivername] = supported_devices
 
-    def _load_driver_by_name(self, driver_name: str) -> "ratbag.drivers.Driver":
-        # Import ratbag.drivers.foo and call load_driver() to instantiate the
-        # driver.
-        try:
-            import importlib
+        for drivername, supported_devices in drivers.items():
+            try:
+                self.add_driver(drivername, supported_devices)
+            except ratbag.driver.DriverUnavailable as e:
+                logger.error(f"{e}")
 
-            module = importlib.import_module(f"ratbag.drivers.{driver_name}")
-        except ImportError as e:
-            raise UnsupportedDeviceError(f"Driver {driver_name} failed to load: {e}")
+    def add_driver(
+        self, drivername: str, supported_devices: List["ratbag.drivers.DeviceConfig"]
+    ):
+        """
+        Add the given driver name. This API exists primarily to support
+        testing and niche features, there is rarely a need for calling this
+        function. Drivers are handled automatically for known devices.
 
-        try:
-            from ratbag.drivers import Driver
+        :param drivername: The string name of the driver to load
+        :param supported_devices: A list of
+                    :class:`ratbag.drivers.DeviceConfig` instances with the
+                    devices supported by this driver.
+        :raises ratbag.driver.DriverUnavailable:
+        """
+        from ratbag.drivers import load_driver_by_name
 
-            load_driver_func = getattr(module, Driver.DRIVER_LOAD_FUNC)
-        except AttributeError:
-            raise NotImplementedError(
-                f"Bug: driver {driver_name} does not have '{ratbag.drivers.Driver.DRIVER_LOAD_FUNC}()'"
-            )
-        return load_driver_func(driver_name)
+        driverclass = load_driver_by_name(drivername)
+        if not driverclass:
+            return
+
+        driver = driverclass.new_with_devicelist(self, supported_devices)
+
+        def cb_device_disconnected(device, ratbag):
+            logger.info(f"disconnected {device.name}")
+            self._devices.remove(device)
+            self.emit("device-removed", device)
+
+        def cb_device_added(driver, device):
+            self._devices.append(device)
+            device.connect("disconnected", cb_device_disconnected)
+            self.emit("device-added", device)
+
+        driver.connect("device-added", cb_device_added)
+
+    def start(self) -> None:
+        """
+        Start the context. Before invoking this function ensure the caller has
+        connected to all the signal.
+        """
+        self.emit("start")
 
 
 class Recorder(GObject.Object):

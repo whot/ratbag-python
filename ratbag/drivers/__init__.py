@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#
+
 # SPDX-License-Identifier: MIT
 #
 # This file is formatted with Python Black
@@ -23,6 +23,62 @@ import ratbag
 import ratbag.hid
 
 logger = logging.getLogger(__name__)
+
+# Contains loaded @ratbag_driver classes
+DRIVERS: Dict[str, type["ratbag.drivers.Driver"]] = {}
+
+
+@attr.s
+class DriverUnavailable(Exception):
+    message: str = attr.ib()
+
+
+def ratbag_driver(name):
+    """
+    Decorator to mark a class as a ratbag driver. This decorator is required for
+    driver discovery.
+
+        >>> @ratbag.drivers.ratbag_driver("somedriver")
+        ... class SomeDriver(ratbag.driver.Driver):
+        ...     @classmethod
+        ...     def new_with_devicelist(self, ratbagctx, list):
+        ...         return SomeDriver()
+        ...
+    """
+
+    def decorator_ratbag_driver(cls):
+        DRIVERS[name] = cls
+        return cls
+
+    return decorator_ratbag_driver
+
+
+def load_driver_by_name(driver_name: str) -> Optional[type["Driver"]]:
+    """
+    Find the class matching ``driver_name`` and return it, importing the module
+    ``"ratbag.drivers.driver_name"`` if necessary.
+
+        >>> ctx = ratbag.Ratbag()
+        >>> cls = load_driver_by_name("roccat")  # doctest +SKIP
+        >>> driver = cls.new_with_devicelist(ctx, [])  # doctest +SKIP
+
+    :return: The driver **class** (not an instance thereof) or ``None`` on error
+    """
+    if driver_name not in DRIVERS:
+        # Try to import ratbag.drivers.foo
+        logger.debug(f"Loading driver {driver_name}")
+        try:
+            import importlib
+
+            importlib.import_module(f"ratbag.drivers.{driver_name}")
+        except ImportError as e:
+            raise DriverUnavailable(f"Driver '{driver_name}' failed to load: {e}")
+    try:
+        return DRIVERS[driver_name]
+    except KeyError:
+        raise DriverUnavailable(
+            f"Bug: driver '{driver_name}' does not use '@ratbag_driver'"
+        )
 
 
 class Message(GObject.Object):
@@ -65,6 +121,161 @@ class Message(GObject.Object):
         return f"{self.msgtype}{subtype} {self.direction.name} ({len(self.bytes)}): {bytestr}"
 
 
+@attr.frozen
+class UsbId:
+    bus: str = attr.ib(validator=attr.validators.in_(("bluetooth", "usb")))
+    """The bus type, one of ``["usb", "bluetooth"]``"""
+    vid: int = attr.ib()
+    """The vendor ID"""
+    pid: int = attr.ib()
+    """The Product ID"""
+
+    @vid.validator
+    def _validate_vid(self, attribute, value):
+        if not 0 <= value <= 0xFFFF:
+            raise attr.ValueError("vid must be <= 0xffff")
+
+    @pid.validator
+    def _validate_pid(self, attribute, value):
+        if not 0 <= value <= 0xFFFF:
+            raise attr.ValueError("pid must be <= 0xffff")
+
+    @staticmethod
+    def from_string(string: str) -> "UsbId":
+        """
+        Return a :class:`UsbId` from a string of format ``"usb:0123:00bc"``.
+
+        :raises ValueError: if the string does not match the required format.
+        """
+        try:
+            tokens = string.split(":")
+            bus = tokens[0]
+            vid = int(tokens[1], 16)
+            pid = int(tokens[2], 16)
+            return UsbId(bus, vid, pid)
+        except Exception:
+            raise ValueError(f"Invalid USB ID token {string}")
+
+    @staticmethod
+    def from_string_sequence(string: str) -> List["UsbId"]:
+        """
+        Return a list of :class:`UsbId` from a semicolon-separated string of
+        format ``"usb:0123:00bc;bluetooth:aabb:0011"``.
+
+        :raises ValueError: if one or more strings do not match the required format.
+        """
+        entries = string.split(";")
+        return [UsbId.from_string(e) for e in entries]
+
+    def __str__(self):
+        return f"{self.bus}:{self.vid:04x}:{self.pid:04x}"
+
+
+class HidrawMonitor(GObject.Object):
+    """
+    Convenience class for drivers to get notified about ``/dev/hidraw``
+    devices as they appear in udev.
+
+        >>> monitor = HidrawMonitor.instance()
+        >>> monitor.connect("rodent-found", lambda mon, r: print(f"Rodent: {r}"))  # doctest: +SKIP
+        >>> monitor.start()
+        >>> monitor.list()  # This emits the "rodent-found" signal for existing devices
+
+    The :class:`Rodent` is initalized but not open, a driver should call
+    :meth:`Rodent.open()` before using the device.
+
+    .. note:: This class is a singleton, use :meth:`HidrawMonitor.instance()`
+    """
+
+    _instance: Optional["HidrawMonitor"] = None
+
+    __gsignals__ = {
+        "rodent-found": (
+            GObject.SignalFlags.RUN_FIRST,
+            None,
+            (GObject.TYPE_PYOBJECT,),  # Rodent
+        ),
+    }
+
+    def __init__(self):
+        GObject.Object.__init__(self)
+        self._context = pyudev.Context()
+        self._has_started = False
+        self._disabled = False
+        self._fake_rodents = []
+
+    def _cb_add_udev_device(self, udev_device):
+        logger.debug(f"udev hidraw device: {udev_device.device_node}")
+        info = DeviceInfo.from_path(pathlib.Path(udev_device.device_node))
+        rodent = Rodent.from_device_info(info)
+        self.emit("rodent-found", rodent)
+
+    def list(self):
+        """
+        List current devices and emit the ``"rodent-found"`` signal for them.
+        """
+        if not self._disabled:
+            for device in self._context.list_devices(subsystem="hidraw"):
+                self._cb_add_udev_device(device)
+
+        for rodent in self._fake_rodents:
+            self.emit("rodent-found", rodent)
+
+    def start(self):
+        """
+        Start the monitor if it is not already running. In the future, new
+        ``/dev/hidraw`` devices will emit the ``"rodent-found"`` signal.
+
+        A caller should call :meth:`list` immediately after this function to
+        receive signals about already connected devices.
+        """
+        if self._disabled or self._has_started:
+            return
+
+        self._has_started = True
+        monitor = pyudev.Monitor.from_netlink(self._context)
+        monitor.filter_by(subsystem="hidraw")
+
+        def udev_monitor_callback(source, condition, monitor):
+            device = monitor.poll(0)
+            while device:
+                logger.debug(f"udev monitor: {device.action} {device.device_node}")
+                if device.action == "add":
+                    self._cb_add_udev_device(device)
+                device = monitor.poll(0)
+            return True  # keep the callback
+
+        GObject.io_add_watch(monitor, GObject.IO_IN, udev_monitor_callback, monitor)
+
+    def disable(self):
+        """
+        Disable the monitor. This function should never be used by a driver, it's a
+        hook for testing and emulation.
+        """
+        assert not self._has_started
+        self._disabled = True
+
+    def add_rodent(self, rodent: "ratbag.drivers.Rodent"):
+        """
+        Add a new :class:`Rodent` that does not get picked up by the monitor
+        otherwise. This function should never be used by a driver, it's a
+        hook for testing and emulation.
+        """
+        if self._has_started:
+            self.emit("rodent-found", rodent)
+        self._fake_rodents.append(rodent)
+
+    @classmethod
+    def instance(cls) -> "HidrawMonitor":
+        """
+        Return the singleton instance for this monitor.
+        """
+        if not cls._instance:
+            cls._instance = HidrawMonitor()
+
+        return cls._instance
+
+
 @attr.s
 class DeviceInfo:
     """
@@ -87,6 +298,13 @@ class DeviceInfo:
 
     @property
     def model(self):
+        """
+        A ratbag-custom string to uniquely identify this device. This
+        identifier is used by callers to match a device to extra data
+        (e.g. Piper uses this to load the correct SVG).
+
+        Usually this string is of the format "bus:vid:pid:0".
+        """
         #  change this when we have a need for it, i.e. when we start
         #  supporting devices where the USB ID gets reused. Until then we can
         #  just hardcode the version to 0
@@ -228,7 +446,6 @@ class Rodent(GObject.Object):
     @classmethod
     def from_device_info(cls, info: DeviceInfo) -> "ratbag.drivers.Rodent":
         r = Rodent(info)
-        r.open()
         return r
 
     @classmethod
@@ -253,23 +470,39 @@ class Rodent(GObject.Object):
             self._rdesc = ratbag.hid.ReportDescriptor.from_bytes(info.report_descriptor)
 
     def open(self):
+        """
+        Open the file descriptor for this device. This may raise any of the
+        exceptions ``open()`` may raise. The most common one is
+        ``os.PermissionError`` if we have insufficient privileges to open the
+        device.
+
+        :raises os.PermissionError: We do not have permissions to open this file
+        """
         self._fd = open(self.path, "r+b", buffering=0)
         os.set_blocking(self._fd.fileno(), False)
 
     @property
-    def name(self):
+    def info(self) -> DeviceInfo:
+        return self._info
+
+    @property
+    def usbid(self) -> UsbId:
+        return UsbId(self.info.bus, self.info.vid, self.info.pid)
+
+    @property
+    def name(self) -> str:
         return self._info.name
 
     @property
-    def model(self):
+    def model(self) -> str:
         return self._info.model
 
     @property
-    def path(self):
+    def path(self) -> pathlib.Path:
         return self._info.path
 
     @property
-    def report_descriptor(self):
+    def report_descriptor(self) -> Optional[bytes]:
         return self._info.report_descriptor
 
     @property
@@ -380,32 +613,79 @@ class Rodent(GObject.Object):
         self.connect("ioctl-reply", cb_ioctl_rx)
 
 
+class DeviceConfig:
+    """
+    Static device configuration as extracted from the data files.
+    This is passed to a :meth:`Driver.new_with_devicelist` to inform the driver about the
+    known available devices.
+
+    The configuration dictionary is used to set the attributes on this driver
+    configuration, e.g.: ::
+
+        >>> c = DeviceConfig("...", { "foo": 10, "BananaBoat": "bar" })
+        >>> c.foo
+        10
+        >>> c.banana_boat
+        'bar'
+
+    CamelCase is automatically converted to snake_case as shown above.
+
+
+    :param match: The string match for this config item.
+    :param config_dict: A dictionary with the driver options.
+    """
+
+    def __init__(self, match: str, config_dict: Dict[str, Any]):
+        self._match = match
+        for name, value in config_dict.items():
+            snake_name = "".join(
+                ["_" + i.lower() if i.isupper() else i for i in name]
+            ).lstrip("_")
+
+            assert not hasattr(self, snake_name)
+            setattr(self, snake_name, value)
+
+    @property
+    def match(self) -> str:
+        """
+        The match string for a single device. In most cases, this is a
+        :class:`UsbId` type string (e.g., ``"usb:0123:ab45"``).
+
+        For drivers that only support UsbId-type matching use the
+        :meth:`usbid` property instead.
+        """
+        return self._match
+
+    @property
+    def usbid(self) -> Optional[UsbId]:
+        """
+        The :class:`UsbId` of this device, if any. This property may be
+        ```None`` for the niche/custom drivers but will be set for anything
+        that works off an actual device.
+        """
+        try:
+            return UsbId.from_string(self.match)
+        except ValueError:
+            return None
+
+
 class Driver(GObject.Object):
     """
     The parent class for all driver implementations. See
     ``ratbag/drivers/drivername.py`` for the implementation of each driver
     itself.
 
-    A driver **must** implement the :func:`DRIVER_LOAD_FUNC` function, it is
-    the entry point for ratbag to instantiate the driver for the device.
-    """
+    A driver **must** be decorated with :func:`ratbag_driver` to identify the
+    entry point for ratbag to instantiate the driver for the device.
 
-    DRIVER_LOAD_FUNC = "load_driver"
-    """
-    The name of the function to instantiate a driver. A driver file must
-    contain at least the following code: ::
-
-        class MyDriver(ratbag.Driver):
-            def probe(self, rodent, config):
-                pass
-
-        def load_driver(driver_name=""):
-            return myDriver()
+    A driver **must** connect to the :class:`ratbag.Ratbag` signal
+    ``"start"``. Once the signal is received the driver may start querying for
+    and adding devices to the ratbag context.
 
     GObject Signals:
 
       - ``device-added``: emitted for each :class:`ratbag.Device` that was
-        added during :meth:`probe`
+        added after ``"start"``.
     """
 
     __gsignals__ = {
@@ -428,36 +708,6 @@ class Driver(GObject.Object):
         """
         self.recorders.append(recorder)
 
-    def probe(
-        self,
-        rodent: "ratbag.drivers.Rodent",
-        config: Dict[str, Any] = {},
-    ) -> None:
-        """
-        Probe the device for information. On success, the driver will create a
-        :class:`ratbag.Device` with at least one profile and the appropriate
-        number of buttons/leds/resolutions and emit the ``device-added``
-        signal for that device.
-
-        A caller should subscribe to the ``device-added`` signal before
-        calling this function.
-
-        If ``device`` is a ``pathlib.Path`` object, the driver
-        creates initializes for the device at that path. Otherwise, ``device``
-        is used as-is as backing device instance. This is used when emulating
-        devices - note that the exact requirements on the device behavior may
-        differ between drivers.
-
-        Completion of this function without an exception counts as success.
-
-        :param device: The path to the device or a fully initialized instance
-                       representing a device
-        :param device_info: Static information about the device from external
-                            sources (system, data files, etc).
-        :param config: Driver-specific device configuration (e.g. quirks).
-        """
-        raise NotImplementedError("This function must be implemented by the driver")
-
     def _device_sanity_check(
         self, driver: "ratbag.drivers.Driver", device: ratbag.Device
     ):
@@ -478,6 +728,33 @@ class Driver(GObject.Object):
             assert nbuttons == len(p.buttons)
             assert nres == len(p.resolutions)
             assert nleds == len(p.leds)
+
+    # The entry point
+    @classmethod
+    def new_with_devicelist(
+        cls, ratbagctx: ratbag.Ratbag, supported_devices: List[DeviceConfig]
+    ) -> "Driver":
+        """
+        Return a new instance of this driver for the given context and the
+        list of known devices that should be handled by the driver.
+
+        The context will emit the ``start`` signal (with no arguments) when
+        setup is complete and the driver should start searching for and
+        initializing devices. For any device found, the driver will create a
+        :class:`ratbag.Device` with at least one profile and the appropriate
+        number of buttons/leds/resolutions and emit the ``device-added``
+        signal for that device.
+
+        Callers should subscribe to the ``device-added`` signal before
+        calling this function.
+
+        :param ratbagctx: The ratbag context
+        :param supported_devices: Static information about supported device from external
+                        sources (system, data files, etc). The driver should
+                        use this information to filter unknown devices.
+        :return: An instance of this :class:`Driver`
+        """
+        raise NotImplementedError("This function must be implemented by the driver")
 
 
 # ioctl handling is copied from hid-tools

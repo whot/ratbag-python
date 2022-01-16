@@ -22,13 +22,11 @@ class Hidpp10Driver(ratbag.drivers.Driver):
         callback(arg, success=True)
 
 
-def load_driver(driver_name, device_info, driver_config):
+def load_driver(driver_name: str) -> type[ratbag.drivers.Driver]:
     """
     Driver entry point
 
     :meta private:
     """
     assert driver_name == "hidpp10"
-    logger.debug(device_info)
-    logger.debug(driver_config)
-    return Hidpp10Driver()
+    return Hidpp10Driver

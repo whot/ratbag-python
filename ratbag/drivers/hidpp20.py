@@ -5,7 +5,7 @@
 # This file is formatted with Python Black
 #
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import attr
 import enum
@@ -17,6 +17,7 @@ from gi.repository import GObject
 import ratbag
 import ratbag.hid
 from ratbag.parser import Parser, Spec
+from ratbag.drivers import HidrawMonitor, ratbag_driver
 
 logger = logging.getLogger(__name__)
 
@@ -418,6 +419,7 @@ class Hidpp20Device(GObject.Object):
         raise NotImplementedError
 
 
+@ratbag_driver("hidpp20")
 class Hidpp20Driver(ratbag.drivers.Driver):
     """
     Implementation of the Logitech HID++ 2.0 protocol.
@@ -442,18 +444,43 @@ class Hidpp20Driver(ratbag.drivers.Driver):
         G305 = "G305"
         G602 = "G602"
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, supported_devices: List[ratbag.drivers.DeviceConfig]):
+        GObject.Object.__init__(self)
+        self._supported_devices = supported_devices
+
+    def start(self):
+        def rodent_found(monitor, rodent):
+            for d in self._supported_devices:
+                if d.usbid == rodent.usbid:
+                    try:
+                        rodent.open()
+                        self.probe(rodent, d)
+                    except ratbag.UnsupportedDeviceError:
+                        logger.info(
+                            f"Skipping unsupported device {rodent.name} ({rodent.path})"
+                        )
+                    except ratbag.SomethingIsMissingError as e:
+                        logger.info(
+                            f"Skipping device {rodent.name} ({rodent.path}): missing {e.thing}"
+                        )
+                    except ratbag.ProtocolError as e:
+                        logger.info(
+                            f"Skipping device {rodent.name} ({rodent.path}): protocol error: {e.message}"
+                        )
+                    except PermissionError as e:
+                        logger.error(f"Unable to open device at {rodent.path}: {e}")
+
+        monitor = HidrawMonitor.instance()
+        monitor.connect("rodent-found", rodent_found)
+        monitor.start()
+        monitor.list()
 
     def probe(self, rodent, config):
-        for key in ("Buttons", "DeviceIndex", "Leds", "ReportRate"):
-            try:
-                val = config[key]
-                config[key.lower()] = val
-            except KeyError:
-                pass
+        try:
+            quirk = config.quirk
+        except AttributeError:
+            quirk = None
 
-        quirk = config.get("Quirk", None)
         if quirk is not None:
             try:
                 quirk = [x for x in Hidpp20Driver.Quirk if x.value == quirk][0]
@@ -463,23 +490,23 @@ class Hidpp20Driver(ratbag.drivers.Driver):
         # Usually we default to the receiver IDX and let the kernel sort it
         # out, but some devices need to have the index hardcoded in the data
         # files
-        index = config.get("deviceindex", RECEIVER_IDX)
+        index = getattr(config, "device_index", RECEIVER_IDX)
         device = Hidpp20Device(rodent, index)
 
-        for rec in self.recorders:
-            rodent.connect_to_recorder(rec)
-            rec.init(
-                {
-                    "name": device.name,
-                    "model": info.model,
-                    "driver": "hidpp20",
-                    "path": device.path,
-                    "syspath": info.path,
-                    "vid": info.vid,
-                    "pid": info.pid,
-                    "report_descriptor": rodent.report_descriptor,
-                }
-            )
+        # for rec in self.recorders:
+        #    rodent.connect_to_recorder(rec)
+        #    rec.init(
+        #        {
+        #            "name": device.name,
+        #            "model": info.model,
+        #            "driver": "hidpp20",
+        #            "path": device.path,
+        #            "syspath": info.path,
+        #            "vid": info.vid,
+        #            "pid": info.pid,
+        #            "report_descriptor": rodent.report_descriptor,
+        #        }
+        #    )
 
         ratbag_device = ratbag.Device(self, device.path, device.name, rodent.model)
         ratbag_device.connect("commit", device.cb_commit)
@@ -499,13 +526,20 @@ class Hidpp20Driver(ratbag.drivers.Driver):
                 ratbag.Resolution(p, dpi_idx, (dpi, dpi), dpi_list=profile.dpi_list)
         self.emit("device-added", ratbag_device)
 
+    # The driver entry point
+    @classmethod
+    def new_with_devicelist(
+        cls,
+        ratbagctx: ratbag.Ratbag,
+        supported_devices: List[ratbag.drivers.DeviceConfig],
+    ) -> ratbag.drivers.Driver:
+        driver = Hidpp20Driver(supported_devices)
 
-def load_driver(driver_name: str) -> ratbag.drivers.Driver:
-    """
-    :meta private:
-    """
-    assert driver_name == "hidpp20"
-    return Hidpp20Driver()
+        def start(ctx):
+            driver.start()
+
+        ratbagctx.connect("start", start)
+        return driver
 
 
 ################################################################################

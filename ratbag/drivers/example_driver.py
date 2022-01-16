@@ -9,6 +9,8 @@
 # implementations and hints on how to get to one, see the actual drivers.
 #
 
+from typing import List
+
 import logging
 
 import ratbag
@@ -19,45 +21,41 @@ import ratbag.drivers
 logger = logging.getLogger(__name__)
 
 
-# This is the entry point, load_driver() must return a ratbag.drivers.Driver
-# instance or throw an exception.
-def load_driver(driver_name):
-    assert driver_name == "example-driver"
-    return ExampleDriver()
-
-
+# This decorator marks this class as the actual driver implementation.
+@ratbag.drivers.ratbag_driver("example-driver")
 class ExampleDriver(ratbag.drivers.Driver):
+    # the actual entry point
+    @classmethod
+    def new_with_devicelist(
+        cls,
+        ratbagctx: ratbag.Ratbag,
+        supported_devices: List[ratbag.drivers.DeviceConfig],
+    ) -> ratbag.drivers.Driver:
+        # Create an instance of our driver
+        driver = cls()
+        # Now connect to the start signal so we know when we can get going
+        ratbagctx.connect("start", lambda ctx: driver.start())
+        # return our driver instance
+
+        # This is an example driver only so we ignore the supported_devices
+        # list. Otherwise we'd want to pass this on to the driver so we can
+        # filter any devices we discover.
+        return driver
+
     def __init__(self):
         # If you have your own constructor, you must call the super
         # constructor first (or asap) to set up the GObject
         super().__init__()
         # driver-specific generic setup goes here
 
-    def probe(self, device, info, config):
-        # device is either a string/pathlib.Path
-        # or a device object. For basic devices (hidraw or just an fd), the
-        # Rodent class simplifies setup:
-        physical_device = ratbag.drivers.Rodent.from_device(device)
+    def start(self):
+        # Here you could set up a UdevHirawMonitor or something similar to
+        # perform the actual device discovery. Ideally together with the
+        # supported_devices list to filter.
+        self.probe("my device", "/some/path")
 
-        # We want to be able to record data to/from our device, so let's
-        # connect it. The Rodent class makes this easy:
-        for rec in self.recorders:
-            # This connects the varous data handlers
-            physical_device.connect_to_recorder(rec)
-            # Initialize the recorder
-            rec.init(
-                {
-                    "name": self.physical_device.name,
-                    "driver": "example-drive",
-                    "path": self.physical_device.path,
-                    # this field is available in Rodent if the device is a
-                    # hidraw device
-                    "report_descriptor": self.physical_device.report_descriptor,
-                }
-            )
-
-        # Recorder is set up, now we can actually talk to the device
-        device = ratbag.Device(self, physical_device.path, physical_device.name)
+    def probe(self, name, path):
+        device = ratbag.Device(self, path, name)
         device.connect("commit", self._on_commit)
 
         for profile_idx in range(3):  # three profiles

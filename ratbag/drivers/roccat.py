@@ -719,14 +719,42 @@ class RoccatDevice(GObject.Object):
         self.wait()
 
 
+@ratbag.drivers.ratbag_driver("roccat")
 class RoccatDriver(ratbag.drivers.Driver):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, supported_devices: List[ratbag.drivers.DeviceConfig]):
+        GObject.Object.__init__(self)
+        self._supported_devices = supported_devices
+
+    def start(self):
+        def rodent_found(monitor, rodent):
+            for d in self._supported_devices:
+                if d.usbid == rodent.usbid:
+                    try:
+                        rodent.open()
+                        self.probe(rodent)
+                    except ratbag.UnsupportedDeviceError:
+                        logger.info(
+                            f"Skipping unsupported device {rodent.name} ({rodent.path})"
+                        )
+                    except ratbag.SomethingIsMissingError as e:
+                        logger.info(
+                            f"Skipping device {rodent.name} ({rodent.path}): missing {e.thing}"
+                        )
+                    except ratbag.ProtocolError as e:
+                        logger.info(
+                            f"Skipping device {rodent.name} ({rodent.path}): protocol error: {e.message}"
+                        )
+                    except PermissionError as e:
+                        logger.error(f"Unable to open device at {rodent.path}: {e}")
+
+        monitor = ratbag.drivers.HidrawMonitor.instance()
+        monitor.connect("rodent-found", rodent_found)
+        monitor.start()
+        monitor.list()
 
     def probe(
         self,
         rodent: ratbag.drivers.Rodent,
-        config: Dict[str, Any] = {},
     ) -> None:
         # This is the device that will handle everything for us
         roccat_device = RoccatDevice(self, rodent)
@@ -734,21 +762,21 @@ class RoccatDriver(ratbag.drivers.Driver):
         # The driver is in charge of connecting the recorders though, we only
         # have generic ones so far anyway. This needs to be done before
         # device.start() so we don't miss any communication.
-        for rec in self.recorders:
-            rodent.connect_to_recorder(rec)
-            rec.init(
-                {
-                    "name": rodent.name,
-                    "model": rodent.model,
-                    "driver": "roccat",
-                    "path": rodent.path,
-                    "syspath": rodent.path,
-                    "vid": rodent.vid,
-                    "pid": rodent.pid,
-                    "report_descriptor": self.hidraw_device.report_descriptor,
-                }
-            )
-
+        #        for rec in self.recorders:
+        #            rodent.connect_to_recorder(rec)
+        #            rec.init(
+        #                {
+        #                    "name": rodent.name,
+        #                    "model": rodent.model,
+        #                    "driver": "roccat",
+        #                    "path": rodent.path,
+        #                    "syspath": rodent.path,
+        #                    "vid": rodent.vid,
+        #                    "pid": rodent.pid,
+        #                    "report_descriptor": self.hidraw_device.report_descriptor,
+        #                }
+        #            )
+        #
         # Calling start() will make the device talk to the physical device
         try:
             ratbag_device = roccat_device.start()
@@ -758,7 +786,16 @@ class RoccatDriver(ratbag.drivers.Driver):
             e.path = roccat_device.path
             raise e
 
+    @classmethod
+    def new_with_devicelist(
+        self,
+        ratbagctx: ratbag.Ratbag,
+        supported_devices: List[ratbag.drivers.DeviceConfig],
+    ):
+        driver = RoccatDriver(supported_devices)
 
-def load_driver(driver_name):
-    assert driver_name == "roccat"
-    return RoccatDriver()
+        def start(_):
+            driver.start()
+
+        ratbagctx.connect("start", start)
+        return driver

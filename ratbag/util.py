@@ -82,22 +82,19 @@ def find_hidraw_devices() -> List[str]:
     return devices
 
 
-def load_data_files(path) -> Dict[str, configparser.ConfigParser]:
+def load_data_files(path: Path) -> List[configparser.ConfigParser]:
     """
     :return: a list of ``configparser.ConfigParser`` objects
     """
     assert path is not None
 
-    files = {}
+    files = []
     for f in Path(path).glob("**/*.device"):
         parser = configparser.ConfigParser()
         # don't convert keys to lowercase
         parser.optionxform = lambda option: option  # type: ignore
         parser.read(f)
-        match = parser["Device"]["DeviceMatch"]
-        for key in match.split(";"):
-            files[key] = parser
-            # logger.debug(f"Found data file for {key}")
+        files.append(parser)
 
     if not files:
         raise FileNotFoundError("Unable to find data files")

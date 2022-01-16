@@ -14,6 +14,7 @@ from gi.repository import GLib
 import ratbag.drivers
 import ratbag.drivers.roccat as roccat
 from ratbag.util import as_hex
+from unittest.mock import MagicMock
 
 logger = logging.getLogger(__name__)
 
@@ -190,14 +191,14 @@ class RoccatTestDevice(ratbag.drivers.Rodent):
 
 @pytest.fixture
 def driver():
-    return roccat.load_driver("roccat")
+    cls = ratbag.drivers.load_driver_by_name("roccat")
+    return cls(supported_devices=[])
 
 
 def test_load_driver():
     # the most basic test case...
-    assert roccat.load_driver("roccat") is not None
-    with pytest.raises(AssertionError):
-        roccat.load_driver("wrong-name")
+    cls = ratbag.drivers.load_driver_by_name("roccat")
+    assert cls == roccat.RoccatDriver
 
 
 class TestRoccatDriver(object):
@@ -215,7 +216,8 @@ class TestRoccatDriver(object):
         # **we** define for this device (not the driver)
         dev = RoccatTestDevice()
         driver.connect("device-added", self.cb_device_added)
-        driver.probe(dev, {})
+        # Note: we bypass the hidraw monitor because we don't need it
+        driver.probe(dev)
         self.mainloop()
 
         assert self.ratbag_device is not None
@@ -246,7 +248,8 @@ class TestRoccatDriver(object):
         dev = RoccatTestDevice()
         dev.profiles[1].buttons[5] = 36  # ConsumerControl.CC_STOP
         driver.connect("device-added", self.cb_device_added)
-        driver.probe(dev, {})
+        # Note: we bypass the hidraw monitor because we don't need it
+        driver.probe(dev)
         self.mainloop()
 
         device = self.ratbag_device
@@ -275,7 +278,8 @@ class TestRoccatDriver(object):
             (kcA, 0x00, 400),
         ]
         driver.connect("device-added", self.cb_device_added)
-        driver.probe(dev, {})
+        # Note: we bypass the hidraw monitor because we don't need it
+        driver.probe(dev)
         self.mainloop()
 
         device = self.ratbag_device
@@ -304,7 +308,8 @@ class TestRoccatDriver(object):
     def test_button_change_action(self, driver):
         dev = RoccatTestDevice()
         driver.connect("device-added", self.cb_device_added)
-        driver.probe(dev, {})
+        # Note: we bypass the hidraw monitor because we don't need it
+        driver.probe(dev)
         self.mainloop()
 
         device = self.ratbag_device
@@ -320,7 +325,8 @@ class TestRoccatDriver(object):
     def test_dpi_change(self, driver):
         dev = RoccatTestDevice()
         driver.connect("device-added", self.cb_device_added)
-        driver.probe(dev, {})
+        # Note: we bypass the hidraw monitor because we don't need it
+        driver.probe(dev)
         self.mainloop()
 
         device = self.ratbag_device

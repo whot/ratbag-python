@@ -4,6 +4,7 @@
 #
 # This file is formatted with Python Black
 
+import attr
 import logging
 import pathlib
 import yaml
@@ -76,16 +77,22 @@ class YamlDevice(ratbag.drivers.Rodent):
     def __init__(self, recording: pathlib.Path):
         y = yaml.safe_load(open(recording).read())
 
-        for attr in y["attributes"]:
-            if attr["type"] == "bytes":
-                v = bytes(attr["value"])  # type: ignore
-            elif attr["type"] == "int":
-                v = int(attr["value"])  # type: ignore
-            elif attr["type"] == "str":
-                v = attr["value"]  # type: ignore
-            elif attr["type"] == "bool":
-                v = attr["value"].lower() == "true"  # type: ignore
-            setattr(self, attr["name"], v)
+        info = ratbag.drivers.DeviceInfo(
+            pathlib.Path("/nopath"), pathlib.Path("/sys/nopath")
+        )
+
+        for att in y["attributes"]:
+            if att["type"] == "bytes":
+                v = bytes(att["value"])  # type: ignore
+            elif att["type"] == "int":
+                v = int(att["value"])  # type: ignore
+            elif att["type"] == "str":
+                v = att["value"]  # type: ignore
+            elif att["type"] == "bool":
+                v = att["value"].lower() == "true"  # type: ignore
+            setattr(info, att["name"], v)
+
+        super().__init__(info)
 
         self.conversations: Dict[bytes, bytes] = {}
         self.ioctls: Dict[bytes, Reply] = {}
@@ -120,6 +127,9 @@ class YamlDevice(ratbag.drivers.Rodent):
 
         for r in self.ioctls.values():
             r.finalize()
+
+    def open(self):
+        pass
 
     def start(self) -> None:
         pass
@@ -166,3 +176,14 @@ class YamlDevice(ratbag.drivers.Rodent):
                 return
         else:
             raise InsufficientDataError(f"HIDIOCSFEATURE report_id {report_id}")
+
+
+@attr.s
+class YamlEmulator:
+    file: pathlib.Path = attr.ib()
+
+    def setup(self):
+        monitor = ratbag.drivers.HidrawMonitor.instance()
+        monitor.disable()  # FIXME: this should probably be configurable
+        rodent = YamlDevice(self.file)
+        monitor.add_rodent(rodent)

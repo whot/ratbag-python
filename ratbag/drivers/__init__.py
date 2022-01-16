@@ -20,6 +20,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from gi.repository import GObject
 
 import ratbag
+import ratbag.hid
 
 logger = logging.getLogger(__name__)
 

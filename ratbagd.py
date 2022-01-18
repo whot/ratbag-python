@@ -422,7 +422,7 @@ class Ratbagd(object):
 
 if __name__ == "__main__":
     _init_logger(verbose=True)
-    rb = ratbag.Ratbag({})
+    rb = ratbag.Ratbag.create()
     ratbagd = Ratbagd(rb)
     try:
         ratbagd.init_dbus()

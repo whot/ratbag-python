@@ -160,10 +160,9 @@ class Ratbag(GObject.Object):
         ),
     }
 
-    def __init__(self, /, config: Dict[str, Any] = {}, load_data_files=True):
+    def __init__(self, /, load_data_files=True):
         super().__init__()
         self._devices: List[Device] = []
-        self._config = config
         if load_data_files:
             self._load_data_files()
 
@@ -257,6 +256,12 @@ class Ratbag(GObject.Object):
         """
         self.emit("start")
 
+    @classmethod
+    def create(cls, /, load_data_files=True):
+        """
+        Create a new Ratbagd instance.
+        """
+        return cls(load_data_files=load_data_files)
 
 class Recorder(GObject.Object):
     """

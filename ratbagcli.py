@@ -467,7 +467,7 @@ def ratbagcli_apply_config(ctx, nocommit: bool, config: Path, name: Optional[str
 
     try:
         mainloop = GLib.MainLoop()
-        ratbagd = ratbag.Ratbag(ctx.obj)
+        ratbagd = ratbag.Ratbag.create()
         for e in ctx.obj.get("emulators", []):
             e.setup()
 
@@ -505,7 +505,7 @@ def ratbagcli_verify_config(ctx, config: Path, name: Optional[str]):
 
     try:
         mainloop = GLib.MainLoop()
-        ratbagd = ratbag.Ratbag(ctx.obj)
+        ratbagd = ratbag.Ratbag.create()
         for e in ctx.obj.get("emulators", []):
             e.setup()
 
@@ -529,7 +529,7 @@ def ratbagcli_verify_config(ctx, config: Path, name: Optional[str]):
 def ratbagcli_show(ctx, name: str):
     try:
         mainloop = GLib.MainLoop()
-        ratbagd = ratbag.Ratbag(ctx.obj)
+        ratbagd = ratbag.Ratbag.create()
         for e in ctx.obj.get("emulators", []):
             e.setup()
 
@@ -552,7 +552,7 @@ def ratbagcli_show(ctx, name: str):
 def ratbagcli_list(ctx):
     try:
         mainloop = GLib.MainLoop()
-        ratbagd = ratbag.Ratbag(ctx.obj)
+        ratbagd = ratbag.Ratbag.create()
         for e in ctx.obj.get("emulators", []):
             e.setup()
 

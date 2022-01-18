@@ -11,7 +11,7 @@ import ratbag
 logger = logging.getLogger(__name__)
 
 
-class Hidpp10Driver(ratbag.drivers.Driver):
+class Hidpp10Driver(ratbag.driver.Driver):
     NAME = "Logitech HID++1.0"
 
     def probe(self, device):
@@ -22,7 +22,7 @@ class Hidpp10Driver(ratbag.drivers.Driver):
         callback(arg, success=True)
 
 
-def load_driver(driver_name: str) -> type[ratbag.drivers.Driver]:
+def load_driver(driver_name: str) -> type[ratbag.driver.Driver]:
     """
     Driver entry point
 

@@ -17,7 +17,7 @@ The public API, i.e. the bits to be consumed by various tools and ratbagd is
 in the `ratbag` module (`ratbag/__init__.py`). This provides the various
 high-level entities like `Device`, `Profile` and `Resolution`.
 
-The drivers are in the `ratbag.drivers` module
+The drivers are in the `ratbag.driver` module
 (`ratbag/drivers/drivername.py`) and the API for drivers and helpers are in
 `ratbag/drivers/__init__.py`.
 

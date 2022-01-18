@@ -17,7 +17,7 @@ from gi.repository import GObject
 import ratbag
 import ratbag.hid
 from ratbag.parser import Parser, Spec
-from ratbag.drivers import HidrawMonitor, ratbag_driver
+from ratbag.driver import HidrawMonitor, ratbag_driver
 
 logger = logging.getLogger(__name__)
 
@@ -225,7 +225,7 @@ class Hidpp20Device(GObject.Object):
         A list of :class:`Profile` instances
     """
 
-    def __init__(self, hidraw_device: ratbag.drivers.Rodent, device_index: int):
+    def __init__(self, hidraw_device: ratbag.driver.Rodent, device_index: int):
         GObject.Object.__init__(self)
         self.index = device_index
         self.hidraw_device = hidraw_device
@@ -420,7 +420,7 @@ class Hidpp20Device(GObject.Object):
 
 
 @ratbag_driver("hidpp20")
-class Hidpp20Driver(ratbag.drivers.Driver):
+class Hidpp20Driver(ratbag.driver.Driver):
     """
     Implementation of the Logitech HID++ 2.0 protocol.
 
@@ -444,7 +444,7 @@ class Hidpp20Driver(ratbag.drivers.Driver):
         G305 = "G305"
         G602 = "G602"
 
-    def __init__(self, supported_devices: List[ratbag.drivers.DeviceConfig]):
+    def __init__(self, supported_devices: List[ratbag.driver.DeviceConfig]):
         GObject.Object.__init__(self)
         self._supported_devices = supported_devices
 
@@ -531,8 +531,8 @@ class Hidpp20Driver(ratbag.drivers.Driver):
     def new_with_devicelist(
         cls,
         ratbagctx: ratbag.Ratbag,
-        supported_devices: List[ratbag.drivers.DeviceConfig],
-    ) -> ratbag.drivers.Driver:
+        supported_devices: List[ratbag.driver.DeviceConfig],
+    ) -> ratbag.driver.Driver:
         driver = Hidpp20Driver(supported_devices)
 
         def start(ctx):

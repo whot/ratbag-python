@@ -6,7 +6,7 @@
 #
 
 
-import ratbag.drivers
+import ratbag.driver
 import ratbag.drivers.hidpp20 as hidpp20
 
 import pytest
@@ -14,11 +14,11 @@ import pytest
 
 @pytest.fixture
 def driver():
-    cls = ratbag.drivers.load_driver_by_name("hidpp20")
+    cls = ratbag.driver.load_driver_by_name("hidpp20")
     return cls
 
 
 def test_load_driver():
     # the most basic test case...
-    cls = ratbag.drivers.load_driver_by_name("hidpp20")
+    cls = ratbag.driver.load_driver_by_name("hidpp20")
     assert cls == hidpp20.Hidpp20Driver

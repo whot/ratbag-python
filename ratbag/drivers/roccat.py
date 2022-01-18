@@ -17,7 +17,7 @@ from gi.repository import GObject
 
 import ratbag
 import ratbag.hid
-import ratbag.drivers
+import ratbag.driver
 import ratbag.util
 
 from ratbag.util import as_hex
@@ -719,9 +719,9 @@ class RoccatDevice(GObject.Object):
         self.wait()
 
 
-@ratbag.drivers.ratbag_driver("roccat")
-class RoccatDriver(ratbag.drivers.Driver):
-    def __init__(self, supported_devices: List[ratbag.drivers.DeviceConfig]):
+@ratbag.driver.ratbag_driver("roccat")
+class RoccatDriver(ratbag.driver.Driver):
+    def __init__(self, supported_devices: List[ratbag.driver.DeviceConfig]):
         GObject.Object.__init__(self)
         self._supported_devices = supported_devices
 
@@ -747,14 +747,14 @@ class RoccatDriver(ratbag.drivers.Driver):
                     except PermissionError as e:
                         logger.error(f"Unable to open device at {rodent.path}: {e}")
 
-        monitor = ratbag.drivers.HidrawMonitor.instance()
+        monitor = ratbag.driver.HidrawMonitor.instance()
         monitor.connect("rodent-found", rodent_found)
         monitor.start()
         monitor.list()
 
     def probe(
         self,
-        rodent: ratbag.drivers.Rodent,
+        rodent: ratbag.driver.Rodent,
     ) -> None:
         # This is the device that will handle everything for us
         roccat_device = RoccatDevice(self, rodent)
@@ -790,7 +790,7 @@ class RoccatDriver(ratbag.drivers.Driver):
     def new_with_devicelist(
         self,
         ratbagctx: ratbag.Ratbag,
-        supported_devices: List[ratbag.drivers.DeviceConfig],
+        supported_devices: List[ratbag.driver.DeviceConfig],
     ):
         driver = RoccatDriver(supported_devices)
 

@@ -180,7 +180,7 @@ class Ratbag(GObject.Object):
         hook onto hidraw devices.
         """
 
-        from ratbag.drivers import DeviceConfig
+        from ratbag.driver import DeviceConfig
 
         # FIXME: this needs to use the install path
         path = Path("data")
@@ -194,7 +194,7 @@ class Ratbag(GObject.Object):
 
         # drivers want the list of all entries passed as one, so we need to
         # extract them first, into a dict of "drivername" : [dev1, dev2, ...]
-        drivers: Dict[str, List["ratbag.drivers.DeviceConfig"]] = {}
+        drivers: Dict[str, List["ratbag.driver.DeviceConfig"]] = {}
         for f in datafiles:
             drivername = f["Device"]["Driver"]
             match = f["Device"]["DeviceMatch"]
@@ -217,7 +217,7 @@ class Ratbag(GObject.Object):
                 logger.error(f"{e}")
 
     def add_driver(
-        self, drivername: str, supported_devices: List["ratbag.drivers.DeviceConfig"]
+        self, drivername: str, supported_devices: List["ratbag.driver.DeviceConfig"]
     ):
         """
         Add the given driver name. This API exists primarily to support
@@ -226,11 +226,11 @@ class Ratbag(GObject.Object):
 
         :param drivername: The string name of the driver to load
         :param supported_devices: A list of
-                    :class:`ratbag.drivers.DeviceConfig` instances with the
+                    :class:`ratbag.driver.DeviceConfig` instances with the
                     devices supported by this driver.
         :raises ratbag.driver.DriverUnavailable:
         """
-        from ratbag.drivers import load_driver_by_name
+        from ratbag.driver import load_driver_by_name
 
         driverclass = load_driver_by_name(drivername)
         if not driverclass:
@@ -328,7 +328,7 @@ class Device(GObject.Object):
     }
 
     def __init__(
-        self, driver: "ratbag.drivers.Driver", path: str, name: str, model: str
+        self, driver: "ratbag.driver.Driver", path: str, name: str, model: str
     ):
         GObject.Object.__init__(self)
         self.driver = driver

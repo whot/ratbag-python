@@ -30,7 +30,7 @@ def test_find_hidraw_devices():
 )
 def test_device_info():
     for path in ratbag.util.find_hidraw_devices():
-        info = ratbag.drivers.DeviceInfo.from_path(path)
+        info = ratbag.driver.DeviceInfo.from_path(path)
         assert info.path == path
         assert info.name is not None
         assert info.vid is not None

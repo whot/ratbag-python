@@ -16,7 +16,7 @@ import logging
 import sys
 
 import ratbag
-from ratbag.drivers import DeviceInfo
+from ratbag.driver import DeviceInfo
 
 logger = logging.getLogger("ratbagd")
 

@@ -12,7 +12,7 @@ import yaml
 from typing import Dict, List
 
 import ratbag
-import ratbag.drivers
+import ratbag.driver
 
 from ratbag.util import as_hex
 
@@ -61,7 +61,7 @@ class Reply(object):
             return next(self._it)
 
 
-class YamlDevice(ratbag.drivers.Rodent):
+class YamlDevice(ratbag.driver.Rodent):
     """
     Creates a :class:`ratbag.Rodent` instance based on a recording made by
     :class:`ratbag.recoder.YamlDeviceRecorder`.
@@ -77,7 +77,7 @@ class YamlDevice(ratbag.drivers.Rodent):
     def __init__(self, recording: pathlib.Path):
         y = yaml.safe_load(open(recording).read())
 
-        info = ratbag.drivers.DeviceInfo(
+        info = ratbag.driver.DeviceInfo(
             pathlib.Path("/nopath"), pathlib.Path("/sys/nopath")
         )
 
@@ -183,7 +183,7 @@ class YamlEmulator:
     file: pathlib.Path = attr.ib()
 
     def setup(self):
-        monitor = ratbag.drivers.HidrawMonitor.instance()
+        monitor = ratbag.driver.HidrawMonitor.instance()
         monitor.disable()  # FIXME: this should probably be configurable
         rodent = YamlDevice(self.file)
         monitor.add_rodent(rodent)

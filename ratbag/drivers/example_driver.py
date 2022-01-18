@@ -15,22 +15,22 @@ import logging
 
 import ratbag
 import ratbag.hid
-import ratbag.drivers
+import ratbag.driver
 
 # Create your own logger for this driver so we can nicely filter it
 logger = logging.getLogger(__name__)
 
 
 # This decorator marks this class as the actual driver implementation.
-@ratbag.drivers.ratbag_driver("example-driver")
-class ExampleDriver(ratbag.drivers.Driver):
+@ratbag.driver.ratbag_driver("example-driver")
+class ExampleDriver(ratbag.driver.Driver):
     # the actual entry point
     @classmethod
     def new_with_devicelist(
         cls,
         ratbagctx: ratbag.Ratbag,
-        supported_devices: List[ratbag.drivers.DeviceConfig],
-    ) -> ratbag.drivers.Driver:
+        supported_devices: List[ratbag.driver.DeviceConfig],
+    ) -> ratbag.driver.Driver:
         # Create an instance of our driver
         driver = cls()
         # Now connect to the start signal so we know when we can get going

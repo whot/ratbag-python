@@ -11,7 +11,7 @@ import pytest
 
 from gi.repository import GLib
 
-import ratbag.drivers
+import ratbag.driver
 import ratbag.drivers.roccat as roccat
 from ratbag.util import as_hex
 from unittest.mock import MagicMock
@@ -38,7 +38,7 @@ ff 7f 95 02 75 10 81 06 09 38 15 81 25 7f 75 08 95 01 81 06 05 0c 0a 38 02 81
 )
 
 
-class RoccatTestDevice(ratbag.drivers.Rodent):
+class RoccatTestDevice(ratbag.driver.Rodent):
     class Profile:
         """
         Use for software-configuring the device
@@ -62,7 +62,7 @@ class RoccatTestDevice(ratbag.drivers.Rodent):
     """
 
     def __init__(self):
-        info = ratbag.drivers.DeviceInfo(
+        info = ratbag.driver.DeviceInfo(
             path="/does/not/exist",
             syspath="/sys/does/not/exist",
             name=f"{type(self).__name__}",
@@ -191,13 +191,13 @@ class RoccatTestDevice(ratbag.drivers.Rodent):
 
 @pytest.fixture
 def driver():
-    cls = ratbag.drivers.load_driver_by_name("roccat")
+    cls = ratbag.driver.load_driver_by_name("roccat")
     return cls(supported_devices=[])
 
 
 def test_load_driver():
     # the most basic test case...
-    cls = ratbag.drivers.load_driver_by_name("roccat")
+    cls = ratbag.driver.load_driver_by_name("roccat")
     assert cls == roccat.RoccatDriver
 
 

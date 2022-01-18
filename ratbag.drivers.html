@@ -44,16 +44,16 @@
 <li class="toctree-l3 current"><a class="current reference internal" href="#">ratbag.drivers package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ratbag-drivers-example-driver-module">ratbag.drivers.example_driver module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-ratbag.drivers.hidpp10">ratbag.drivers.hidpp10 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ratbag-drivers-hidpp10-module">ratbag.drivers.hidpp10 module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ratbag-drivers-hidpp20-module">ratbag.drivers.hidpp20 module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ratbag-drivers-roccat-module">ratbag.drivers.roccat module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-ratbag.drivers">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ratbag.html#module-ratbag.emulator">ratbag.emulator module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ratbag.html#ratbag-emulator-module">ratbag.emulator module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.html#ratbag-hid-module">ratbag.hid module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.html#module-ratbag.parser">ratbag.parser module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.html#module-ratbag.recorder">ratbag.recorder module</a></li>
@@ -68,7 +68,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="ratbag.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ratbag.html#module-ratbag.emulator">ratbag.emulator module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ratbag.html#ratbag-emulator-module">ratbag.emulator module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ratbag.html#ratbag-hid-module">ratbag.hid module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ratbag.html#module-ratbag.parser">ratbag.parser module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ratbag.html#module-ratbag.recorder">ratbag.recorder module</a></li>
@@ -113,52 +113,8 @@
 <section id="ratbag-drivers-example-driver-module">
 <h2>ratbag.drivers.example_driver module<a class="headerlink" href="#ratbag-drivers-example-driver-module" title="Permalink to this headline"></a></h2>
 </section>
-<section id="module-ratbag.drivers.hidpp10">
-<span id="ratbag-drivers-hidpp10-module"></span><h2>ratbag.drivers.hidpp10 module<a class="headerlink" href="#module-ratbag.drivers.hidpp10" title="Permalink to this headline"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp10.Hidpp10Driver">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.hidpp10.</span></span><span class="sig-name descname"><span class="pre">Hidpp10Driver</span></span><a class="headerlink" href="#ratbag.drivers.hidpp10.Hidpp10Driver" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ratbag.drivers.Driver" title="ratbag.drivers.Driver"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.Driver</span></code></a></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp10.Hidpp10Driver.NAME">
-<span class="sig-name descname"><span class="pre">NAME</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Logitech</span> <span class="pre">HID++1.0'</span></em><a class="headerlink" href="#ratbag.drivers.hidpp10.Hidpp10Driver.NAME" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp10.Hidpp10Driver.probe">
-<span class="sig-name descname"><span class="pre">probe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp10.Hidpp10Driver.probe" title="Permalink to this definition"></a></dt>
-<dd><p>Probe the device for information. On success, the driver will create a
-<a class="reference internal" href="ratbag.html#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a> with at least one profile and the appropriate
-number of buttons/leds/resolutions and emit the <code class="docutils literal notranslate"><span class="pre">device-added</span></code>
-signal for that device.</p>
-<p>A caller should subscribe to the <code class="docutils literal notranslate"><span class="pre">device-added</span></code> signal before
-calling this function.</p>
-<p>If <code class="docutils literal notranslate"><span class="pre">device</span></code> is a <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> object, the driver
-creates initializes for the device at that path. Otherwise, <code class="docutils literal notranslate"><span class="pre">device</span></code>
-is used as-is as backing device instance. This is used when emulating
-devices - note that the exact requirements on the device behavior may
-differ between drivers.</p>
-<p>Completion of this function without an exception counts as success.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>device</strong> – The path to the device or a fully initialized instance
-representing a device</p></li>
-<li><p><strong>device_info</strong> – Static information about the device from external
-sources (system, data files, etc).</p></li>
-<li><p><strong>config</strong> – Driver-specific device configuration (e.g. quirks).</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.hidpp10.Hidpp10Driver.commit">
-<span class="sig-name descname"><span class="pre">commit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.hidpp10.Hidpp10Driver.commit" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<section id="ratbag-drivers-hidpp10-module">
+<h2>ratbag.drivers.hidpp10 module<a class="headerlink" href="#ratbag-drivers-hidpp10-module" title="Permalink to this headline"></a></h2>
 </section>
 <section id="ratbag-drivers-hidpp20-module">
 <h2>ratbag.drivers.hidpp20 module<a class="headerlink" href="#ratbag-drivers-hidpp20-module" title="Permalink to this headline"></a></h2>
@@ -166,328 +122,8 @@ sources (system, data files, etc).</p></li>
 <section id="ratbag-drivers-roccat-module">
 <h2>ratbag.drivers.roccat module<a class="headerlink" href="#ratbag-drivers-roccat-module" title="Permalink to this headline"></a></h2>
 </section>
-<section id="module-ratbag.drivers">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ratbag.drivers" title="Permalink to this headline"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.Message">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.</span></span><span class="sig-name descname"><span class="pre">Message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Direction.TX</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Message" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gi.overrides.GObject.Object</span></code></p>
-<p>A message sent to the device or received from the device. This object
-exists to standardize logging attempts. Drivers should, where possible,
-re-use the existing messages.</p>
-<p>Messages are usually logged as <code class="docutils literal notranslate"><span class="pre">type</span> <span class="pre">subtype</span> <span class="pre">direction</span> <span class="pre">data</span></code></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.Message.SUBTYPE">
-<span class="sig-name descname"><span class="pre">SUBTYPE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#ratbag.drivers.Message.SUBTYPE" title="Permalink to this definition"></a></dt>
-<dd><p>The subtype of this message. Used e.g. by ioctls to specify which ioctl
-was invoked.</p>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.Message.Direction">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Message.Direction" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
-<p>Message direction</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.Message.Direction.RX">
-<span class="sig-name descname"><span class="pre">RX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#ratbag.drivers.Message.Direction.RX" title="Permalink to this definition"></a></dt>
-<dd><p>Message received from the device</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.Message.Direction.TX">
-<span class="sig-name descname"><span class="pre">TX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#ratbag.drivers.Message.Direction.TX" title="Permalink to this definition"></a></dt>
-<dd><p>Message sent to the device</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.Message.Direction.IOC">
-<span class="sig-name descname"><span class="pre">IOC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#ratbag.drivers.Message.Direction.IOC" title="Permalink to this definition"></a></dt>
-<dd><p>An ioctl invocation on the device</p>
-</dd></dl>
-
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.DeviceInfo">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.</span></span><span class="sig-name descname"><span class="pre">DeviceInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">syspath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Unnamed</span> <span class="pre">device'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'usb'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_descriptor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.DeviceInfo" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Information about a device. This is information collected about a device
-that can help in picking which driver to load, listing the device for the
-user, etc.</p>
-<p>Information collected is (usually) done without opening the device.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.DeviceInfo.path">
-<span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></em><a class="headerlink" href="#ratbag.drivers.DeviceInfo.path" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.DeviceInfo.syspath">
-<span class="sig-name descname"><span class="pre">syspath</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></em><a class="headerlink" href="#ratbag.drivers.DeviceInfo.syspath" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.DeviceInfo.name">
-<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ratbag.drivers.DeviceInfo.name" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.DeviceInfo.bus">
-<span class="sig-name descname"><span class="pre">bus</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ratbag.drivers.DeviceInfo.bus" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.DeviceInfo.vid">
-<span class="sig-name descname"><span class="pre">vid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.DeviceInfo.vid" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.DeviceInfo.pid">
-<span class="sig-name descname"><span class="pre">pid</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.drivers.DeviceInfo.pid" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.DeviceInfo.report_descriptor">
-<span class="sig-name descname"><span class="pre">report_descriptor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.DeviceInfo.report_descriptor" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.DeviceInfo.from_path">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.DeviceInfo.from_path" title="Permalink to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#ratbag.drivers.DeviceInfo" title="ratbag.drivers.DeviceInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceInfo</span></code></a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.Rodent">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.</span></span><span class="sig-name descname"><span class="pre">Rodent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gi.overrides.GObject.Object</span></code></p>
-<p>An class abstracting a physical device, connected via a non-blocking
-file descriptor. This class exists so we have a default interface for
-communicating with the device that we can hook into for logging and
-others.</p>
-<p>See <a class="reference internal" href="#ratbag.drivers.Rodent.from_device" title="ratbag.drivers.Rodent.from_device"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_device()</span></code></a> for the most convenient way to create a new Rodent
-object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>path</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code>]) – the path to the physical device</p>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The name Rodent was chosen to avoid confusion with <a class="reference internal" href="ratbag.html#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a>.</p>
-</div>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.Rodent.name">
-<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#ratbag.drivers.Rodent.name" title="Permalink to this definition"></a></dt>
-<dd><p>The device’s name (as advertized by the device itself)</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.Rodent.path">
-<span class="sig-name descname"><span class="pre">path</span></span><a class="headerlink" href="#ratbag.drivers.Rodent.path" title="Permalink to this definition"></a></dt>
-<dd><p>The device’s path</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.Rodent.report_descriptor">
-<span class="sig-name descname"><span class="pre">report_descriptor</span></span><a class="headerlink" href="#ratbag.drivers.Rodent.report_descriptor" title="Permalink to this definition"></a></dt>
-<dd><p>The bytes for this hidraw device’s report descriptor (if this device
-is a hidraw device, otherwise <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p>
-</dd></dl>
-
-<dl class="simple">
-<dt>GObject Signals:</dt><dd><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">data-to-device</span></code>, <code class="docutils literal notranslate"><span class="pre">data-from-device</span></code>: the <code class="docutils literal notranslate"><span class="pre">bytes</span></code> that have
-been written to or read from the device.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ioctl-command</span></code>: an ioctl has been called on the device with the
-given ioctl name and the data in <code class="docutils literal notranslate"><span class="pre">bytes</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ioctl-reply</span></code>: an ioctl has returned data in <code class="docutils literal notranslate"><span class="pre">bytes</span></code></p></li>
-</ul>
-</dd>
-</dl>
-<p>These signals are primarily used by recorders, there should be no need to
-handle those signals in other parts of the implementation.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.Rodent.from_device">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent.from_device" title="Permalink to this definition"></a></dt>
-<dd><p>A simplification for drivers. If the given device is already a
-pre-setup device (from a recorder), this function returns that device.
-Otherwise, this function returns a <a class="reference internal" href="#ratbag.drivers.Rodent" title="ratbag.drivers.Rodent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.drivers.Rodent</span></code></a>
-instance for the given device path.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="ratbag.drivers.Rodent.report_ids">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">report_ids</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.drivers.Rodent.report_ids" title="Permalink to this definition"></a></dt>
-<dd><p>A dictionary containg the list each of “feature”, “input” and “output”
-report IDs. For devices without a report descriptor, each list is
-empty.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, …]]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.Rodent.start">
-<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent.start" title="Permalink to this definition"></a></dt>
-<dd><p>Start parsing data from the device.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.Rodent.send">
-<span class="sig-name descname"><span class="pre">send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent.send" title="Permalink to this definition"></a></dt>
-<dd><p>Send data to the device</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.Rodent.recv">
-<span class="sig-name descname"><span class="pre">recv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent.recv" title="Permalink to this definition"></a></dt>
-<dd><p>Receive data from the device. This method waits synchronously for the data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.Rodent.hid_get_feature">
-<span class="sig-name descname"><span class="pre">hid_get_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent.hid_get_feature" title="Permalink to this definition"></a></dt>
-<dd><p>Return a list of bytes as returned by this HID GetFeature request</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.Rodent.hid_set_feature">
-<span class="sig-name descname"><span class="pre">hid_set_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent.hid_set_feature" title="Permalink to this definition"></a></dt>
-<dd><p>Issue a HID SetFeature request for the given report ID with the given
-data.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>the first element of data must be the report_id</p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.Rodent.connect_to_recorder">
-<span class="sig-name descname"><span class="pre">connect_to_recorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recorder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Rodent.connect_to_recorder" title="Permalink to this definition"></a></dt>
-<dd><p>Connect this device to the given recorder. This is a convenience
-method to simplify drivers.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ratbag.drivers.Driver">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.drivers.</span></span><span class="sig-name descname"><span class="pre">Driver</span></span><a class="headerlink" href="#ratbag.drivers.Driver" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gi.overrides.GObject.Object</span></code></p>
-<p>The parent class for all driver implementations. See
-<code class="docutils literal notranslate"><span class="pre">ratbag/drivers/drivername.py</span></code> for the implementation of each driver
-itself.</p>
-<p>A driver <strong>must</strong> implement the <a class="reference internal" href="#ratbag.drivers.Driver.DRIVER_LOAD_FUNC" title="ratbag.drivers.Driver.DRIVER_LOAD_FUNC"><code class="xref py py-func docutils literal notranslate"><span class="pre">DRIVER_LOAD_FUNC()</span></code></a> function, it is
-the entry point for ratbag to instantiate the driver for the device.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.drivers.Driver.DRIVER_LOAD_FUNC">
-<span class="sig-name descname"><span class="pre">DRIVER_LOAD_FUNC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'load_driver'</span></em><a class="headerlink" href="#ratbag.drivers.Driver.DRIVER_LOAD_FUNC" title="Permalink to this definition"></a></dt>
-<dd><p>The name of the function to instantiate a driver. A driver file must
-contain at least the following code:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyDriver</span><span class="p">(</span><span class="n">ratbag</span><span class="o">.</span><span class="n">Driver</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">probe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
-        <span class="k">pass</span>
-
-<span class="k">def</span> <span class="nf">load_driver</span><span class="p">(</span><span class="n">driver_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">myDriver</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>GObject Signals:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">device-added</span></code>: emitted for each <a class="reference internal" href="ratbag.html#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a> that was
-added during <a class="reference internal" href="#ratbag.drivers.Driver.probe" title="ratbag.drivers.Driver.probe"><code class="xref py py-meth docutils literal notranslate"><span class="pre">probe()</span></code></a></p></li>
-</ul>
-</div></blockquote>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.Driver.add_recorder">
-<span class="sig-name descname"><span class="pre">add_recorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recorder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Driver.add_recorder" title="Permalink to this definition"></a></dt>
-<dd><p>Instruct the driver to add <code class="docutils literal notranslate"><span class="pre">recorder</span></code> to log driver communication to
-the device. It is up to the driver to determine what communication is
-notable enough to be recorder for later replay.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.drivers.Driver.probe">
-<span class="sig-name descname"><span class="pre">probe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.drivers.Driver.probe" title="Permalink to this definition"></a></dt>
-<dd><p>Probe the device for information. On success, the driver will create a
-<a class="reference internal" href="ratbag.html#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a> with at least one profile and the appropriate
-number of buttons/leds/resolutions and emit the <code class="docutils literal notranslate"><span class="pre">device-added</span></code>
-signal for that device.</p>
-<p>A caller should subscribe to the <code class="docutils literal notranslate"><span class="pre">device-added</span></code> signal before
-calling this function.</p>
-<p>If <code class="docutils literal notranslate"><span class="pre">device</span></code> is a <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code> object, the driver
-creates initializes for the device at that path. Otherwise, <code class="docutils literal notranslate"><span class="pre">device</span></code>
-is used as-is as backing device instance. This is used when emulating
-devices - note that the exact requirements on the device behavior may
-differ between drivers.</p>
-<p>Completion of this function without an exception counts as success.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>device</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="#ratbag.drivers.Rodent" title="ratbag.drivers.Rodent"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rodent</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code>]) – The path to the device or a fully initialized instance
-representing a device</p></li>
-<li><p><strong>device_info</strong> (<a class="reference internal" href="#ratbag.drivers.DeviceInfo" title="ratbag.drivers.DeviceInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeviceInfo</span></code></a>) – Static information about the device from external
-sources (system, data files, etc).</p></li>
-<li><p><strong>config</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]) – Driver-specific device configuration (e.g. quirks).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline"></a></h2>
 </section>
 </section>
 

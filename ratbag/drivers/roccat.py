@@ -720,42 +720,11 @@ class RoccatDevice(GObject.Object):
 
 
 @ratbag.driver.ratbag_driver("roccat")
-class RoccatDriver(ratbag.driver.Driver):
-    def __init__(self, supported_devices: List[ratbag.driver.DeviceConfig]):
-        GObject.Object.__init__(self)
-        self._supported_devices = supported_devices
-
-    def start(self):
-        def rodent_found(monitor, rodent):
-            for d in self._supported_devices:
-                if d.usbid == rodent.usbid:
-                    try:
-                        rodent.open()
-                        self.emit("rodent-found", rodent)
-                        self.probe(rodent)
-                    except ratbag.UnsupportedDeviceError:
-                        logger.info(
-                            f"Skipping unsupported device {rodent.name} ({rodent.path})"
-                        )
-                    except ratbag.SomethingIsMissingError as e:
-                        logger.info(
-                            f"Skipping device {rodent.name} ({rodent.path}): missing {e.thing}"
-                        )
-                    except ratbag.ProtocolError as e:
-                        logger.info(
-                            f"Skipping device {rodent.name} ({rodent.path}): protocol error: {e.message}"
-                        )
-                    except PermissionError as e:
-                        logger.error(f"Unable to open device at {rodent.path}: {e}")
-
-        monitor = ratbag.driver.HidrawMonitor.instance()
-        monitor.connect("rodent-found", rodent_found)
-        monitor.start()
-        monitor.list()
-
+class RoccatDriver(ratbag.driver.HidrawDriver):
     def probe(
         self,
         rodent: ratbag.driver.Rodent,
+        config: ratbag.driver.DeviceConfig,
     ) -> None:
         # This is the device that will handle everything for us
         roccat_device = RoccatDevice(self, rodent)
@@ -768,17 +737,3 @@ class RoccatDriver(ratbag.driver.Driver):
             e.name = roccat_device.name
             e.path = roccat_device.path
             raise e
-
-    @classmethod
-    def new_with_devicelist(
-        self,
-        ratbagctx: ratbag.Ratbag,
-        supported_devices: List[ratbag.driver.DeviceConfig],
-    ):
-        driver = RoccatDriver(supported_devices)
-
-        def start(_):
-            driver.start()
-
-        ratbagctx.connect("start", start)
-        return driver

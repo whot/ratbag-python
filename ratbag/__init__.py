@@ -360,15 +360,33 @@ class Device(GObject.Object):
     - ``resync``: callers should re-sync the state of the device
     """
 
-    __gsignals__ = {
-        "disconnected": (GObject.SignalFlags.RUN_FIRST, None, ()),
-        "commit": (
-            GObject.SignalFlags.RUN_FIRST,
-            None,
-            (GObject.TYPE_PYOBJECT,),
-        ),
-        "resync": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
-    }
+    @GObject.Signal()
+    def disconnected(self, *args):
+        """
+        GObject signal emitted when the device was disconnected
+        """
+        pass
+
+    @GObject.Signal(name="commit", arg_types=(object,))
+    def _commit(self, *args):
+        """
+        GObject signal emitted when the device was disconnected. This signal
+        is for internal use only.
+
+        Name clash with :meth:`commit`
+        """
+        pass
+
+    @GObject.Signal(arg_types=(object,))
+    def resync(self, *args):
+        """
+        GObject signal emitted when the device state has changed and the
+        caller should update its internal state from the device.
+
+        This signal carries a single integer that is the
+        :meth:`CommitTransaction.seqno` for the corresponding transaction.
+        """
+        pass
 
     def __init__(
         self, driver: "ratbag.driver.Driver", path: str, name: str, model: str

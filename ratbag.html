@@ -19,7 +19,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="ratbag.drivers package" href="ratbag.drivers.html" />
-    <link rel="prev" title="Welcome to libratbag’s documentation!" href="index.html" /> 
+    <link rel="prev" title="ratbag" href="modules.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -39,20 +39,6 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">ratbag package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="ratbag.drivers.html">ratbag.drivers package</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#ratbag-emulator-module">ratbag.emulator module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#ratbag-hid-module">ratbag.hid module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ratbag.parser">ratbag.parser module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ratbag.recorder">ratbag.recorder module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ratbag.util">ratbag.util module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-ratbag">Module contents</a></li>
-</ul>
-</li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">ratbag</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ratbag package</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
@@ -60,6 +46,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ratbag-driver-module">ratbag.driver module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ratbag-emulator-module">ratbag.emulator module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ratbag-hid-module">ratbag.hid module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ratbag.parser">ratbag.parser module</a></li>
@@ -86,6 +73,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">ratbag</a> &raquo;</li>
       <li>ratbag package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/ratbag.rst.txt" rel="nofollow"> View page source</a>
@@ -108,7 +96,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ratbag.drivers.html#ratbag-drivers-hidpp10-module">ratbag.drivers.hidpp10 module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.drivers.html#ratbag-drivers-hidpp20-module">ratbag.drivers.hidpp20 module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ratbag.drivers.html#ratbag-drivers-roccat-module">ratbag.drivers.roccat module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ratbag.drivers.html#module-contents">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ratbag.drivers.html#module-ratbag.drivers">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -116,6 +104,9 @@
 </section>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="ratbag-driver-module">
+<h2>ratbag.driver module<a class="headerlink" href="#ratbag-driver-module" title="Permalink to this headline"></a></h2>
 </section>
 <section id="ratbag-emulator-module">
 <h2>ratbag.emulator module<a class="headerlink" href="#ratbag-emulator-module" title="Permalink to this headline"></a></h2>
@@ -173,7 +164,7 @@ property</p></li>
 <p>The argument passed to <code class="xref py py-attr docutils literal notranslate"><span class="pre">convert_to_data</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.parser.Spec.ConverterArg.bytes">
-<span class="sig-name descname"><span class="pre">bytes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_CountingAttr(counter=20,</span> <span class="pre">_default=NOTHING,</span> <span class="pre">repr=True,</span> <span class="pre">eq=True,</span> <span class="pre">order=True,</span> <span class="pre">hash=None,</span> <span class="pre">init=True,</span> <span class="pre">metadata={})</span></em><a class="headerlink" href="#ratbag.parser.Spec.ConverterArg.bytes" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">bytes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_CountingAttr(counter=22,</span> <span class="pre">_default=NOTHING,</span> <span class="pre">repr=True,</span> <span class="pre">eq=True,</span> <span class="pre">order=True,</span> <span class="pre">hash=None,</span> <span class="pre">init=True,</span> <span class="pre">metadata={})</span></em><a class="headerlink" href="#ratbag.parser.Spec.ConverterArg.bytes" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -307,10 +298,10 @@ tuples with a 16-bit integer and byte each</p></li>
 <span id="ratbag-recorder-module"></span><h2>ratbag.recorder module<a class="headerlink" href="#module-ratbag.recorder" title="Permalink to this headline"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.recorder.YamlDeviceRecorder">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.recorder.</span></span><span class="sig-name descname"><span class="pre">YamlDeviceRecorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.recorder.YamlDeviceRecorder" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.recorder.</span></span><span class="sig-name descname"><span class="pre">YamlDeviceRecorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.recorder.YamlDeviceRecorder" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ratbag.Recorder" title="ratbag.Recorder"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Recorder</span></code></a></p>
-<p>A simple recoder that logs the data to/from the device as a series of YAML
-objects. All elements in <cite>config</cite> are logged as attributes.</p>
+<p>A simple recorder that logs the data to/from the device as a series of
+YAML objects. All elements in <cite>config</cite> are logged as attributes.</p>
 <p>The output of this logger can be consumed by
 <code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.emulator.YamlDevice</span></code>.</p>
 <p>Example output:</p>
@@ -328,19 +319,25 @@ objects. All elements in <cite>config</cite> are logged as attributes.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>config</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]) – a dictionary with attributes to log</p>
+<dd class="field-odd"><p><strong>config</strong> – a dictionary with attributes to log</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="ratbag.recorder.YamlDeviceRecorder.init">
-<span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.recorder.YamlDeviceRecorder.init" title="Permalink to this definition"></a></dt>
-<dd><p>Initialize the logger for the given device.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>info</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]) – a dictionary of extra logging keys</p>
+<dt class="sig sig-object py" id="ratbag.recorder.YamlDeviceRecorder.create_in_blackbox">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_in_blackbox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">blackbox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.recorder.YamlDeviceRecorder.create_in_blackbox" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ratbag.recorder.YamlDeviceRecorder" title="ratbag.recorder.YamlDeviceRecorder"><code class="xref py py-class docutils literal notranslate"><span class="pre">YamlDeviceRecorder</span></code></a></p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.recorder.YamlDeviceRecorder.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.recorder.YamlDeviceRecorder.start" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -453,7 +450,7 @@ required or the value is replaced.</p>
 <span class="sig-prename descclassname"><span class="pre">ratbag.util.</span></span><span class="sig-name descname"><span class="pre">load_data_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.util.load_data_files" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigParser</span></code>]</p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigParser</span></code>]</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>a list of <code class="docutils literal notranslate"><span class="pre">configparser.ConfigParser</span></code> objects</p>
@@ -639,14 +636,11 @@ the device, if any.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.Ratbag">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">Ratbag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Ratbag" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">Ratbag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">load_data_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blackbox</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Ratbag" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gi.overrides.GObject.Object</span></code></p>
 <p>An instance managing one or more ratbag devices. This is the entry point
-for all ratbag clients. The ratbag object can be instantiated with a
-static device path (or several) or, the default, support for udev. In the
-latter case, devices are added/removed as they appear.</p>
-<p>Where static device paths are given, the device must be present and
-removal of that device will not re-add this device in the future.</p>
+for all ratbag clients. This context loads the data files and instantiates
+the drivers accordingly.</p>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">ratbag</span><span class="o">.</span><span class="n">Ratbag</span><span class="p">()</span>
 <span class="n">r</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;device-added&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">ratbag</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;New device: </span><span class="si">{device}</span><span class="s2">&quot;</span><span class="p">))</span>
@@ -657,7 +651,12 @@ removal of that device will not re-add this device in the future.</p>
 <p><a class="reference internal" href="#ratbag.Ratbag" title="ratbag.Ratbag"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Ratbag</span></code></a> requires a GLib mainloop.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>config</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]) – a dictionary with configuration information</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> – a dictionary with configuration information</p></li>
+<li><p><strong>load_data_files</strong> – <code class="docutils literal notranslate"><span class="pre">True</span></code> if the data files should be loaded. There
+is rarely a need for setting this to <code class="docutils literal notranslate"><span class="pre">False</span></code> outside specific test
+cases.</p></li>
+</ul>
 </dd>
 </dl>
 <p>Supported keys in <code class="docutils literal notranslate"><span class="pre">config</span></code>:</p>
@@ -673,12 +672,71 @@ similar to record device interactions</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">device-removed</span></code> Notification that the <a class="reference internal" href="#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a> was removed</p></li>
 </ul>
 <dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Ratbag.add_driver">
+<span class="sig-name descname"><span class="pre">add_driver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">drivername</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supported_devices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Ratbag.add_driver" title="Permalink to this definition"></a></dt>
+<dd><p>Add the given driver name. This API exists primarily to support
+testing and niche features, there is rarely a need for calling this
+function. Drivers are handled automatically for known devices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>drivername</strong> – The string name of the driver to load</p></li>
+<li><p><strong>supported_devices</strong> – A list of
+<code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.driver.DeviceConfig</span></code> instances with the
+devices supported by this driver.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ratbag.driver.DriverUnavailable</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ratbag.Ratbag.start">
 <span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Ratbag.start" title="Permalink to this definition"></a></dt>
-<dd><p>Add the devices and/or start monitoring udev for new devices.</p>
+<dd><p>Start the context. Before invoking this function ensure the caller has
+connected to all the signal.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Ratbag.create">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">load_data_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blackbox</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Ratbag.create" title="Permalink to this definition"></a></dt>
+<dd><p>Create a new Ratbagd instance.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ratbag.Blackbox">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">Blackbox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Blackbox" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The manager class for any recorders active in this session.</p>
+<p>The default recordings directory is
+<code class="docutils literal notranslate"><span class="pre">$XDG_STATE_HOME/ratbag/recordings/$timestamp</span></code>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.Blackbox.directory">
+<span class="sig-name descname"><span class="pre">directory</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></em><a class="headerlink" href="#ratbag.Blackbox.directory" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Blackbox.add_recorder">
+<span class="sig-name descname"><span class="pre">add_recorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recorder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Blackbox.add_recorder" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Blackbox.make_path">
+<span class="sig-name descname"><span class="pre">make_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Blackbox.make_path" title="Permalink to this definition"></a></dt>
+<dd><p>Return a path for <code class="docutils literal notranslate"><span class="pre">filename</span></code> that is within this blackbox’
+recordings directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -696,20 +754,6 @@ host and the device, see <code class="xref py py-func docutils literal notransla
 <dd class="field-odd"><p><strong>config</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]) – A dictionary with logger-specific data to initialize</p>
 </dd>
 </dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="ratbag.Recorder.init">
-<span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Recorder.init" title="Permalink to this definition"></a></dt>
-<dd><p>Initialize the logger for the given device.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>info</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]) – a dictionary of extra logging keys</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.Recorder.log_rx">
 <span class="sig-name descname"><span class="pre">log_rx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Recorder.log_rx" title="Permalink to this definition"></a></dt>
@@ -730,6 +774,70 @@ host and the device, see <code class="xref py py-func docutils literal notransla
 <dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ratbag.CommitTransaction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">CommitTransaction</span></span><a class="headerlink" href="#ratbag.CommitTransaction" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gi.overrides.GObject.Object</span></code></p>
+<p>A helper object for <a class="reference internal" href="#ratbag.Device.commit" title="ratbag.Device.commit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Device.commit()</span></code></a>. This object keeps track of a
+current commit transaction and emits the <code class="docutils literal notranslate"><span class="pre">complete</span></code> signal once the
+driver has completed the transaction.</p>
+<p>A transaction object can only be used once.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="ratbag.CommitTransaction.seqno">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">seqno</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.CommitTransaction.seqno" title="Permalink to this definition"></a></dt>
+<dd><p>The unique sequence number for this transaction. This can be used to
+compare transactions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ratbag.CommitTransaction.used">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">used</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ratbag.CommitTransaction.used" title="Permalink to this definition"></a></dt>
+<dd><p>True if the transaction has been used in <a class="reference internal" href="#ratbag.Device.commit" title="ratbag.Device.commit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Device.commit()</span></code></a> (even
+if the transaction is not yet complete).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ratbag.CommitTransaction.device">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.Device" title="ratbag.Device"><span class="pre">ratbag.Device</span></a></em><a class="headerlink" href="#ratbag.CommitTransaction.device" title="Permalink to this definition"></a></dt>
+<dd><p>The device assigned to this transaction. This property is not
+available until the transaction is used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">Device</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ratbag.CommitTransaction.success">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">success</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ratbag.CommitTransaction.success" title="Permalink to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> on success. This property is not available unless the
+transaction is complete.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.CommitTransaction.complete">
+<span class="sig-name descname"><span class="pre">complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">success</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.CommitTransaction.complete" title="Permalink to this definition"></a></dt>
+<dd><p>Complete this transaction with the given success status.</p>
 </dd></dl>
 
 </dd></dl>
@@ -775,22 +883,17 @@ is used by drivers.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.Device.commit">
-<span class="sig-name descname"><span class="pre">commit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Device.commit" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">commit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transaction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Device.commit" title="Permalink to this definition"></a></dt>
 <dd><p>Write the current changes to the driver. This is an asynchronous
 operation (maybe in a separate thread). Once complete, the
-driver calls the specified callback function with a boolean status.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">commit_complete</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">sequence_number</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">status</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Commit was successful&quot;</span><span class="p">)</span>
-
-<span class="n">seqno</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">commit_complete</span><span class="p">)</span>
+given transaction object will emit the <code class="docutils literal notranslate"><span class="pre">complete</span></code> signal.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">CommitTransaction</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">on_complete</span><span class="p">(</span><span class="n">transaction</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Device </span><span class="si">{transaction.device}</span><span class="s2"> is done&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal_number</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;complete&quot;</span><span class="p">,</span> <span class="n">on_complete</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">device</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  
 </pre></div>
 </div>
-<p>The returned sequence number can be used to identify the specific
-invocation of <a class="reference internal" href="#ratbag.Device.commit" title="ratbag.Device.commit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">commit()</span></code></a>. This number increases by an unspecified
-amount every time the device state changes, a <code class="docutils literal notranslate"><span class="pre">resync</span></code> signal with a
-sequence number lower than returned by this method is thus from an
-earlier device change.</p>
 <p>The <a class="reference internal" href="#ratbag.Device.dirty" title="ratbag.Device.dirty"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dirty</span></code></a> status of the device’s features is reset to
 <code class="docutils literal notranslate"><span class="pre">False</span></code> immediately before the callback is invoked but not before
 the driver handles the state changes. In other words, a caller must
@@ -799,14 +902,11 @@ callback.</p>
 <p>If an error occurs, the driver calls the callback with a <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 <p>If any device state changes in response to <a class="reference internal" href="#ratbag.Device.commit" title="ratbag.Device.commit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">commit()</span></code></a>, the driver
 emits a <code class="docutils literal notranslate"><span class="pre">resync</span></code> signal to notify all other listeners. This signal
-includes the same sequence as passed to the callback to allow for
+includes the same sequence number as the transaction to allow for
 filtering signals.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>a sequence number for this transaction</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a sequence number for this transaction</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1815,7 +1915,7 @@ caller’s responsibility to set the colors in a non-ambiguous way.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to libratbag’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="modules.html" class="btn btn-neutral float-left" title="ratbag" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="ratbag.drivers.html" class="btn btn-neutral float-right" title="ratbag.drivers package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

@@ -10,7 +10,6 @@ Welcome to libratbag's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   ratbag
    modules
 
 Indices and tables

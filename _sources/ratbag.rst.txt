@@ -12,6 +12,14 @@ Subpackages
 Submodules
 ----------
 
+ratbag.driver module
+--------------------
+
+.. automodule:: ratbag.driver
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 ratbag.emulator module
 ----------------------
 

@@ -444,7 +444,8 @@ class Device(GObject.Object):
     def _cb_idle_commit(self, callback: CommitCallback, seqno: int) -> bool:
         if not self.dirty:
             # well, that was easy
-            callback(self, True, seqno)
+            if callback:
+                callback(self, True, seqno)
             return False  # don't reschedule idle func
 
         def callback_wrapper(device: ratbag.Device, status: bool, seqno: int) -> None:
@@ -458,7 +459,8 @@ class Device(GObject.Object):
                 map(clean, p.leds)
                 p.dirty = False  # type: ignore
             self.dirty = False  # type: ignore
-            callback(self, status, seqno)
+            if callback:
+                callback(self, status, seqno)
 
         logger.debug("Writing current changes to device")
         self.emit("commit", callback_wrapper, seqno)

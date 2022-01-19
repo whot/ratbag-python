@@ -599,7 +599,8 @@ class Rodent(GObject.Object):
         """
         Return a list of bytes as returned by this HID GetFeature request
         """
-        report = self._rdesc.feature_reports[report_id]
+        report = self._rdesc.feature_report_by_id(report_id)
+        assert report is not None
         rsize = report.size
         buf = bytearray([report_id & 0xFF]) + bytearray(rsize - 1)
         logger.debug(Rodent.IoctlCommand("HIDIOCGFEATURE", buf))
@@ -617,7 +618,8 @@ class Rodent(GObject.Object):
 
         .. note:: the first element of data must be the report_id
         """
-        assert report_id in self._rdesc.feature_reports
+        report = self._rdesc.feature_report_by_id(report_id)
+        assert report is not None
         assert data[0] == report_id
         buf = bytearray(data)
 

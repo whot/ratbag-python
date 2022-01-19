@@ -7,26 +7,12 @@
 import logging
 
 import ratbag
+import ratbag.driver
 
 logger = logging.getLogger(__name__)
 
 
-class Hidpp10Driver(ratbag.driver.Driver):
-    NAME = "Logitech HID++1.0"
-
-    def probe(self, device):
-        profile = ratbag.Profile(device, 0)
-        device.add_profile(profile)
-
-    def commit(self, device, callback, arg):
-        callback(arg, success=True)
-
-
-def load_driver(driver_name: str) -> type[ratbag.driver.Driver]:
-    """
-    Driver entry point
-
-    :meta private:
-    """
-    assert driver_name == "hidpp10"
-    return Hidpp10Driver
+@ratbag.driver.ratbag_driver("hidpp10")
+class Hidpp10Driver(ratbag.driver.HidrawDriver):
+    def probe(self, rodent, config):
+        pass

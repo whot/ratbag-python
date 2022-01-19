@@ -453,6 +453,7 @@ class Device(GObject.Object):
             self.dirty = False  # type: ignore
             if callback:
                 callback(self, status, seqno)
+            device.emit("resync", seqno)
 
         logger.debug("Writing current changes to device")
         self.emit("commit", callback_wrapper, seqno)

@@ -712,7 +712,6 @@ class RoccatDevice(GObject.Object):
             success = False
 
         callback(ratbag_device, success, seqno)
-        ratbag_device.emit("resync", seqno)
 
     def write(self, report_id, bs):
         self.hidraw_device.hid_set_feature(int(report_id), bs)

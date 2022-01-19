@@ -414,8 +414,9 @@ class Hidpp20Device(GObject.Object):
         return self.hidraw_device.recv()
 
     def cb_commit(
-        self, ratbag_device: ratbag.Device, callback: ratbag.CommitCallbackWrapper
+        self, ratbag_device: ratbag.Device, transaction: ratbag.CommitTransaction
     ):
+        transaction.complete(success=False)
         raise NotImplementedError
 
 

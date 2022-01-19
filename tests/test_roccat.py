@@ -38,6 +38,18 @@ ff 7f 95 02 75 10 81 06 09 38 15 81 25 7f 75 08 95 01 81 06 05 0c 0a 38 02 81
 )
 
 
+@pytest.fixture
+def transaction():
+    transaction = ratbag.CommitTransaction()
+
+    def cb_complete(ta):
+        assert ta.seqno >= 0
+        assert ta == transaction
+
+    transaction.connect("complete", cb_complete)
+    return transaction
+
+
 class RoccatTestDevice(ratbag.driver.Rodent):
     class Profile:
         """
@@ -81,10 +93,6 @@ class RoccatTestDevice(ratbag.driver.Rodent):
         self.active_profile = 0
         self.expected_commit_status = True
         self.commits = []  # the seqnos
-
-    def commit_callback(self, device, status, seqno):
-        assert status == self.expected_commit_status
-        self.commits.append(seqno)
 
     def hid_get_feature(self, report_id):
         try:
@@ -305,7 +313,7 @@ class TestRoccatDriver(object):
                     continue
                 assert b.action != ratbag.Action.Type.MACRO
 
-    def test_button_change_action(self, driver):
+    def test_button_change_action(self, driver, transaction):
         dev = RoccatTestDevice()
         driver.connect("device-added", self.cb_device_added)
         # Note: we bypass the hidraw monitor because we don't need it
@@ -315,14 +323,13 @@ class TestRoccatDriver(object):
         device = self.ratbag_device
         button = device.profiles[3].buttons[2]
         button.set_action(ratbag.ActionButton(button, 1))  # change to left button
-        seqno = device.commit(dev.commit_callback)
+        device.commit(transaction)
         self.mainloop()
 
-        assert len(dev.commits) == 1
-        assert dev.commits[0] == seqno
+        assert transaction.success is True
         assert dev.profiles[3].buttons[2] == 1
 
-    def test_dpi_change(self, driver):
+    def test_dpi_change(self, driver, transaction):
         dev = RoccatTestDevice()
         driver.connect("device-added", self.cb_device_added)
         # Note: we bypass the hidraw monitor because we don't need it
@@ -334,10 +341,9 @@ class TestRoccatDriver(object):
         res.set_dpi((1300, 1300))
         res = device.profiles[1].resolutions[1]
         res.set_dpi((1400, 1400))
-        seqno = device.commit(dev.commit_callback)
+        device.commit(transaction)
         self.mainloop()
 
-        assert len(dev.commits) == 1
-        assert dev.commits[0] == seqno
+        assert transaction.success is True
         assert dev.profiles[1].resolutions[1] == (1400, 1400)
         assert dev.profiles[2].resolutions[4] == (1300, 1300)

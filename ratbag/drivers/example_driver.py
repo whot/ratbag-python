@@ -88,7 +88,7 @@ class ExampleDriver(ratbag.driver.Driver):
         # interaction with this device will be the _on_commit callback
         self.emit("device-added", device)
 
-    def _on_commit(self, device: ratbag.Device, callback: ratbag.CommitCallbackWrapper):
+    def _on_commit(self, device: ratbag.Device, transaction: ratbag.CommitTransaction):
         for p in device.profiles:
             if not p.dirty:
                 continue
@@ -103,4 +103,4 @@ class ExampleDriver(ratbag.driver.Driver):
             # etc.
 
         # Once we are done we push our success status up
-        callback(device, True)
+        transaction.complete(success=True)

@@ -7,17 +7,14 @@
 from pathlib import Path
 from gi.repository import GLib, GObject
 from typing import Any, Callable, Dict, List, Optional, Tuple
+from itertools import count
 
 import attr
 import enum
 import logging
-import pyudev
 
 import ratbag.util
 
-
-CommitCallback = Callable[["ratbag.Device", bool, int], None]
-CommitCallbackWrapper = Callable[["ratbag.Device", bool], None]
 
 logger = logging.getLogger(__name__)
 
@@ -336,6 +333,76 @@ class Recorder(GObject.Object):
         pass
 
 
+class CommitTransaction(GObject.Object):
+    """
+    A helper object for :meth:`Device.commit`. This object keeps track of a
+    current commit transaction and emits the ``complete`` signal once the
+    driver has completed the transaction.
+
+    A transaction object can only be used once.
+    """
+
+    _seqno_gen = count()
+
+    __gsignals__ = {
+        "complete": (GObject.SignalFlags.RUN_FIRST, None, ()),
+    }
+
+    def __init__(self):
+        GObject.Object.__init__(self)
+        self._seqno = next(self._seqno_gen)
+        self._used = False
+        self._done = False
+
+    @property
+    def seqno(self) -> int:
+        """
+        The unique sequence number for this transaction. This can be used to
+        compare transactions.
+        """
+        return self._seqno
+
+    @property
+    def used(self) -> bool:
+        """
+        True if the transaction has been used in :meth:`Device.commit` (even
+        if the transaction is not yet complete).
+        """
+        return self._used
+
+    @property
+    def device(self) -> "ratbag.Device":
+        """
+        The device assigned to this transaction. This property is not
+        available until the transaction is used.
+        """
+        return self._device
+
+    @property
+    def success(self) -> bool:
+        """
+        Returns ``True`` on success. This property is not available unless the
+        transaction is complete.
+        """
+        return self._success
+
+    def mark_as_in_use(self, device: "ratbag.Device"):
+        """
+        :meta private:
+        """
+        self._used = True
+        self._device = device
+
+    def complete(self, success: bool):
+        """
+        Complete this transaction with the given success status.
+        """
+        if not self._done:
+            self._success = success
+            self._done = True
+            self.emit("complete")
+
+
 class Device(GObject.Object):
     """
     A device as exposed to Ratbag clients. A driver implementation must not
@@ -381,7 +448,6 @@ class Device(GObject.Object):
         self._profiles: Tuple[Profile, ...] = tuple()
         self._driver = driver
         self._dirty = False
-        self._seqno = 1
 
     @property
     def profiles(self) -> Tuple["ratbag.Profile", ...]:
@@ -393,23 +459,17 @@ class Device(GObject.Object):
         # modify it.
         return self._profiles
 
-    def commit(self, callback: CommitCallback = None) -> int:
+    def commit(self, transaction: Optional[CommitTransaction] = None):
         """
         Write the current changes to the driver. This is an asynchronous
         operation (maybe in a separate thread). Once complete, the
-        driver calls the specified callback function with a boolean status. ::
+        given transaction object will emit the ``complete`` signal.
 
-            def commit_complete(device, success, sequence_number):
-                if success:
-                    print("Commit was successful")
-
-            seqno = device.commit(commit_complete)
-
-        The returned sequence number can be used to identify the specific
-        invocation of :meth:`commit`. This number increases by an unspecified
-        amount every time the device state changes, a ``resync`` signal with a
-        sequence number lower than returned by this method is thus from an
-        earlier device change.
+            >>> t = CommitTransaction()
+            >>> def on_complete(transaction):
+            ...     print(f"Device {transaction.device} is done")
+            >>> signal_number = t.connect("complete", on_complete)
+            >>> device.commit(t)  # doctest: +SKIP
 
         The :attr:`dirty` status of the device's features is reset to
         ``False`` immediately before the callback is invoked but not before
@@ -421,40 +481,45 @@ class Device(GObject.Object):
 
         If any device state changes in response to :meth:`commit`, the driver
         emits a ``resync`` signal to notify all other listeners. This signal
-        includes the same sequence as passed to the callback to allow for
+        includes the same sequence number as the transaction to allow for
         filtering signals.
 
         :returns: a sequence number for this transaction
         """
+        if transaction is None:
+            transaction = CommitTransaction()
+        elif transaction.used:
+            raise ValueError("Transactions cannot be re-used")
 
-        self._seqno += 1
-        GLib.idle_add(self._cb_idle_commit, callback, self._seqno)
-        return self._seqno
+        transaction.mark_as_in_use(self)
 
-    def _cb_idle_commit(self, callback: CommitCallback, seqno: int) -> bool:
+        GLib.idle_add(self._cb_idle_commit, transaction)
+
+    def _cb_idle_commit(self, transaction: CommitTransaction) -> bool:
         if not self.dirty:
             # well, that was easy
-            if callback:
-                callback(self, True, seqno)
+            transaction.complete()
             return False  # don't reschedule idle func
 
-        def callback_wrapper(device: ratbag.Device, success: bool) -> None:
+        def reset_dirty(transaction: CommitTransaction):
             def clean(x: "ratbag.Feature") -> None:
                 x.dirty = False  # type: ignore
 
+            device = transaction.device
+
             # Now reset all dirty values
-            for p in self.profiles:
+            for p in device.profiles:
                 map(clean, p.buttons)
                 map(clean, p.resolutions)
                 map(clean, p.leds)
                 p.dirty = False  # type: ignore
-            self.dirty = False  # type: ignore
-            if callback:
-                callback(self, success, seqno)
-            device.emit("resync", seqno)
+            device.dirty = False  # type: ignore
+            device.emit("resync", transaction.seqno)
+            transaction.disconnect_by_func(reset_dirty)
 
+        transaction.connect("complete", reset_dirty)
         logger.debug("Writing current changes to device")
-        self.emit("commit", callback_wrapper)
+        self.emit("commit", transaction)
 
         return False  # don't reschedule idle func
 

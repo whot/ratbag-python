@@ -70,19 +70,20 @@ class Ratbag(GObject.Object):
 
     """
 
-    __gsignals__ = {
-        "start": (
-            GObject.SignalFlags.RUN_FIRST,
-            None,
-            (),
-        ),  # this is an internally used signal
-        "device-added": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
-        "device-removed": (
-            GObject.SignalFlags.RUN_FIRST,
-            None,
-            (GObject.TYPE_PYOBJECT,),
-        ),
-    }
+    @GObject.Signal(name="start")
+    def _start(self, *args):
+        """
+        GObject signal emitted in response to :meth:`start`.
+        This signal is for internal use.
+        """
+        pass
+
+    @GObject.Signal(name="device-added", arg_types=(object,))
+    def device_added(self, *args):
+        """
+        GObject signal emitted when a new :class:`ratbag.Device` was added
+        """
+        pass
 
     def __init__(self, /, load_data_files=True, blackbox: Optional["Blackbox"] = None):
         super().__init__()
@@ -165,7 +166,6 @@ class Ratbag(GObject.Object):
         def cb_device_disconnected(device, ratbag):
             logger.info(f"disconnected {device.name}")
             self._devices.remove(device)
-            self.emit("device-removed", device)
 
         def cb_device_added(driver, device):
             self._devices.append(device)

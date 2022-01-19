@@ -48,17 +48,17 @@ class Reply(object):
     def finalize(self) -> None:
         reduced = list(set(self.values))
         if len(reduced) == 1:
-            self.constant = True
             self.values = reduced
+
+            def same_value():
+                yield reduced[0]
+
+            self._it = iter(same_value())
         else:
-            self.constant = False
             self._it = iter(self.values)
 
     def next(self) -> bytes:
-        if self.constant:
-            return self.values[0]
-        else:
-            return next(self._it)
+        return next(self._it)
 
 
 class YamlDevice(ratbag.driver.Rodent):

@@ -17,14 +17,17 @@ The public API, i.e. the bits to be consumed by various tools and ratbagd is
 in the `ratbag` module (`ratbag/__init__.py`). This provides the various
 high-level entities like `Device`, `Profile` and `Resolution`.
 
-The drivers are in the `ratbag.driver` module
+The drivers are in the `ratbag.drivers` subpackage
 (`ratbag/drivers/drivername.py`) and the API for drivers and helpers are in
-`ratbag/drivers/__init__.py`.
+`ratbag/driver.py`.
 
-A driver has a `probe()` function that is called when that driver is assigned
-to a physical device. This function should set up (one or more)
-`ratbag.Device` or throw an exception on error. How the driver does this is
-left to the driver.
+A driver has a `new_from_devicelist()` class method that is called when that
+driver is loaded. This function is called with a list of all known supported
+devices and should detect any devices in the system. These should be set up as
+one or more `ratbag.Device`.  How the driver does this is left to the driver.
+Since most of the drivers deal with hidraw devices, there is a
+convenience class `HidrawDriver` that does most of the above so the driver
+only needs to implement device-specifics.
 
 The rest is largely handled by GObject signals - changes from user tools
 are signalled back to the driver which then writes to the device. And signals

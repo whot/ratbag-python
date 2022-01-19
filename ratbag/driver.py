@@ -248,13 +248,12 @@ class HidrawMonitor(GObject.Object):
 
     _instance: Optional["HidrawMonitor"] = None
 
-    __gsignals__ = {
-        "rodent-found": (
-            GObject.SignalFlags.RUN_FIRST,
-            None,
-            (GObject.TYPE_PYOBJECT,),  # Rodent
-        ),
-    }
+    @GObject.Signal(arg_types=(object,))
+    def rodent_found(self, *args):
+        """
+        Notification that a rodent was found
+        """
+        pass
 
     def __init__(self):
         GObject.Object.__init__(self)
@@ -781,21 +780,15 @@ class Driver(GObject.Object):
     A driver **must** connect to the :class:`ratbag.Ratbag` signal
     ``"start"``. Once the signal is received the driver may start querying for
     and adding devices to the ratbag context.
-
-    GObject Signals:
-
-      - ``device-added``: emitted for each :class:`ratbag.Device` that was
-        added after ``"start"``.
-      - ``rodent-found``: emitted for each :class:`ratbag.driver.Rodent` that was
-        opened.
     """
 
-    __gsignals__ = {
-        "failed": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
-        "success": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
-        "device-added": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
-        "rodent-found": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
-    }
+    @GObject.Signal(arg_types=(object,))
+    def device_added(self, *args):
+        """
+        Emitted for each :class:`ratbag.Device` that was added after
+        :meth:``"start"``.
+        """
+        pass
 
     def __init__(self):
         GObject.Object.__init__(self)
@@ -864,6 +857,13 @@ class HidrawDriver(Driver):
             assigned to this driver in a static configuration (data files).
 
     """
+
+    @GObject.Signal(arg_types=(object,))
+    def rodent_found(self, *args):
+        """
+        Notification that a rodent that matches the device list was found
+        """
+        pass
 
     def __init__(self, supported_devices: List[DeviceConfig]):
         super().__init__()

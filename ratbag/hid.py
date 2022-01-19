@@ -1303,7 +1303,7 @@ class ReportDescriptor:
             sz = (0, 1, 2, 4)[header & 0x3]
             assert idx + sz < datalen
 
-            fmt = (None, "B", ">H", None, ">I")[sz]
+            fmt = (None, "B", "<H", None, "<I")[sz]
             if fmt is not None:
                 value = struct.unpack_from(fmt, data, idx + 1)[0]
             else:

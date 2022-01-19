@@ -38,6 +38,7 @@ def ratbag_driver(name):
     Decorator to mark a class as a ratbag driver. This decorator is required for
     driver discovery.
 
+        >>> import ratbag.driver
         >>> @ratbag.driver.ratbag_driver("somedriver")
         ... class SomeDriver(ratbag.driver.Driver):
         ...     @classmethod
@@ -58,7 +59,7 @@ def load_driver_by_name(driver_name: str) -> Optional[Type["Driver"]]:
     Find the class matching ``driver_name`` and return it, importing the module
     ``"ratbag.drivers.driver_name"`` if necessary.
 
-        >>> ctx = ratbag.Ratbag()
+        >>> ctx = ratbag.Ratbag()  # doctest: +SKIP
         >>> cls = load_driver_by_name("roccat")  # doctest: +SKIP
         >>> driver = cls.new_with_devicelist(ctx, [])  # doctest: +SKIP
 

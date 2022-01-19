@@ -261,7 +261,7 @@ class Config(object):
 
         if not self.nocommit:
 
-            def cb_commit_complete(transaction):
+            def cb_commit_finished(transaction):
                 if not transaction.success:
                     logger.error(
                         f"Failed to write changes to device {transaction.device.name}"
@@ -270,7 +270,7 @@ class Config(object):
                     logger.debug("done")
 
             transaction = ratbag.CommitTransaction()
-            transaction.connect("complete", cb_commit_complete)
+            transaction.connect("finished", cb_commit_finished)
 
             device.commit(transaction)
             logger.debug("Waiting for device to commit")

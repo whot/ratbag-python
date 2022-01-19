@@ -5,7 +5,7 @@ import enum
 import libevdev
 import struct
 
-from typing import Dict, Iterator, Tuple
+from typing import Dict, Iterator, Optional, Tuple
 
 
 class Collection(enum.IntEnum):
@@ -1270,16 +1270,25 @@ class ReportDescriptor:
     """
 
     @property
-    def input_reports(self):
-        return self._reports[Report.Type.INPUT].values()
+    def input_reports(self) -> Tuple[Report, ...]:
+        return tuple(self._reports[Report.Type.INPUT].values())
 
     @property
-    def output_reports(self):
-        return self._reports[Report.Type.OUTPUT].values()
+    def output_reports(self) -> Tuple[Report, ...]:
+        return tuple(self._reports[Report.Type.OUTPUT].values())
 
     @property
-    def feature_reports(self):
-        return self._reports[Report.Type.FEATURE].values()
+    def feature_reports(self) -> Tuple[Report, ...]:
+        return tuple(self._reports[Report.Type.FEATURE].values())
+
+    def input_report_by_id(self, report_id) -> Optional[Report]:
+        return self._reports[Report.Type.INPUT].get(report_id, None)
+
+    def output_report_by_id(self, report_id) -> Optional[Report]:
+        return self._reports[Report.Type.OUTPUT].get(report_id, None)
+
+    def feature_report_by_id(self, report_id) -> Optional[Report]:
+        return self._reports[Report.Type.FEATURE].get(report_id, None)
 
     @staticmethod
     def items(data: bytes) -> Iterator[Item]:

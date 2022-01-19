@@ -19,47 +19,6 @@ import ratbag.util
 logger = logging.getLogger(__name__)
 
 
-class UnsupportedDeviceError(Exception):
-    """
-    Error indicating that the device is not supported. This exception is
-    raised for devices that ratbag does not have an implementation for.
-
-    .. note:: This error is unrecoverable without changes to ratbag.
-
-    .. attribute:: path
-
-       The device path that failed
-
-    .. attribute:: name
-
-       The device name that failed
-
-    """
-
-    def __init__(self, name: str = None, path: Path = None):
-        self.name = name
-        self.path = path
-
-
-class SomethingIsMissingError(UnsupportedDeviceError):
-    """
-    Error indicating that the device is missing something that we require for
-    it to work. This exception is raised for devices that ratbag has an
-    implementation for but for some reason the device is lacking a required
-    feature.
-
-    .. note:: This error is unrecoverable without changes to ratbag.
-
-    .. attribute:: thing
-
-       A string explaining the thing that is missing
-    """
-
-    def __init__(self, name: str, path: Path, thing: str):
-        super().__init__(name, path)
-        self.thing = thing
-
-
 class ConfigError(Exception):
     """
     Error indicating that the caller has tried to set the device's
@@ -75,39 +34,6 @@ class ConfigError(Exception):
 
     def __init__(self, message: str):
         self.message = message
-
-
-class ProtocolError(Exception):
-    """
-    Error indicating that the communication with the device encountered an
-    error
-
-    It depends on the specifics on the error whether this is recoverable.
-
-    .. attribute:: path
-
-       The device path that failed
-
-    .. attribute:: name
-
-       The device name that failed
-
-    .. attribute:: message
-
-       An explanatory message
-
-    .. attribute:: conversation
-
-       A list of byte arrays with the context of the failed conversation with
-       the device, if any.
-
-    """
-
-    def __init__(self, message: str = None, name: str = None, path: str = None):
-        self.name = name
-        self.path = path
-        self.message = message
-        self.conversation: List[bytes] = []
 
 
 class Ratbag(GObject.Object):

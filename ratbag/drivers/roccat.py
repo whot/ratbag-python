@@ -572,12 +572,12 @@ class RoccatDevice(GObject.Object):
     def start(self):
         feature_reports = self.hidraw_device.report_ids["feature"]
         if ReportID.KEY_MAPPING not in feature_reports:
-            raise ratbag.SomethingIsMissingError(
-                self.name, self.path, "KeyMapping Report ID"
+            raise ratbag.driver.SomethingIsMissingError.from_rodent(
+                self.hidraw_device, "KeyMapping Report ID"
             )
         if ReportID.SELECT_PROFILE not in feature_reports:
-            raise ratbag.SomethingIsMissingError(
-                self.name, self.path, "ConfigureProfile Report ID"
+            raise ratbag.driver.SomethingIsMissingError.from_rodent(
+                self.hidraw_device, "ConfigureProfile Report ID"
             )
 
         # Fetch current profile index
@@ -640,8 +640,9 @@ class RoccatDevice(GObject.Object):
                 break
             time.sleep(0.01)
         else:
-            raise ratbag.ProtocolError(
-                message="Timeout while waiting for device to be ready"
+            raise ratbag.driver.ProtocolError.from_rodent(
+                rodent=self.hidraw_device,
+                message="Timeout while waiting for device to be ready",
             )
 
     @property
@@ -729,10 +730,5 @@ class RoccatDriver(ratbag.driver.HidrawDriver):
         roccat_device = RoccatDevice(self, rodent)
 
         # Calling start() will make the device talk to the physical device
-        try:
-            ratbag_device = roccat_device.start()
-            self.emit("device-added", ratbag_device)
-        except ratbag.ProtocolError as e:
-            e.name = roccat_device.name
-            e.path = roccat_device.path
-            raise e
+        ratbag_device = roccat_device.start()
+        self.emit("device-added", ratbag_device)

@@ -9,7 +9,7 @@ import logging
 import pathlib
 import yaml
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import ratbag
 import ratbag.driver
@@ -37,15 +37,15 @@ class Reply(object):
     yields those values, in order.
     """
 
-    def __init__(self, tx: bytes, rx: bytes):
+    def __init__(self, tx: bytes, rx: bytes, name: Optional[str] = None):
         self.tx = tx
         self.values: List[bytes] = [rx]
-        self.name = None
+        self.name = name
 
     def add_value(self, value: bytes):
         self.values.append(value)
 
-    def finalize(self) -> None:
+    def _finalize(self) -> None:
         reduced = list(set(self.values))
         if len(reduced) == 1:
             self.values = reduced
@@ -58,7 +58,14 @@ class Reply(object):
             self._it = iter(self.values)
 
     def next(self) -> bytes:
-        return next(self._it)
+        try:
+            return next(self._it)
+        except AttributeError:
+            self._finalize()
+            return next(self._it)
+
+    def __str__(self) -> str:
+        return f"{self.name + ': ' if self.name else ''} tx: {as_hex(self.tx)} rx: {[as_hex(v) for v in self.values]}"
 
 
 class YamlDevice(ratbag.driver.Rodent):
@@ -98,7 +105,7 @@ class YamlDevice(ratbag.driver.Rodent):
         super().__init__(info)
 
         self.conversations: Dict[bytes, bytes] = {}
-        self.ioctls: Dict[bytes, Reply] = {}
+        self.ioctls: Dict[str, Dict[bytes, Reply]] = {}
         key = None
         value = None
         for data in y["data"]:
@@ -116,20 +123,19 @@ class YamlDevice(ratbag.driver.Rodent):
                     self.conversations[key] = value
                     key, value = None, None
             elif data["type"] == "ioctl":
+                name = data["name"]
                 tx = bytes(data["tx"])
                 rx = data.get("rx")
                 if rx:
                     rx = bytes(rx)
+                if name not in self.ioctls:
+                    self.ioctls[name] = {}
                 try:
-                    reply = self.ioctls[tx]
+                    reply = self.ioctls[name][tx]
                     reply.add_value(rx)
                 except KeyError:
-                    reply = Reply(tx, rx)
-                    reply.name = data["name"]
-                    self.ioctls[tx] = reply
-
-        for r in self.ioctls.values():
-            r.finalize()
+                    reply = Reply(tx, rx, name=name)
+                    self.ioctls[name][tx] = reply
 
     def open(self):
         pass
@@ -156,10 +162,7 @@ class YamlDevice(ratbag.driver.Rodent):
         return self.recv_data
 
     def hid_get_feature(self, report_id: int) -> bytes:
-        for r in self.ioctls.values():
-            if r.name != "HIDIOCGFEATURE":
-                continue
-
+        for r in self.ioctls.get("HIDIOCGFEATURE", {}).values():
             # we know the first byte is the report ID
             if r.tx[0] == report_id:
                 data = r.next()
@@ -169,16 +172,17 @@ class YamlDevice(ratbag.driver.Rodent):
             raise InsufficientDataError(f"HIDIOCGFEATURE report_id {report_id}")
 
     def hid_set_feature(self, report_id: int, data: bytes) -> None:
-        for r in self.ioctls.values():
-            if r.name != "HIDIOCSFEATURE":
-                continue
+        for r in self.ioctls.get("HIDIOCSFEATURE", {}).values():
+            print(f"Looking for: {as_hex(data)} in {as_hex(r.tx)}")
 
             if r.tx == data:
                 logger.debug(f"hid_set_feature: {as_hex(data)}")
                 r.next()
                 return
         else:
-            raise InsufficientDataError(f"HIDIOCSFEATURE report_id {report_id}")
+            raise InsufficientDataError(
+                f"HIDIOCSFEATURE report_id {report_id}: {as_hex(data)}"
+            )
 
 
 @attr.s

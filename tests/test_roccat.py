@@ -217,7 +217,7 @@ class TestRoccatDriver(object):
         dev = RoccatTestDevice()
         driver.connect("device-added", self.cb_device_added)
         # Note: we bypass the hidraw monitor because we don't need it
-        driver.probe(dev)
+        driver.probe(dev, None)
         self.mainloop()
 
         assert self.ratbag_device is not None
@@ -249,7 +249,7 @@ class TestRoccatDriver(object):
         dev.profiles[1].buttons[5] = 36  # ConsumerControl.CC_STOP
         driver.connect("device-added", self.cb_device_added)
         # Note: we bypass the hidraw monitor because we don't need it
-        driver.probe(dev)
+        driver.probe(dev, None)
         self.mainloop()
 
         device = self.ratbag_device
@@ -279,7 +279,7 @@ class TestRoccatDriver(object):
         ]
         driver.connect("device-added", self.cb_device_added)
         # Note: we bypass the hidraw monitor because we don't need it
-        driver.probe(dev)
+        driver.probe(dev, None)
         self.mainloop()
 
         device = self.ratbag_device
@@ -309,7 +309,7 @@ class TestRoccatDriver(object):
         dev = RoccatTestDevice()
         driver.connect("device-added", self.cb_device_added)
         # Note: we bypass the hidraw monitor because we don't need it
-        driver.probe(dev)
+        driver.probe(dev, None)
         self.mainloop()
 
         device = self.ratbag_device
@@ -326,7 +326,7 @@ class TestRoccatDriver(object):
         dev = RoccatTestDevice()
         driver.connect("device-added", self.cb_device_added)
         # Note: we bypass the hidraw monitor because we don't need it
-        driver.probe(dev)
+        driver.probe(dev, None)
         self.mainloop()
 
         device = self.ratbag_device

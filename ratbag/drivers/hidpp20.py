@@ -420,7 +420,7 @@ class Hidpp20Device(GObject.Object):
 
 
 @ratbag_driver("hidpp20")
-class Hidpp20Driver(ratbag.driver.Driver):
+class Hidpp20Driver(ratbag.driver.HidrawDriver):
     """
     Implementation of the Logitech HID++ 2.0 protocol.
 
@@ -443,38 +443,6 @@ class Hidpp20Driver(ratbag.driver.Driver):
 
         G305 = "G305"
         G602 = "G602"
-
-    def __init__(self, supported_devices: List[ratbag.driver.DeviceConfig]):
-        GObject.Object.__init__(self)
-        self._supported_devices = supported_devices
-
-    def start(self):
-        def rodent_found(monitor, rodent):
-            for d in self._supported_devices:
-                if d.usbid == rodent.usbid:
-                    try:
-                        rodent.open()
-                        self.emit("rodent-found", rodent)
-                        self.probe(rodent, d)
-                    except ratbag.UnsupportedDeviceError:
-                        logger.info(
-                            f"Skipping unsupported device {rodent.name} ({rodent.path})"
-                        )
-                    except ratbag.SomethingIsMissingError as e:
-                        logger.info(
-                            f"Skipping device {rodent.name} ({rodent.path}): missing {e.thing}"
-                        )
-                    except ratbag.ProtocolError as e:
-                        logger.info(
-                            f"Skipping device {rodent.name} ({rodent.path}): protocol error: {e.message}"
-                        )
-                    except PermissionError as e:
-                        logger.error(f"Unable to open device at {rodent.path}: {e}")
-
-        monitor = HidrawMonitor.instance()
-        monitor.connect("rodent-found", rodent_found)
-        monitor.start()
-        monitor.list()
 
     def probe(self, rodent, config):
         try:
@@ -511,21 +479,6 @@ class Hidpp20Driver(ratbag.driver.Driver):
             for dpi_idx, dpi in enumerate(profile.dpi):
                 ratbag.Resolution(p, dpi_idx, (dpi, dpi), dpi_list=profile.dpi_list)
         self.emit("device-added", ratbag_device)
-
-    # The driver entry point
-    @classmethod
-    def new_with_devicelist(
-        cls,
-        ratbagctx: ratbag.Ratbag,
-        supported_devices: List[ratbag.driver.DeviceConfig],
-    ) -> ratbag.driver.Driver:
-        driver = Hidpp20Driver(supported_devices)
-
-        def start(ctx):
-            driver.start()
-
-        ratbagctx.connect("start", start)
-        return driver
 
 
 ################################################################################

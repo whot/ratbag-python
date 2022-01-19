@@ -792,6 +792,70 @@ class Driver(GObject.Object):
         raise NotImplementedError("This function must be implemented by the driver")
 
 
+class HidrawDriver(Driver):
+    """
+    A convenience class for drivers that need to support hidraw devices and
+    only care about pre-configured devices. This class takes care of handling
+    udev devices and calls :meth:`probe` with each :class:`Rodent` that is a
+    supported match.
+
+    .. attribute: supported_devices
+
+            A list of :class:`DeviceConfig` entities with the devices
+            assigned to this driver in a static configuration (data files).
+
+    """
+
+    def __init__(self, supported_devices: List[DeviceConfig]):
+        super().__init__()
+        self.supported_devices = supported_devices
+
+    def start(self):
+        def rodent_found(monitor, rodent):
+            for d in self.supported_devices:
+                if d.usbid == rodent.usbid:
+                    try:
+                        rodent.open()
+                        self.emit("rodent-found", rodent)
+                        self.probe(rodent, d)
+                    except ratbag.UnsupportedDeviceError:
+                        logger.info(
+                            f"Skipping unsupported device {rodent.name} ({rodent.path})"
+                        )
+                    except ratbag.SomethingIsMissingError as e:
+                        logger.info(
+                            f"Skipping device {rodent.name} ({rodent.path}): missing {e.thing}"
+                        )
+                    except ratbag.ProtocolError as e:
+                        logger.info(
+                            f"Skipping device {rodent.name} ({rodent.path}): protocol error: {e.message}"
+                        )
+                    except PermissionError as e:
+                        logger.error(f"Unable to open device at {rodent.path}: {e}")
+
+        monitor = ratbag.driver.HidrawMonitor.instance()
+        monitor.connect("rodent-found", rodent_found)
+        monitor.start()
+        monitor.list()
+
+    def probe(self, rodent: Rodent, config: DeviceConfig):
+        raise NotImplementedError("Function must be implemented in subclass")
+
+    @classmethod
+    def new_with_devicelist(
+        cls,
+        ratbagctx: ratbag.Ratbag,
+        supported_devices: List[DeviceConfig],
+    ):
+        driver = cls(supported_devices)
+
+        def start(_):
+            driver.start()
+
+        ratbagctx.connect("start", start)
+        return driver
+
+
 # ioctl handling is copied from hid-tools
 # We only need a small subset of it but we do need to hook into the transport
 # later, so copying it was easier than modifying hidtools

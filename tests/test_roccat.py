@@ -42,11 +42,12 @@ ff 7f 95 02 75 10 81 06 09 38 15 81 25 7f 75 08 95 01 81 06 05 0c 0a 38 02 81
 def transaction():
     transaction = ratbag.CommitTransaction()
 
-    def cb_complete(ta):
+    def cb_finished(ta):
+        assert ta.is_finished
         assert ta.seqno >= 0
         assert ta == transaction
 
-    transaction.connect("complete", cb_complete)
+    transaction.connect("finished", cb_finished)
     return transaction
 
 

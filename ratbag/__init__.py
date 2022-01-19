@@ -262,7 +262,7 @@ class Recorder(GObject.Object):
 class CommitTransaction(GObject.Object):
     """
     A helper object for :meth:`Device.commit`. This object keeps track of a
-    current commit transaction and emits the ``complete`` signal once the
+    current commit transaction and emits the ``finished`` signal once the
     driver has completed the transaction.
 
     A transaction object can only be used once.
@@ -270,9 +270,12 @@ class CommitTransaction(GObject.Object):
 
     _seqno_gen = count()
 
-    __gsignals__ = {
-        "complete": (GObject.SignalFlags.RUN_FIRST, None, ()),
-    }
+    @GObject.Signal()
+    def finished(self, *args):
+        """
+        GObject signal sent when the transaction is complete.
+        """
+        pass
 
     def __init__(self):
         GObject.Object.__init__(self)
@@ -312,6 +315,10 @@ class CommitTransaction(GObject.Object):
         """
         return self._success
 
+    @property
+    def is_finished(self) -> bool:
+        return self._done
+
     def mark_as_in_use(self, device: "ratbag.Device"):
         """
         :meta private:
@@ -326,7 +333,7 @@ class CommitTransaction(GObject.Object):
         if not self._done:
             self._success = success
             self._done = True
-            self.emit("complete")
+            self.emit("finished")
 
 
 class Device(GObject.Object):
@@ -389,12 +396,12 @@ class Device(GObject.Object):
         """
         Write the current changes to the driver. This is an asynchronous
         operation (maybe in a separate thread). Once complete, the
-        given transaction object will emit the ``complete`` signal.
+        given transaction object will emit the ``finished`` signal.
 
             >>> t = CommitTransaction()
-            >>> def on_complete(transaction):
+            >>> def on_finished(transaction):
             ...     print(f"Device {transaction.device} is done")
-            >>> signal_number = t.connect("complete", on_complete)
+            >>> signal_number = t.connect("finished", on_finished)
             >>> device.commit(t)  # doctest: +SKIP
 
         The :attr:`dirty` status of the device's features is reset to
@@ -424,7 +431,7 @@ class Device(GObject.Object):
     def _cb_idle_commit(self, transaction: CommitTransaction) -> bool:
         if not self.dirty:
             # well, that was easy
-            transaction.complete()
+            transaction.complete(True)
             return False  # don't reschedule idle func
 
         def reset_dirty(transaction: CommitTransaction):
@@ -443,7 +450,7 @@ class Device(GObject.Object):
             device.emit("resync", transaction.seqno)
             transaction.disconnect_by_func(reset_dirty)
 
-        transaction.connect("complete", reset_dirty)
+        transaction.connect("finished", reset_dirty)
         logger.debug("Writing current changes to device")
         self.emit("commit", transaction)
 

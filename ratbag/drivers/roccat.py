@@ -658,7 +658,7 @@ class RoccatDevice(GObject.Object):
         return bs[1] == 0x1
 
     def cb_commit(
-        self, ratbag_device: ratbag.Device, callback: ratbag.CommitCallback, seqno: int
+        self, ratbag_device: ratbag.Device, callback: ratbag.CommitCallbackWrapper
     ):
         def is_dirty(feature):
             return feature.dirty
@@ -711,7 +711,7 @@ class RoccatDevice(GObject.Object):
             traceback.print_exc()
             success = False
 
-        callback(ratbag_device, success, seqno)
+        callback(ratbag_device, success)
 
     def write(self, report_id, bs):
         self.hidraw_device.hid_set_feature(int(report_id), bs)

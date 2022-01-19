@@ -88,16 +88,19 @@ class ExampleDriver(ratbag.driver.Driver):
         # interaction with this device will be the _on_commit callback
         self.emit("device-added", device)
 
-    def _on_commit(self, device):
+    def _on_commit(self, device: ratbag.Device, callback: ratbag.CommitCallbackWrapper):
         for p in device.profiles:
             if not p.dirty:
                 continue
 
             logger.debug(f"Profile {p.index} has changes to be written")
-            for res in p.resolutions.value():
+            for res in p.resolutions:
                 if not res.dirty:
                     continue
                 x, y = res.dpi
                 logger.debug(f"Writing out resolution {res.index} for dpi {x},{y}")
 
             # etc.
+
+        # Once we are done we push our success status up
+        callback(device, True)

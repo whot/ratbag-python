@@ -17,6 +17,7 @@ import ratbag.util
 
 
 CommitCallback = Callable[["ratbag.Device", bool, int], None]
+CommitCallbackWrapper = Callable[["ratbag.Device", bool], None]
 
 logger = logging.getLogger(__name__)
 
@@ -364,10 +365,7 @@ class Device(GObject.Object):
         "commit": (
             GObject.SignalFlags.RUN_FIRST,
             None,
-            (
-                GObject.TYPE_PYOBJECT,
-                GObject.TYPE_PYOBJECT,
-            ),
+            (GObject.TYPE_PYOBJECT,),
         ),
         "resync": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
     }
@@ -401,8 +399,8 @@ class Device(GObject.Object):
         operation (maybe in a separate thread). Once complete, the
         driver calls the specified callback function with a boolean status. ::
 
-            def commit_complete(device, status, sequence_number):
-                if status:
+            def commit_complete(device, success, sequence_number):
+                if success:
                     print("Commit was successful")
 
             seqno = device.commit(commit_complete)
@@ -440,7 +438,7 @@ class Device(GObject.Object):
                 callback(self, True, seqno)
             return False  # don't reschedule idle func
 
-        def callback_wrapper(device: ratbag.Device, status: bool, seqno: int) -> None:
+        def callback_wrapper(device: ratbag.Device, success: bool) -> None:
             def clean(x: "ratbag.Feature") -> None:
                 x.dirty = False  # type: ignore
 
@@ -452,11 +450,11 @@ class Device(GObject.Object):
                 p.dirty = False  # type: ignore
             self.dirty = False  # type: ignore
             if callback:
-                callback(self, status, seqno)
+                callback(self, success, seqno)
             device.emit("resync", seqno)
 
         logger.debug("Writing current changes to device")
-        self.emit("commit", callback_wrapper, seqno)
+        self.emit("commit", callback_wrapper)
 
         return False  # don't reschedule idle func
 

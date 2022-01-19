@@ -607,10 +607,6 @@ class Profile(Feature):
         all other profiles.
         """
 
-    __gsignals__ = {
-        "active": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
-    }
-
     def __init__(
         self,
         device,

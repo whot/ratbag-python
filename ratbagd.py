@@ -221,18 +221,20 @@ class RatbagButton(ServiceInterface):
         value = None
 
         if action.type == ratbag.Action.Type.BUTTON:
-            value = action.button
+            value = dbus_next.Variant("u", int(action.button))
         elif action.type == ratbag.Action.Type.SPECIAL:
-            value = action.special
-        if action.type == ratbag.Action.Type.KEY:
-            value = None  # FIXME
-        if action.type == ratbag.Action.Type.MACRO:
+            value = dbus_next.Variant("u", int(action.special))
+        # elif action.type == ratbag.Action.Type.KEY:
+        #    value = dbus_next.Variant("u", int(ratbag.Action.Type.UNKNOWN))  # FIXME
+        elif action.type == ratbag.Action.Type.MACRO:
             value = dbus_next.Variant(
-                "a(uu)", [(e[0].value, e[1]) for e in action.events]
+                "a(uu)", [[e[0].value, e[1]] for e in action.events]
             )
+        else:
+            value = dbus_next.Variant("u", int(ratbag.Action.Type.UNKNOWN))
 
         assert value is not None
-        return [action.type.vlaue, value]
+        return [action.type.value, value]
 
     @Mapping.setter  # type: ignore
     def Mapping(self, mapping: "(uv)"):  # type: ignore

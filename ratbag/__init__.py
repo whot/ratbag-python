@@ -177,7 +177,8 @@ class Ratbag(GObject.Object):
 
         driver.connect("device-added", cb_device_added)
         if self._blackbox:
-            driver.connect("rodent-found", cb_rodent_found)
+            if "rodent-found" in GObject.signal_list_names(type(driver)):
+                driver.connect("rodent-found", cb_rodent_found)
 
     def start(self) -> None:
         """

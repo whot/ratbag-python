@@ -90,7 +90,10 @@ class YamlDevice(ratbag.driver.Rodent):
                 v = att["value"]  # type: ignore
             elif att["type"] == "bool":
                 v = att["value"].lower() == "true"  # type: ignore
-            setattr(info, att["name"], v)
+            try:
+                setattr(info, att["name"], v)
+            except AttributeError as e:
+                logger.debug(f"Skipping {att['name']}: {e}")
 
         super().__init__(info)
 

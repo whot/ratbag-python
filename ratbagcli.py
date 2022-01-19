@@ -424,12 +424,14 @@ def _init_emulators(infile):
     help="Path to the logger config file",
 )
 @click.option(
-    "--record", type=click.Path(dir_okay=False), help="Path to the file to record to"
+    "--record",
+    help="Path to the directory to collect recordings in",
+    type=click.Path(dir_okay=True, path_type=Path),
 )
 @click.option(
     "--replay",
-    type=click.Path(exists=True, dir_okay=False, path_type=Path),
     help="Path to the device recording",
+    type=click.Path(dir_okay=False, path_type=Path),
 )
 @click.pass_context
 def ratbagcli(ctx, verbose: int, log_config: Path, record: Path, replay: Path):
@@ -440,7 +442,7 @@ def ratbagcli(ctx, verbose: int, log_config: Path, record: Path, replay: Path):
 
     ctx.obj = {}
     if record:
-        ctx.obj["recorders"] = _init_recorders(record)
+        ctx.obj["blackbox"] = ratbag.Blackbox(directory=record)
     if replay:
         ctx.obj["emulators"] = _init_emulators(replay)
 
@@ -467,7 +469,7 @@ def ratbagcli_apply_config(ctx, nocommit: bool, config: Path, name: Optional[str
 
     try:
         mainloop = GLib.MainLoop()
-        ratbagd = ratbag.Ratbag.create()
+        ratbagd = ratbag.Ratbag.create(blackbox=ctx.obj.get("blackbox", None))
         for e in ctx.obj.get("emulators", []):
             e.setup()
 
@@ -505,7 +507,7 @@ def ratbagcli_verify_config(ctx, config: Path, name: Optional[str]):
 
     try:
         mainloop = GLib.MainLoop()
-        ratbagd = ratbag.Ratbag.create()
+        ratbagd = ratbag.Ratbag.create(blackbox=ctx.obj.get("blackbox", None))
         for e in ctx.obj.get("emulators", []):
             e.setup()
 
@@ -529,7 +531,7 @@ def ratbagcli_verify_config(ctx, config: Path, name: Optional[str]):
 def ratbagcli_show(ctx, name: str):
     try:
         mainloop = GLib.MainLoop()
-        ratbagd = ratbag.Ratbag.create()
+        ratbagd = ratbag.Ratbag.create(blackbox=ctx.obj.get("blackbox", None))
         for e in ctx.obj.get("emulators", []):
             e.setup()
 
@@ -552,7 +554,7 @@ def ratbagcli_show(ctx, name: str):
 def ratbagcli_list(ctx):
     try:
         mainloop = GLib.MainLoop()
-        ratbagd = ratbag.Ratbag.create()
+        ratbagd = ratbag.Ratbag.create(blackbox=ctx.obj.get("blackbox", None))
         for e in ctx.obj.get("emulators", []):
             e.setup()
 

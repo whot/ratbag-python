@@ -160,9 +160,10 @@ class Ratbag(GObject.Object):
         ),
     }
 
-    def __init__(self, /, load_data_files=True):
+    def __init__(self, /, load_data_files=True, blackbox: Optional["Blackbox"] = None):
         super().__init__()
         self._devices: List[Device] = []
+        self._blackbox = blackbox
         if load_data_files:
             self._load_data_files()
 
@@ -247,7 +248,12 @@ class Ratbag(GObject.Object):
             device.connect("disconnected", cb_device_disconnected)
             self.emit("device-added", device)
 
+        def cb_rodent_found(driver, rodent):
+            rodent.enable_recorder(self._blackbox)
+
         driver.connect("device-added", cb_device_added)
+        if self._blackbox:
+            driver.connect("rodent-found", cb_rodent_found)
 
     def start(self) -> None:
         """
@@ -257,11 +263,53 @@ class Ratbag(GObject.Object):
         self.emit("start")
 
     @classmethod
-    def create(cls, /, load_data_files=True):
+    def create(cls, /, load_data_files=True, blackbox: Optional["Blackbox"] = None):
         """
         Create a new Ratbagd instance.
         """
-        return cls(load_data_files=load_data_files)
+        return cls(load_data_files=load_data_files, blackbox=blackbox)
+
+
+@attr.s
+class Blackbox:
+    """
+    The manager class for any recorders active in this session.
+
+    The default recordings directory is
+    ``$XDG_STATE_HOME/ratbag/recordings/$timestamp``.
+    """
+
+    directory: Path = attr.ib()
+    _recorders: List["Recorder"] = attr.ib(init=False, default=attr.Factory(list))
+
+    @directory.validator
+    def _directory_check(self, attribute, value):
+        if value.exists() and not value.is_dir():
+            raise ValueError("Path must be a directory")
+
+    @directory.default
+    def _directory_default(self):
+        import os
+        from datetime.datetime import now
+
+        ts = now.strftime("%Y-%m-%d-%H:%M:%S")
+        fallback = Path.home() / ".state"
+        statedir = os.environ.get("XDG_STATE_HOME", fallback)
+        return statedir / "ratbag" / "recordings" / ts
+
+    def add_recorder(self, recorder: "Recorder"):
+        if not self._recorders and not self.directory.exists():
+            self.directory.mkdir(exist_ok=True, parents=True)
+
+        self._recorders.append(recorder)
+
+    def make_path(self, filename) -> Path:
+        """
+        Return a path for ``filename`` that is within this blackbox'
+        recordings directory.
+        """
+        return self.directory / filename
+
 
 class Recorder(GObject.Object):
     """
@@ -273,14 +321,6 @@ class Recorder(GObject.Object):
 
     def __init__(self, config: Dict[str, Any] = {}):
         GObject.Object.__init__(self)
-
-    def init(self, info: Dict[str, Any] = {}) -> None:
-        """
-        Initialize the logger for the given device.
-
-        :param info: a dictionary of extra logging keys
-        """
-        pass
 
     def log_rx(self, data: bytes) -> None:
         """

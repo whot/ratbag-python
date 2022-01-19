@@ -523,6 +523,45 @@ class Rodent(GObject.Object):
             ids["feature"] = tuple([r.report_id for r in self._rdesc.feature_reports])
         return ids
 
+    def enable_recorder(self, blackbox: ratbag.Blackbox) -> "ratbag.Recorder":
+        from ratbag.recorder import YamlDeviceRecorder
+
+        filename = f"{self.path.name}.yml"  # hidraw0 etc
+
+        self._recorder = YamlDeviceRecorder.create_in_blackbox(
+            blackbox,
+            filename,
+            info={
+                "name": self.name,
+                "model": self.model,
+                "path": self.path,
+                "syspath": self.info.syspath,
+                "vid": self.info.vid,
+                "pid": self.info.pid,
+                "report_descriptor": self.report_descriptor,
+            },
+        )
+        blackbox.add_recorder(self._recorder)
+
+        def cb_logtx(device, data):
+            self._recorder.log_tx(data)
+
+        def cb_logrx(device, data):
+            self._recorder.log_rx(data)
+
+        def cb_ioctl_tx(device, ioctl_name, bytes):
+            self._recorder.log_ioctl_tx(ioctl_name, bytes)
+
+        def cb_ioctl_rx(device, ioctl_name, bytes):
+            self._recorder.log_ioctl_rx(ioctl_name, bytes)
+
+        self.connect("data-from-device", cb_logrx)
+        self.connect("data-to-device", cb_logtx)
+        self.connect("ioctl-command", cb_ioctl_tx)
+        self.connect("ioctl-reply", cb_ioctl_rx)
+        self._recorder.start()
+        return self._recorder
+
     def start(self) -> None:
         """
         Start parsing data from the device.
@@ -686,27 +725,21 @@ class Driver(GObject.Object):
 
       - ``device-added``: emitted for each :class:`ratbag.Device` that was
         added after ``"start"``.
+      - ``rodent-found``: emitted for each :class:`ratbag.driver.Rodent` that was
+        opened.
     """
 
     __gsignals__ = {
         "failed": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
         "success": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
         "device-added": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
+        "rodent-found": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
     }
 
     def __init__(self):
         GObject.Object.__init__(self)
         self.name = None
-        self.recorders = []
         self.connect("device-added", self._device_sanity_check)
-
-    def add_recorder(self, recorder: ratbag.Recorder) -> None:
-        """
-        Instruct the driver to add ``recorder`` to log driver communication to
-        the device. It is up to the driver to determine what communication is
-        notable enough to be recorder for later replay.
-        """
-        self.recorders.append(recorder)
 
     def _device_sanity_check(
         self, driver: "ratbag.driver.Driver", device: ratbag.Device

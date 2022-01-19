@@ -454,6 +454,7 @@ class Hidpp20Driver(ratbag.driver.Driver):
                 if d.usbid == rodent.usbid:
                     try:
                         rodent.open()
+                        self.emit("rodent-found", rodent)
                         self.probe(rodent, d)
                     except ratbag.UnsupportedDeviceError:
                         logger.info(
@@ -492,21 +493,6 @@ class Hidpp20Driver(ratbag.driver.Driver):
         # files
         index = getattr(config, "device_index", RECEIVER_IDX)
         device = Hidpp20Device(rodent, index)
-
-        # for rec in self.recorders:
-        #    rodent.connect_to_recorder(rec)
-        #    rec.init(
-        #        {
-        #            "name": device.name,
-        #            "model": info.model,
-        #            "driver": "hidpp20",
-        #            "path": device.path,
-        #            "syspath": info.path,
-        #            "vid": info.vid,
-        #            "pid": info.pid,
-        #            "report_descriptor": rodent.report_descriptor,
-        #        }
-        #    )
 
         ratbag_device = ratbag.Device(self, device.path, device.name, rodent.model)
         ratbag_device.connect("commit", device.cb_commit)

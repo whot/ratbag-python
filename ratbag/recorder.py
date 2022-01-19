@@ -13,8 +13,8 @@ import ratbag
 
 class YamlDeviceRecorder(ratbag.Recorder):
     """
-    A simple recoder that logs the data to/from the device as a series of YAML
-    objects. All elements in `config` are logged as attributes.
+    A simple recorder that logs the data to/from the device as a series of
+    YAML objects. All elements in `config` are logged as attributes.
 
     The output of this logger can be consumed by
     :class:`ratbag.emulator.YamlDevice`.
@@ -36,12 +36,23 @@ class YamlDeviceRecorder(ratbag.Recorder):
 
     """
 
-    def __init__(self, config: Dict[str, Any]):
-        super().__init__(self)
-        assert "logfile" in config
-        self.logfile = open(config["logfile"], "w")
+    @classmethod
+    def create_in_blackbox(
+        cls, blackbox: ratbag.Blackbox, filename: str, info=dict()
+    ) -> "YamlDeviceRecorder":
+        recorder = YamlDeviceRecorder(
+            filename=blackbox.make_path(filename),
+            info=info,
+        )
+        return recorder
 
-    def init(self, info: Dict[str, Any] = {}) -> None:
+    def __init__(self, filename, info):
+        super().__init__(self)
+        self._filename = filename
+        self.info = info
+
+    def start(self) -> None:
+        self.logfile = open(self._filename, "w")
         now = datetime.datetime.now().strftime("%y-%m-%d %H:%M")
         self.logfile.write(
             f"# generated {now}\n"
@@ -49,15 +60,19 @@ class YamlDeviceRecorder(ratbag.Recorder):
             f"version: 1\n"
             f"attributes:\n"
         )
-        for key, value in info.items():
+        for key, value in self.info.items():
+            comment = ""
             if type(value) == int:
                 tstr = "int"
+                comment = f"  # {value:04x}"
             elif type(value) == str:
                 tstr = "str"
             elif type(value) == bytes:
                 tstr = "bytes"
                 value = list(value)
-            self.logfile.write(f"  - {{name: {key}, type: {tstr}, value: {value}}}\n")
+            self.logfile.write(
+                f"  - {{name: {key}, type: {tstr}, value: {value}}}{comment}\n"
+            )
 
         self.logfile.write("data:\n")
         self.logfile.flush()

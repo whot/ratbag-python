@@ -731,6 +731,7 @@ class RoccatDriver(ratbag.driver.Driver):
                 if d.usbid == rodent.usbid:
                     try:
                         rodent.open()
+                        self.emit("rodent-found", rodent)
                         self.probe(rodent)
                     except ratbag.UnsupportedDeviceError:
                         logger.info(
@@ -759,24 +760,6 @@ class RoccatDriver(ratbag.driver.Driver):
         # This is the device that will handle everything for us
         roccat_device = RoccatDevice(self, rodent)
 
-        # The driver is in charge of connecting the recorders though, we only
-        # have generic ones so far anyway. This needs to be done before
-        # device.start() so we don't miss any communication.
-        #        for rec in self.recorders:
-        #            rodent.connect_to_recorder(rec)
-        #            rec.init(
-        #                {
-        #                    "name": rodent.name,
-        #                    "model": rodent.model,
-        #                    "driver": "roccat",
-        #                    "path": rodent.path,
-        #                    "syspath": rodent.path,
-        #                    "vid": rodent.vid,
-        #                    "pid": rodent.pid,
-        #                    "report_descriptor": self.hidraw_device.report_descriptor,
-        #                }
-        #            )
-        #
         # Calling start() will make the device talk to the physical device
         try:
             ratbag_device = roccat_device.start()

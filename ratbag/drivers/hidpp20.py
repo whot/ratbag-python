@@ -247,8 +247,8 @@ class Hidpp20Device(GObject.Object):
 
         required = (REPORT_ID_SHORT, REPORT_ID_LONG)
         if not (set(supported) & set(required)):
-            raise ratbag.SomethingIsMissingError(
-                self.name, self.path, "HID++ short/long reports"
+            raise ratbag.driver.SomethingIsMissingError.from_rodent(
+                self.hidraw_device, "HID++ short/long reports"
             )
 
         self.supported_requests = supported
@@ -262,8 +262,8 @@ class Hidpp20Device(GObject.Object):
         version = QueryProtocolVersion.instance(self).run()
         logger.debug(f"protocol version {version.reply.major}.{version.reply.minor}")
         if version.reply.major < 2:
-            raise ratbag.SomethingIsMissingError(
-                self.name, self.path, "Protocol version 2.x"
+            raise ratbag.driver.SomethingIsMissingError.from_rodent(
+                self.hidraw_device, "Protocol version 2.x"
             )
         self.protocol_version = (version.major, version.minor)
 
@@ -296,30 +296,27 @@ class Hidpp20Device(GObject.Object):
 
     def _init_profiles(self) -> None:
         if FeatureName.ONBOARD_PROFILES not in self.features:
-            raise ratbag.SomethingIsMissingError(
-                self.name, self.path, "HID++2.0 feature ONBOARD_PROFILES"
+            raise ratbag.driver.SomethingIsMissingError.from_rodent(
+                self.hidraw_device, "HID++2.0 feature ONBOARD_PROFILES"
             )
 
         desc_query = QueryOnboardProfilesDesc.instance(self).run()
         logger.debug(desc_query)
         if desc_query.reply.memory_model_id != OnboardProfile.MemoryType.G402.value:
-            raise ratbag.SomethingIsMissingError(
-                self.name,
-                self.path,
+            raise ratbag.driver.SomethingIsMissingError.from_rodent(
+                self.hidraw_device,
                 f"Unsupported memory model {desc_query.memory_model_id}",
             )
         if desc_query.reply.macro_format_id != OnboardProfile.MacroType.G402.value:
-            raise ratbag.SomethingIsMissingError(
-                self.name,
-                self.path,
+            raise ratbag.driver.SomethingIsMissingError.from_rodent(
+                self.hidraw_device,
                 f"Unsupported macro format {desc_query.macro_format_id}",
             )
         try:
             OnboardProfile.ProfileType(desc_query.reply.profile_format_id)
         except ValueError:
-            raise ratbag.SomethingIsMissingError(
-                self.name,
-                self.path,
+            raise ratbag.driver.SomethingIsMissingError.from_rodent(
+                self.hidraw_device,
                 f"Unsupported profile format {desc_query.profile_format_id}",
             )
 
@@ -328,9 +325,8 @@ class Hidpp20Device(GObject.Object):
         mode_query = QueryOnboardProfilesGetMode.instance(self).run()
         logger.debug(mode_query)
         if mode_query.reply.mode != OnboardProfile.Mode.ONBOARD.value:
-            raise ratbag.SomethingIsMissingError(
-                self.name,
-                self.path,
+            raise ratbag.driver.SomethingIsMissingError.from_rodent(
+                self.hidraw_device,
                 f"Device not in Onboard mode ({mode_query.reply.mode})",
             )
             # FIXME: set the device to onboard mode here instead of throwing

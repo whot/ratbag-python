@@ -33,6 +33,64 @@ class DriverUnavailable(Exception):
     message: str = attr.ib()
 
 
+@attr.s
+class UnsupportedDeviceError(Exception):
+    """
+    Error indicating that the device is not supported. This exception is
+    raised for devices that ratbag does not have an implementation for.
+
+    .. note:: This error is unrecoverable without changes to ratbag.
+    """
+
+    name: str = attr.ib()
+    path: pathlib.Path = attr.ib()
+
+
+@attr.s
+class SomethingIsMissingError(UnsupportedDeviceError):
+    """
+    Error indicating that the device is missing something that we require for
+    it to work. This exception is raised for devices that ratbag has an
+    implementation for but for some reason the device is lacking a required
+    feature.
+
+    .. note:: This error is unrecoverable without changes to ratbag.
+    """
+
+    name: str = attr.ib()
+    path: pathlib.Path = attr.ib()
+    thing: str = attr.ib()
+
+    @classmethod
+    def from_rodent(cls, rodent: "Rodent", thing: str):
+        return cls(thing=thing, name=rodent.name, path=rodent.path)
+
+
+@attr.s
+class ProtocolError(Exception):
+    """
+    Error indicating that the communication with the device encountered an
+    error
+
+    It depends on the specifics on the error whether this is recoverable.
+    """
+
+    message: str = attr.ib()
+    """An explanatory message"""
+    name: str = attr.ib()
+    path: pathlib.Path = attr.ib()
+
+    conversation: List[bytes] = attr.ib(default=attr.Factory(list))
+    """
+    A list of byte arrays with the context of the failed conversation with
+    the device, if any.
+    """
+
+    @classmethod
+    def from_rodent(cls, rodent: "Rodent", message: str):
+        return cls(message=message, name=rodent.name, path=rodent.path)
+
+
 def ratbag_driver(name):
     """
     Decorator to mark a class as a ratbag driver. This decorator is required for
@@ -819,15 +877,15 @@ class HidrawDriver(Driver):
                         rodent.open()
                         self.emit("rodent-found", rodent)
                         self.probe(rodent, d)
-                    except ratbag.UnsupportedDeviceError:
+                    except UnsupportedDeviceError:
                         logger.info(
                             f"Skipping unsupported device {rodent.name} ({rodent.path})"
                         )
-                    except ratbag.SomethingIsMissingError as e:
+                    except SomethingIsMissingError as e:
                         logger.info(
                             f"Skipping device {rodent.name} ({rodent.path}): missing {e.thing}"
                         )
-                    except ratbag.ProtocolError as e:
+                    except ProtocolError as e:
                         logger.info(
                             f"Skipping device {rodent.name} ({rodent.path}): protocol error: {e.message}"
                         )

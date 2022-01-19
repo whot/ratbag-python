@@ -1,0 +1,4 @@
+[Device]
+Name=Etekcity Scroll Alpha
+DeviceMatch=usb:1ea7:4011
+Driver=etekcity

@@ -1,0 +1,11 @@
+[Device]
+Name=SteelSeries Rival 310
+DeviceMatch=usb:1038:1720
+Driver=steelseries
+
+[Driver/steelseries]
+DeviceVersion=2
+Buttons=6
+Leds=2
+DpiRange=100:12000@100
+MacroLength=1

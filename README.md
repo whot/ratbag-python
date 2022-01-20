@@ -13,9 +13,10 @@ repository.
 
 ## Architecture
 
-The public API, i.e. the bits to be consumed by various tools and ratbagd is
-in the `ratbag` module (`ratbag/__init__.py`). This provides the various
-high-level entities like `Device`, `Profile` and `Resolution`.
+The public API, i.e. the bits to be consumed by various tools is in the
+`ratbag` module (`ratbag/__init__.py`). This provides the various high-level
+entities like `Device`, `Profile` and `Resolution` and the `Ratbag` context to
+tie them all together.
 
 The drivers are in the `ratbag.drivers` subpackage
 (`ratbag/drivers/drivername.py`) and the API for drivers and helpers are in
@@ -36,6 +37,36 @@ the status back to the frontend API.
 Start at the `ratbag.Ratbag` documentation here:
 https://whot.github.io/ratbag-python/ratbag.html#ratbag.Ratbag
 
+### Control Flow
+
+The overview of the control flow:
+
+```
+caller       |   Ratbag                 |    driver
+----------------------------------------|---------------
+Ratbag()     |                          |
+           ---->  load data files       |
+             |    instantiate drivers  ----> search/monitor devices
+.............. GLib.MainLoop doing its thing ...............
+             |                          |    probe new device
+             |                          |    create ratbagd.Device
+             |        receive         <---  'device-added' signal
+receive    <---  'device-added' signal  |
+refresh UI   |                          |
+.............. GLib.MainLoop doing its thing ...............
+change dpi   |                          |
+change btn   |                          |
+dev.commit()----->  "commit" signal ------->  receive
+             |                          |  write changes to device
+.............. GLib.MainLoop doing its thing ...............
+             |                          |
+receive  <------------------------------  "complete" signal on commit transaction
+refresh UI   |                          |
+```
+
+The `Ratbag` context object merely separates the public API from the driver
+implementation. It has little logic beyond what is necessary to load the data
+files and instantiate all available drivers.
 
 ### Usage of GObject
 

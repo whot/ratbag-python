@@ -19,6 +19,7 @@ import ratbag
 import ratbag.hid
 import ratbag.driver
 import ratbag.util
+from ratbag.parser import Spec, Parser
 
 from ratbag.util import as_hex
 
@@ -79,21 +80,21 @@ class RoccatProfile(object):
 
     SIZE: int = 43
 
-    format: ratbag.util.FormatSpec = [
-        ("B", "report_id"),
-        ("B", "report_length"),
-        ("B", "profile_id"),
-        ("B", "xy_linked"),
-        ("B", "x_sensitivity"),
-        ("B", "y_sensitivity"),
-        ("B", "dpi_mask"),
-        ("BBBBB", "xres"),
-        ("B", "current_dpi"),
-        ("BBBBB", "yres"),
-        ("B", "_"),
-        ("B", "_report_rate_idx"),
-        ("B" * 21, "_"),  # 21 bytes padding
-        ("<H", "checksum"),
+    format: List[Spec] = [
+        Spec("B", "report_id"),
+        Spec("B", "report_length"),
+        Spec("B", "profile_id"),
+        Spec("B", "xy_linked"),
+        Spec("B", "x_sensitivity"),
+        Spec("B", "y_sensitivity"),
+        Spec("B", "dpi_mask"),
+        Spec("BBBBB", "xres"),
+        Spec("B", "current_dpi"),
+        Spec("BBBBB", "yres"),
+        Spec("B", "_"),
+        Spec("B", "_report_rate_idx"),
+        Spec("B" * 21, "_"),  # 21 bytes padding
+        Spec("H", "checksum", endian="le", convert_to_data=lambda x: crc(x.bytes)),
     ]
 
     report_rates = [125, 250, 500, 1000]
@@ -105,8 +106,10 @@ class RoccatProfile(object):
         self.ratbag_profile = None
         self.key_mapping = None
         self.dpi_mask = 0
-        ratbag.util.attr_from_data(
-            self, RoccatProfile.format, bytes([0] * RoccatProfile.SIZE), quiet=True
+        Parser.to_object(
+            data=bytes([0] * RoccatProfile.SIZE),
+            specs=RoccatProfile.format,
+            obj=self,
         )
         self.report_id = ReportID.PROFILE_SETTINGS.value
         self.report_length = RoccatProfile.SIZE
@@ -128,7 +131,11 @@ class RoccatProfile(object):
         if len(data) != RoccatProfile.SIZE:
             raise ratbag.ProtocolError(f"Invalid size {len(data)} for Profile")
 
-        ratbag.util.attr_from_data(self, RoccatProfile.format, data, offset=0)
+        Parser.to_object(
+            data=data,
+            specs=RoccatProfile.format,
+            obj=self,
+        )
 
         # Checksum first because if we have garbage, don't touch anything
         if crc(data) != self.checksum:
@@ -195,8 +202,9 @@ class RoccatProfile(object):
     def __bytes__(self):
         # need to do this twice, once to fill in the data, the second time so
         # the checksum is correct
-        return ratbag.util.attr_to_data(
-            self, RoccatProfile.format, maps={"checksum": lambda x: crc(x)}
+        return Parser.from_object(
+            specs=RoccatProfile.format,
+            obj=self,
         )
 
 
@@ -210,23 +218,25 @@ class RoccatMacro(object):
     NAMELEN = 24
 
     format = [
-        ("B", "report_id"),
-        ("<H", "report_length"),
-        ("B", "profile"),
-        ("B", "button_idx"),
-        ("B", "active"),
-        ("B" * 24, "_"),
-        ("B" * NAMELEN, "_group"),
-        ("B" * NAMELEN, "_name"),
-        ("<H", "length"),
-        (f"<{NKEYS}*BBH", "_keys"),  # keycode, flag, time
-        ("<H", "checksum"),
+        Spec("B", "report_id"),
+        Spec("H", "report_length", endian="le"),
+        Spec("B", "profile"),
+        Spec("B", "button_idx"),
+        Spec("B", "active"),
+        Spec("B" * 24, "_"),
+        Spec("B" * NAMELEN, "_group"),
+        Spec("B" * NAMELEN, "_name"),
+        Spec("H", "length", endian="le"),
+        Spec(f"BBH", "_keys", endian="le", repeat=NKEYS),  # keycode, flag, time
+        Spec("H", "checksum", endian="le", convert_to_data=lambda x: crc(x.bytes)),
     ]
 
     def __init__(self, profile_idx, button_idx):
         # Init everything with zeroes so we have all attributes we need
-        ratbag.util.attr_from_data(
-            self, RoccatMacro.format, bytes([0x00] * RoccatMacro.SIZE), quiet=True
+        Parser.to_object(
+            data=bytes([0x00] * RoccatMacro.SIZE),
+            specs=RoccatMacro.format,
+            obj=self,
         )
         self.report_id = ReportID.MACRO.value
         self.report_length = RoccatMacro.SIZE
@@ -353,7 +363,11 @@ class RoccatMacro(object):
         if len(data) != RoccatMacro.SIZE:
             raise ratbag.ProtocolError(message=f"Invalid size {len(data)} for Macro")
 
-        ratbag.util.attr_from_data(self, RoccatMacro.format, data, offset=0)
+        Parser.to_object(
+            data=data,
+            specs=RoccatMacro.format,
+            obj=self,
+        )
 
         if crc(data) != self.checksum:
             raise ratbag.ProtocolError(
@@ -366,8 +380,9 @@ class RoccatMacro(object):
         if not self._macro_exists_on_device:
             self.active = 0x01
 
-        return ratbag.util.attr_to_data(
-            self, RoccatMacro.format, maps={"checksum": lambda x: crc(x)}
+        return Parser.from_object(
+            specs=RoccatMacro.format,
+            obj=self,
         )
 
 
@@ -379,11 +394,11 @@ class RoccatKeyMapping(object):
     SIZE = 77
 
     format = [
-        ("B", "report_id"),
-        ("B", "report_length"),
-        ("B", "profile_id"),
-        (f"{MAX_BUTTONS}*BBB", "actions"),  # action[button][0] is what we need
-        ("<H", "checksum"),
+        Spec("B", "report_id"),
+        Spec("B", "report_length"),
+        Spec("B", "profile_id"),
+        Spec("BBB", "actions", repeat=MAX_BUTTONS),  # action[button][0] is what we need
+        Spec("H", "checksum", endian="le", convert_to_data=lambda x: crc(x.bytes)),
     ]
 
     # firmware action value vs ratbag value
@@ -417,6 +432,11 @@ class RoccatKeyMapping(object):
     }
 
     def __init__(self, profile_idx):
+        Parser.to_object(
+            data=bytes([0x00] * RoccatKeyMapping.SIZE),
+            specs=RoccatKeyMapping.format,
+            obj=self,
+        )
         self.profile_id = profile_idx
         self.macros = {}  # button index: RoccatMacro
         self.num_buttons = MAX_BUTTONS
@@ -430,7 +450,12 @@ class RoccatKeyMapping(object):
             )
 
         self.bytes = data
-        ratbag.util.attr_from_data(self, RoccatKeyMapping.format, data, offset=0)
+        Parser.to_object(
+            data=data,
+            specs=RoccatKeyMapping.format,
+            obj=self,
+        )
+
         if crc(data) != self.checksum:
             raise ratbag.ProtocolError(
                 f"CRC validation failed for mapping on {self.profile_id}"
@@ -545,8 +570,9 @@ class RoccatKeyMapping(object):
         # Weirdly enough, our first KeyMapping reply has a length of zero
         if self.report_length == 0:
             self.report_length = RoccatKeyMapping.SIZE
-        return ratbag.util.attr_to_data(
-            self, RoccatKeyMapping.format, maps={"checksum": lambda x: crc(x)}
+        return Parser.from_object(
+            specs=RoccatKeyMapping.format,
+            obj=self,
         )
 
 

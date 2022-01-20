@@ -173,8 +173,6 @@ class YamlDevice(ratbag.driver.Rodent):
 
     def hid_set_feature(self, report_id: int, data: bytes) -> None:
         for r in self.ioctls.get("HIDIOCSFEATURE", {}).values():
-            print(f"Looking for: {as_hex(data)} in {as_hex(r.tx)}")
-
             if r.tx == data:
                 logger.debug(f"hid_set_feature: {as_hex(data)}")
                 r.next()

@@ -476,8 +476,8 @@ def ratbagcli_apply_config(ctx, nocommit: bool, config: Path, name: Optional[str
     try:
         mainloop = GLib.MainLoop()
         ratbagd = ratbag.Ratbag.create(blackbox=ctx.obj.get("blackbox", None))
-        for e in ctx.obj.get("emulators", []):
-            e.setup()
+        for emulator in ctx.obj.get("emulators", []):
+            emulator.setup()
 
         def cb_device_added(ratbagcli, device):
             if name is None or name in device.name:
@@ -515,8 +515,8 @@ def ratbagcli_verify_config(ctx, config: Path, name: Optional[str]):
     try:
         mainloop = GLib.MainLoop()
         ratbagd = ratbag.Ratbag.create(blackbox=ctx.obj.get("blackbox", None))
-        for e in ctx.obj.get("emulators", []):
-            e.setup()
+        for emulator in ctx.obj.get("emulators", []):
+            emulator.setup()
 
         def cb_device_added(ratbagcli, device):
             if name is None or name in device.name:

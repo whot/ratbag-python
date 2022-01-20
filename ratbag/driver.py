@@ -123,21 +123,21 @@ def load_driver_by_name(driver_name: str) -> Optional[Type["Driver"]]:
 
     :return: The driver **class** (not an instance thereof) or ``None`` on error
     """
-    if driver_name not in DRIVERS:
+    if not DRIVERS:
         # Try to import ratbag.drivers.foo
-        logger.debug(f"Loading driver {driver_name}")
+        logger.debug(f"Loading drivers")
         try:
             import importlib
 
-            importlib.import_module(f"ratbag.drivers.{driver_name}")
+            for mod in pathlib.Path("ratbag/drivers/").glob("*.py"):
+                importlib.import_module(f"ratbag.drivers.{mod.name[:-3]}")
         except ImportError as e:
-            raise DriverUnavailable(f"Driver '{driver_name}' failed to load: {e}")
+            logger.warning(f"Importing ratbag.drivers.{mod} failed: {e}")
+
     try:
         return DRIVERS[driver_name]
     except KeyError:
-        raise DriverUnavailable(
-            f"Bug: driver '{driver_name}' does not use '@ratbag_driver'"
-        )
+        raise DriverUnavailable(f"Unable to find driver '{driver_name}'")
 
 
 class Message(GObject.Object):

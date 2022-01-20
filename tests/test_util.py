@@ -175,3 +175,30 @@ def test_parser():
     assert result.size == 13
     reverse = Parser.from_object(result.object, spec)
     assert reverse[-2] << 8 | reverse[-1] == sum(range(11))
+
+
+def test_data_files():
+    datafiles = ratbag.util.load_data_files()
+    assert datafiles
+    assert len(datafiles) > 20  # we have more than that but whatever
+
+    for f in datafiles:
+        assert f.name
+        assert f.driver
+        assert len(f.matches) >= 1
+
+    # test two random devices to make sure they're there
+    g305 = ratbag.util.DataFile(
+        name="Logitech Gaming Mouse G305",
+        matches=["usb:046d:4074"],
+        driver="hidpp20",
+        driver_options={"Leds": "0", "Quirk": "G305"},
+    )
+    assert g305 in datafiles
+
+    xtd = ratbag.util.DataFile(
+        name="Roccat Kone XTD",
+        matches=["usb:1e7d:2e22"],
+        driver="roccat",
+    )
+    assert xtd in datafiles

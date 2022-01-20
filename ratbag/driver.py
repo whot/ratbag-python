@@ -385,13 +385,24 @@ class DeviceInfo:
                 except StopIteration:
                     return None
 
-        vid = int(find_prop(device, "ID_VENDOR_ID") or 0, 16)  # type: ignore
-        pid = int(find_prop(device, "ID_MODEL_ID") or 0, 16)  # type: ignore
+        vidstr = find_prop(device, "ID_VENDOR_ID")
+        pidstr = find_prop(device, "ID_MODEL_ID")
+        busstr = find_prop(device, "ID_BUS")
+        if not vidstr or not pidstr or not busstr:
+            hidstr = find_prop(device, "HID_ID")
+            assert hidstr
+            try:
+                bid, vid, pid = map(lambda x: int(x, 16), hidstr.split(":"))
+                bus = {3: "usb", 5: "bluetooth"}[bid]
+            except (ValueError, KeyError):
+                pass
+        else:
+            vid = int(vidstr, 16)  # type: ignore
+            pid = int(pidstr, 16)  # type: ignore
+            bus = busstr or "unknown"
         name = (
             find_prop(device, "HID_NAME") or f"Unnamed HID device {vid:04x}:{pid:04x}"
         )
-        bus = find_prop(device, "ID_BUS")
-        assert bus
         syspath = device.sys_path
 
         def find_report_descriptor(device) -> Optional[bytes]:

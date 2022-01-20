@@ -463,8 +463,9 @@ def ratbagcli_apply_config(ctx, nocommit: bool, config: Path, name: Optional[str
     """
     Apply the given config to the device.
 
-    If a name is given, all device names are matched for this substring and
-    only matching devices are compared.
+    If a device name is given, only devices with that name are
+    configured. The name may be a part of the name, e.g. G303 matches the
+    "Logitech G303" device.
     """
     try:
         user_config = Config(config, nocommit)
@@ -501,8 +502,9 @@ def ratbagcli_verify_config(ctx, config: Path, name: Optional[str]):
     Compare differences between the given config and the current configuration
     stored on the device.
 
-    If a name is given, all device names are matched for this substring and
-    only matching devices are compared.
+    If a device name is given, only devices with that name are
+    verified. The name may be a part of the name, e.g. G303 matches the
+    "Logitech G303" device.
     """
     try:
         user_config = Config(config, False)
@@ -534,6 +536,13 @@ def ratbagcli_verify_config(ctx, config: Path, name: Optional[str]):
 @click.argument("name", required=False)
 @click.pass_context
 def ratbagcli_show(ctx, name: str):
+    """
+    Show current configuration of a device
+
+    If a device name is given, only devices with that name are
+    shown. The name may be a part of the name, e.g. G303 matches the
+    "Logitech G303" device.
+    """
     try:
         mainloop = GLib.MainLoop()
         ratbagd = ratbag.Ratbag.create(blackbox=ctx.obj.get("blackbox", None))
@@ -557,6 +566,13 @@ def ratbagcli_show(ctx, name: str):
 @ratbagcli.command(name="list")
 @click.pass_context
 def ratbagcli_list(ctx):
+    """
+    List all connected devices
+
+    If a device name is given, only devices with that name are
+    listed. The name may be a part of the name, e.g. G303 matches the
+    "Logitech G303" device.
+    """
     try:
         mainloop = GLib.MainLoop()
         ratbagd = ratbag.Ratbag.create(blackbox=ctx.obj.get("blackbox", None))

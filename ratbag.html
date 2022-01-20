@@ -145,7 +145,7 @@ instances, for example:</p>
 <p>See the <a class="reference internal" href="#ratbag.parser.Spec" title="ratbag.parser.Spec"><code class="xref py py-class docutils literal notranslate"><span class="pre">Spec</span></code></a> documentation for details on the format.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.parser.Spec">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.parser.</span></span><span class="sig-name descname"><span class="pre">Spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'BE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repeat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_to_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.parser.Spec" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.parser.</span></span><span class="sig-name descname"><span class="pre">Spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'BE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repeat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">greedy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_from_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convert_to_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.parser.Spec" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The format specification for a single <strong>logical</strong> in a data set. This is
 used in <a class="reference internal" href="#ratbag.parser.Parser.to_object" title="ratbag.parser.Parser.to_object"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Parser.to_object()</span></code></a> or <a class="reference internal" href="#ratbag.parser.Parser.from_object" title="ratbag.parser.Parser.from_object"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Parser.from_object()</span></code></a> to convert
@@ -164,7 +164,7 @@ property</p></li>
 <p>The argument passed to <code class="xref py py-attr docutils literal notranslate"><span class="pre">convert_to_data</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.parser.Spec.ConverterArg.bytes">
-<span class="sig-name descname"><span class="pre">bytes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_CountingAttr(counter=22,</span> <span class="pre">_default=NOTHING,</span> <span class="pre">repr=True,</span> <span class="pre">eq=True,</span> <span class="pre">order=True,</span> <span class="pre">hash=None,</span> <span class="pre">init=True,</span> <span class="pre">metadata={})</span></em><a class="headerlink" href="#ratbag.parser.Spec.ConverterArg.bytes" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">bytes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_CountingAttr(counter=26,</span> <span class="pre">_default=NOTHING,</span> <span class="pre">repr=True,</span> <span class="pre">eq=True,</span> <span class="pre">order=True,</span> <span class="pre">hash=None,</span> <span class="pre">init=True,</span> <span class="pre">metadata={})</span></em><a class="headerlink" href="#ratbag.parser.Spec.ConverterArg.bytes" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -205,6 +205,36 @@ element, the respective object attribute is a tuple.</p>
 <dd><p>The number of times this field repeats in struct. Where repeat is greater
 than 1, the resulting attribute is a list with <code class="docutils literal notranslate"><span class="pre">repeat</span></code> elements (each
 element may be tuple, see <code class="docutils literal notranslate"><span class="pre">format</span></code>).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.parser.Spec.greedy">
+<span class="sig-name descname"><span class="pre">greedy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ratbag.parser.Spec.greedy" title="Permalink to this definition"></a></dt>
+<dd><p>If true, <code class="docutils literal notranslate"><span class="pre">repeat</span></code> is ignored and the current field repeats until the
+remainder of the available data. This takes the current format spec into
+account. For example, a <cite>HH</cite> tuple has 4 bytes and will repeat 5 times in
+a data size 20.</p>
+<p>If the data size is not a multiple of the current format size, the
+remainder is silently skipped:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spec</span> <span class="o">=</span> <span class="n">Spec</span><span class="p">(</span><span class="s2">&quot;H&quot;</span><span class="p">,</span> <span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="n">greedy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">Parser</span><span class="o">.</span><span class="n">to_object</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="n">spec</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">data</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">4</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.parser.Spec.convert_from_data">
+<span class="sig-name descname"><span class="pre">convert_from_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.parser.Spec.convert_from_data" title="Permalink to this definition"></a></dt>
+<dd><p>Conversion function for the data. An example for converting a sequence of
+bytes to a string:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spec</span> <span class="o">=</span> <span class="n">Spec</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">convert_from_data</span><span class="o">=</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">Parser</span><span class="o">.</span><span class="n">to_object</span><span class="p">(</span><span class="s2">&quot;bar&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">spec</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">data</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">foo</span> <span class="o">==</span> <span class="s2">&quot;bar&quot;</span>
+</pre></div>
+</div>
+<p>Note that the conversion happens once all <code class="docutils literal notranslate"><span class="pre">repeat</span></code> have been completed,
+i.e. the input value for <code class="docutils literal notranslate"><span class="pre">repeat</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> is a list.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -445,12 +475,43 @@ required or the value is replaced.</p>
 </dl>
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="ratbag.util.DataFile">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.util.</span></span><span class="sig-name descname"><span class="pre">DataFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matches</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.util.DataFile" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.util.DataFile.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ratbag.util.DataFile.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.util.DataFile.matches">
+<span class="sig-name descname"><span class="pre">matches</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.util.DataFile.matches" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.util.DataFile.driver">
+<span class="sig-name descname"><span class="pre">driver</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ratbag.util.DataFile.driver" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.util.DataFile.driver_options">
+<span class="sig-name descname"><span class="pre">driver_options</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.util.DataFile.driver_options" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.util.DataFile.from_config_parser">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_config_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.util.DataFile.from_config_parser" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="ratbag.util.load_data_files">
-<span class="sig-prename descclassname"><span class="pre">ratbag.util.</span></span><span class="sig-name descname"><span class="pre">load_data_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.util.load_data_files" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ratbag.util.</span></span><span class="sig-name descname"><span class="pre">load_data_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.util.load_data_files" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigParser</span></code>]</p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#ratbag.util.DataFile" title="ratbag.util.DataFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFile</span></code></a>]</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>a list of <code class="docutils literal notranslate"><span class="pre">configparser.ConfigParser</span></code> objects</p>
@@ -458,132 +519,9 @@ required or the value is replaced.</p>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="ratbag.util.attr_from_data">
-<span class="sig-prename descclassname"><span class="pre">ratbag.util.</span></span><span class="sig-name descname"><span class="pre">attr_from_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmt_tuples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.util.attr_from_data" title="Permalink to this definition"></a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">fmt_tuples</span></code> is a list of tuples that are converted into attributes on
-<code class="docutils literal notranslate"><span class="pre">obj</span></code>. Each entry is a tuple in the form <code class="docutils literal notranslate"><span class="pre">(format,</span> <span class="pre">fieldname)</span></code> where
-<code class="docutils literal notranslate"><span class="pre">format</span></code> is a <cite>struct`</cite> parsing format and fieldname is the
-attribute name. e.g.</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">(&quot;H&quot;,</span> <span class="pre">&quot;report_rate&quot;)</span></code> is a 16-bit <code class="docutils literal notranslate"><span class="pre">obj.report_rate</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">(&quot;&gt;H&quot;,</span> <span class="pre">&quot;report_rate&quot;)</span></code> is a 16-bit BigEndian <code class="docutils literal notranslate"><span class="pre">obj.report_rate</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">(&quot;BBB&quot;,</span> <span class="pre">&quot;color&quot;)</span></code> is a <code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">y,</span> <span class="pre">z)</span></code> tuple of 8 bits</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">(&quot;BB&quot;,</span> <span class="pre">&quot;_&quot;)</span></code> are two bytes padding</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">(&quot;HH&quot;,</span> <span class="pre">&quot;?&quot;)</span></code> are two unknown 16-bit fields</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">(&quot;5*HH&quot;,</span> <span class="pre">&quot;?&quot;)</span></code> is a list of five tuples with 2 16 bit entries each</p></li>
-</ul>
-</div></blockquote>
-<p>Endianess defaults to BE. Prefix format with <code class="docutils literal notranslate"><span class="pre">&lt;</span></code> or
-<code class="docutils literal notranslate"><span class="pre">&gt;</span></code> and all <strong>subsequent</strong> fields use that endianess.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyObject</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">pass</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">mybytes</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">format</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;nprofiles&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;&gt;H&quot;</span><span class="p">,</span> <span class="s2">&quot;checksum&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;&lt;H&quot;</span><span class="p">,</span> <span class="s2">&quot;resolution&quot;</span><span class="p">)]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">obj</span> <span class="o">=</span> <span class="n">MyObject</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">offset</span> <span class="o">=</span> <span class="n">attr_from_data</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">mybytes</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">nprofiles</span><span class="p">)</span>
-<span class="go">0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">hex</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">checksum</span><span class="p">)</span>
-<span class="go">&#39;0x102&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">hex</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">resolution</span><span class="p">)</span>
-<span class="go">&#39;0x403&#39;</span>
-</pre></div>
-</div>
-<p>Repeating is possible by prefixing the format string with <code class="docutils literal notranslate"><span class="pre">N*</span></code> where
-<code class="docutils literal notranslate"><span class="pre">N</span></code> is an integer greater than 1.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>obj</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code>) – the object to set the attributes for</p></li>
-<li><p><strong>fmt_tuples</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – a list of tuples with the first element a struct format
-and the second element the attribute name</p></li>
-<li><p><strong>data</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code>) – the data to parse</p></li>
-<li><p><strong>offset</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the offset to start parsing from</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>the new offset after parsing all tuples</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ratbag.util.attr_to_data">
-<span class="sig-prename descclassname"><span class="pre">ratbag.util.</span></span><span class="sig-name descname"><span class="pre">attr_to_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmt_tuples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.util.attr_to_data" title="Permalink to this definition"></a></dt>
-<dd><p>The inverse of <a class="reference internal" href="#ratbag.util.attr_from_data" title="ratbag.util.attr_from_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">attr_from_data()</span></code></a>.
-<code class="docutils literal notranslate"><span class="pre">fmt_tuples</span></code> is a list of tuples that represent attributes on
-<code class="docutils literal notranslate"><span class="pre">obj</span></code>. Each entry is a tuple in the form <code class="docutils literal notranslate"><span class="pre">(format,</span> <span class="pre">fieldname)</span></code> where
-<code class="docutils literal notranslate"><span class="pre">format</span></code> is a <cite>struct`</cite> parsing format and fieldname is the
-attribute name. Each attribute is packed into a binary struct according to
-the format specification.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>maps</strong> – a dictionary of <code class="docutils literal notranslate"><span class="pre">{</span> <span class="pre">name:</span> <span class="pre">func(bytes)</span> <span class="pre">}</span></code> where for each attribute with the
-name, the matching function is called to produce that value instead. The argument to the
-function is the list of already written bytes, the return value must match the attribute it
-would otherwise have.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>the bytes representing the objects, given the format tuples</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <section id="module-ratbag">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ratbag" title="Permalink to this headline"></a></h2>
-<dl class="py exception">
-<dt class="sig sig-object py" id="ratbag.UnsupportedDeviceError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">UnsupportedDeviceError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.UnsupportedDeviceError" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
-<p>Error indicating that the device is not supported. This exception is
-raised for devices that ratbag does not have an implementation for.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This error is unrecoverable without changes to ratbag.</p>
-</div>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.UnsupportedDeviceError.path">
-<span class="sig-name descname"><span class="pre">path</span></span><a class="headerlink" href="#ratbag.UnsupportedDeviceError.path" title="Permalink to this definition"></a></dt>
-<dd><p>The device path that failed</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.UnsupportedDeviceError.name">
-<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#ratbag.UnsupportedDeviceError.name" title="Permalink to this definition"></a></dt>
-<dd><p>The device name that failed</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py exception">
-<dt class="sig sig-object py" id="ratbag.SomethingIsMissingError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">SomethingIsMissingError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thing</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.SomethingIsMissingError" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ratbag.UnsupportedDeviceError" title="ratbag.UnsupportedDeviceError"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.UnsupportedDeviceError</span></code></a></p>
-<p>Error indicating that the device is missing something that we require for
-it to work. This exception is raised for devices that ratbag has an
-implementation for but for some reason the device is lacking a required
-feature.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This error is unrecoverable without changes to ratbag.</p>
-</div>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.SomethingIsMissingError.thing">
-<span class="sig-name descname"><span class="pre">thing</span></span><a class="headerlink" href="#ratbag.SomethingIsMissingError.thing" title="Permalink to this definition"></a></dt>
-<dd><p>A string explaining the thing that is missing</p>
-</dd></dl>
-
-</dd></dl>
-
 <dl class="py exception">
 <dt class="sig sig-object py" id="ratbag.ConfigError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">ConfigError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.ConfigError" title="Permalink to this definition"></a></dt>
@@ -596,40 +534,6 @@ attempting a different configuration.</p>
 <dt class="sig sig-object py" id="ratbag.ConfigError.message">
 <span class="sig-name descname"><span class="pre">message</span></span><a class="headerlink" href="#ratbag.ConfigError.message" title="Permalink to this definition"></a></dt>
 <dd><p>The error message</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py exception">
-<dt class="sig sig-object py" id="ratbag.ProtocolError">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">ProtocolError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.ProtocolError" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
-<p>Error indicating that the communication with the device encountered an
-error</p>
-<p>It depends on the specifics on the error whether this is recoverable.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.ProtocolError.path">
-<span class="sig-name descname"><span class="pre">path</span></span><a class="headerlink" href="#ratbag.ProtocolError.path" title="Permalink to this definition"></a></dt>
-<dd><p>The device path that failed</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.ProtocolError.name">
-<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#ratbag.ProtocolError.name" title="Permalink to this definition"></a></dt>
-<dd><p>The device name that failed</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.ProtocolError.message">
-<span class="sig-name descname"><span class="pre">message</span></span><a class="headerlink" href="#ratbag.ProtocolError.message" title="Permalink to this definition"></a></dt>
-<dd><p>An explanatory message</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ratbag.ProtocolError.conversation">
-<span class="sig-name descname"><span class="pre">conversation</span></span><a class="headerlink" href="#ratbag.ProtocolError.conversation" title="Permalink to this definition"></a></dt>
-<dd><p>A list of byte arrays with the context of the failed conversation with
-the device, if any.</p>
 </dd></dl>
 
 </dd></dl>
@@ -671,6 +575,12 @@ similar to record device interactions</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">device-added</span></code> Notification that a new <a class="reference internal" href="#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a> was added</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">device-removed</span></code> Notification that the <a class="reference internal" href="#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a> was removed</p></li>
 </ul>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.Ratbag.device_added">
+<span class="sig-name descname"><span class="pre">device_added</span></span><a class="headerlink" href="#ratbag.Ratbag.device_added" title="Permalink to this definition"></a></dt>
+<dd><p>GObject signal emitted when a new <a class="reference internal" href="#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a> was added</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.Ratbag.add_driver">
 <span class="sig-name descname"><span class="pre">add_driver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">drivername</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supported_devices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Ratbag.add_driver" title="Permalink to this definition"></a></dt>
@@ -708,6 +618,19 @@ connected to all the signal.</p>
 <dt class="sig sig-object py" id="ratbag.Ratbag.create">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">load_data_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blackbox</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Ratbag.create" title="Permalink to this definition"></a></dt>
 <dd><p>Create a new Ratbagd instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Ratbag.do_device_added">
+<span class="sig-name descname"><span class="pre">do_device_added</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Ratbag.do_device_added" title="Permalink to this definition"></a></dt>
+<dd><p>GObject signal emitted when a new <a class="reference internal" href="#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a> was added</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Ratbag.do_start">
+<span class="sig-name descname"><span class="pre">do_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Ratbag.do_start" title="Permalink to this definition"></a></dt>
+<dd><p>GObject signal emitted in response to <a class="reference internal" href="#ratbag.Ratbag.start" title="ratbag.Ratbag.start"><code class="xref py py-meth docutils literal notranslate"><span class="pre">start()</span></code></a>.
+This signal is for internal use.</p>
 </dd></dl>
 
 </dd></dl>
@@ -783,9 +706,15 @@ host and the device, see <code class="xref py py-func docutils literal notransla
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">CommitTransaction</span></span><a class="headerlink" href="#ratbag.CommitTransaction" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gi.overrides.GObject.Object</span></code></p>
 <p>A helper object for <a class="reference internal" href="#ratbag.Device.commit" title="ratbag.Device.commit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Device.commit()</span></code></a>. This object keeps track of a
-current commit transaction and emits the <code class="docutils literal notranslate"><span class="pre">complete</span></code> signal once the
+current commit transaction and emits the <code class="docutils literal notranslate"><span class="pre">finished</span></code> signal once the
 driver has completed the transaction.</p>
 <p>A transaction object can only be used once.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.CommitTransaction.finished">
+<span class="sig-name descname"><span class="pre">finished</span></span><a class="headerlink" href="#ratbag.CommitTransaction.finished" title="Permalink to this definition"></a></dt>
+<dd><p>GObject signal sent when the transaction is complete.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.CommitTransaction.seqno">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">seqno</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#ratbag.CommitTransaction.seqno" title="Permalink to this definition"></a></dt>
@@ -834,10 +763,26 @@ transaction is complete.</p>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="ratbag.CommitTransaction.is_finished">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_finished</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ratbag.CommitTransaction.is_finished" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.CommitTransaction.complete">
 <span class="sig-name descname"><span class="pre">complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">success</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.CommitTransaction.complete" title="Permalink to this definition"></a></dt>
 <dd><p>Complete this transaction with the given success status.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.CommitTransaction.do_finished">
+<span class="sig-name descname"><span class="pre">do_finished</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.CommitTransaction.do_finished" title="Permalink to this definition"></a></dt>
+<dd><p>GObject signal sent when the transaction is complete.</p>
 </dd></dl>
 
 </dd></dl>
@@ -870,6 +815,21 @@ finalized.</p>
 is used by drivers.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">resync</span></code>: callers should re-sync the state of the device</p></li>
 </ul>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.Device.disconnected">
+<span class="sig-name descname"><span class="pre">disconnected</span></span><a class="headerlink" href="#ratbag.Device.disconnected" title="Permalink to this definition"></a></dt>
+<dd><p>GObject signal emitted when the device was disconnected</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ratbag.Device.resync">
+<span class="sig-name descname"><span class="pre">resync</span></span><a class="headerlink" href="#ratbag.Device.resync" title="Permalink to this definition"></a></dt>
+<dd><p>GObject signal emitted when the device state has changed and the
+caller should update its internal state from the device.</p>
+<p>This signal carries a single integer that is the
+<a class="reference internal" href="#ratbag.CommitTransaction.seqno" title="ratbag.CommitTransaction.seqno"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CommitTransaction.seqno()</span></code></a> for the corresponding transaction.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.Device.profiles">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">profiles</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Profile" title="ratbag.Profile"><span class="pre">ratbag.Profile</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Device.profiles" title="Permalink to this definition"></a></dt>
@@ -886,11 +846,11 @@ is used by drivers.</p></li>
 <span class="sig-name descname"><span class="pre">commit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transaction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Device.commit" title="Permalink to this definition"></a></dt>
 <dd><p>Write the current changes to the driver. This is an asynchronous
 operation (maybe in a separate thread). Once complete, the
-given transaction object will emit the <code class="docutils literal notranslate"><span class="pre">complete</span></code> signal.</p>
+given transaction object will emit the <code class="docutils literal notranslate"><span class="pre">finished</span></code> signal.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">CommitTransaction</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">on_complete</span><span class="p">(</span><span class="n">transaction</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">on_finished</span><span class="p">(</span><span class="n">transaction</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Device </span><span class="si">{transaction.device}</span><span class="s2"> is done&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">signal_number</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;complete&quot;</span><span class="p">,</span> <span class="n">on_complete</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">signal_number</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;finished&quot;</span><span class="p">,</span> <span class="n">on_finished</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">device</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  
 </pre></div>
 </div>
@@ -930,9 +890,32 @@ or JSON.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Device.do_commit">
+<span class="sig-name descname"><span class="pre">do_commit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Device.do_commit" title="Permalink to this definition"></a></dt>
+<dd><p>GObject signal emitted when the device was disconnected. This signal
+is for internal use only.</p>
+<p>Name clash with <a class="reference internal" href="#ratbag.Device.commit" title="ratbag.Device.commit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">commit()</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Device.do_disconnected">
+<span class="sig-name descname"><span class="pre">do_disconnected</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Device.do_disconnected" title="Permalink to this definition"></a></dt>
+<dd><p>GObject signal emitted when the device was disconnected</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ratbag.Device.do_get_property">
 <span class="sig-name descname"><span class="pre">do_get_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pspec</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Device.do_get_property" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ratbag.Device.do_resync">
+<span class="sig-name descname"><span class="pre">do_resync</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Device.do_resync" title="Permalink to this definition"></a></dt>
+<dd><p>GObject signal emitted when the device state has changed and the
+caller should update its internal state from the device.</p>
+<p>This signal carries a single integer that is the
+<a class="reference internal" href="#ratbag.CommitTransaction.seqno" title="ratbag.CommitTransaction.seqno"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CommitTransaction.seqno()</span></code></a> for the corresponding transaction.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.Device.do_set_property">

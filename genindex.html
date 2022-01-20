@@ -72,6 +72,7 @@
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
@@ -115,10 +116,10 @@
         <li><a href="ratbag.html#ratbag.Resolution.active">(ratbag.Resolution attribute)</a>
 </li>
       </ul></li>
-      <li><a href="ratbag.html#ratbag.Ratbag.add_driver">add_driver() (ratbag.Ratbag method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ratbag.html#ratbag.Ratbag.add_driver">add_driver() (ratbag.Ratbag method)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Blackbox.add_recorder">add_recorder() (ratbag.Blackbox method)</a>
 </li>
       <li><a href="ratbag.html#ratbag.util.add_to_sparse_tuple">add_to_sparse_tuple() (in module ratbag.util)</a>
@@ -142,10 +143,6 @@
 </li>
       </ul></li>
       <li><a href="ratbag.html#ratbag.util.as_hex">as_hex() (in module ratbag.util)</a>
-</li>
-      <li><a href="ratbag.html#ratbag.util.attr_from_data">attr_from_data() (in module ratbag.util)</a>
-</li>
-      <li><a href="ratbag.html#ratbag.util.attr_to_data">attr_to_data() (in module ratbag.util)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -199,7 +196,7 @@
 </li>
       <li><a href="ratbag.html#ratbag.ConfigError">ConfigError</a>
 </li>
-      <li><a href="ratbag.html#ratbag.ProtocolError.conversation">conversation (ratbag.ProtocolError attribute)</a>
+      <li><a href="ratbag.html#ratbag.parser.Spec.convert_from_data">convert_from_data (ratbag.parser.Spec attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.parser.Spec.convert_to_data">convert_to_data (ratbag.parser.Spec attribute)</a>
 </li>
@@ -215,6 +212,8 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ratbag.html#ratbag.util.DataFile">DataFile (class in ratbag.util)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Profile.default">default (ratbag.Profile attribute)</a>
 
       <ul>
@@ -229,6 +228,8 @@
         <li><a href="ratbag.html#ratbag.Feature.device">(ratbag.Feature attribute)</a>
 </li>
       </ul></li>
+      <li><a href="ratbag.html#ratbag.Ratbag.device_added">device_added (ratbag.Ratbag attribute)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Blackbox.directory">directory (ratbag.Blackbox attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Device.dirty">dirty (ratbag.Device attribute)</a>
@@ -238,6 +239,16 @@
 </li>
       </ul></li>
       <li><a href="ratbag.html#ratbag.Profile.Capability.DISABLE">DISABLE (ratbag.Profile.Capability attribute)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.Device.disconnected">disconnected (ratbag.Device attribute)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.Device.do_commit">do_commit() (ratbag.Device method)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.Ratbag.do_device_added">do_device_added() (ratbag.Ratbag method)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.Device.do_disconnected">do_disconnected() (ratbag.Device method)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.CommitTransaction.do_finished">do_finished() (ratbag.CommitTransaction method)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Button.do_get_property">do_get_property() (ratbag.Button method)</a>
 
@@ -255,6 +266,8 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ratbag.html#ratbag.Device.do_resync">do_resync() (ratbag.Device method)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Button.do_set_property">do_set_property() (ratbag.Button method)</a>
 
       <ul>
@@ -269,11 +282,17 @@
         <li><a href="ratbag.html#ratbag.Resolution.do_set_property">(ratbag.Resolution method)</a>
 </li>
       </ul></li>
+      <li><a href="ratbag.html#ratbag.Ratbag.do_start">do_start() (ratbag.Ratbag method)</a>
+</li>
       <li><a href="ratbag.html#ratbag.ActionSpecial.Special.DOUBLECLICK">DOUBLECLICK (ratbag.ActionSpecial.Special attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Resolution.dpi">dpi (ratbag.Resolution attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Resolution.dpi_list">dpi_list (ratbag.Resolution property)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.util.DataFile.driver">driver (ratbag.util.DataFile attribute)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.util.DataFile.driver_options">driver_options (ratbag.util.DataFile attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -305,11 +324,23 @@
 </li>
       <li><a href="ratbag.html#ratbag.util.find_hidraw_devices">find_hidraw_devices() (in module ratbag.util)</a>
 </li>
+      <li><a href="ratbag.html#ratbag.CommitTransaction.finished">finished (ratbag.CommitTransaction attribute)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ratbag.html#ratbag.parser.Spec.format">format (ratbag.parser.Spec attribute)</a>
 </li>
+      <li><a href="ratbag.html#ratbag.util.DataFile.from_config_parser">from_config_parser() (ratbag.util.DataFile class method)</a>
+</li>
       <li><a href="ratbag.html#ratbag.parser.Parser.from_object">from_object() (ratbag.parser.Parser class method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ratbag.html#ratbag.parser.Spec.greedy">greedy (ratbag.parser.Spec attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -328,6 +359,8 @@
       <li><a href="ratbag.html#ratbag.Profile.Capability.INDIVIDUAL_REPORT_RATE">INDIVIDUAL_REPORT_RATE (ratbag.Profile.Capability attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.ActionMacro.Event.INVALID">INVALID (ratbag.ActionMacro.Event attribute)</a>
+</li>
+      <li><a href="ratbag.html#ratbag.CommitTransaction.is_finished">is_finished (ratbag.CommitTransaction property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -385,12 +418,10 @@
 </li>
       <li><a href="ratbag.html#ratbag.Blackbox.make_path">make_path() (ratbag.Blackbox method)</a>
 </li>
-      <li><a href="ratbag.html#ratbag.ConfigError.message">message (ratbag.ConfigError attribute)</a>
-
-      <ul>
-        <li><a href="ratbag.html#ratbag.ProtocolError.message">(ratbag.ProtocolError attribute)</a>
+      <li><a href="ratbag.html#ratbag.util.DataFile.matches">matches (ratbag.util.DataFile attribute)</a>
 </li>
-      </ul></li>
+      <li><a href="ratbag.html#ratbag.ConfigError.message">message (ratbag.ConfigError attribute)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Led.mode">mode (ratbag.Led attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Led.modes">modes (ratbag.Led property)</a>
@@ -431,9 +462,7 @@
 </li>
         <li><a href="ratbag.html#ratbag.Profile.name">(ratbag.Profile attribute)</a>
 </li>
-        <li><a href="ratbag.html#ratbag.ProtocolError.name">(ratbag.ProtocolError attribute)</a>
-</li>
-        <li><a href="ratbag.html#ratbag.UnsupportedDeviceError.name">(ratbag.UnsupportedDeviceError attribute)</a>
+        <li><a href="ratbag.html#ratbag.util.DataFile.name">(ratbag.util.DataFile attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -467,21 +496,15 @@
       <li><a href="ratbag.html#ratbag.parser.Parser">Parser (class in ratbag.parser)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Device.path">path (ratbag.Device attribute)</a>
-
-      <ul>
-        <li><a href="ratbag.html#ratbag.ProtocolError.path">(ratbag.ProtocolError attribute)</a>
 </li>
-        <li><a href="ratbag.html#ratbag.UnsupportedDeviceError.path">(ratbag.UnsupportedDeviceError attribute)</a>
-</li>
-      </ul></li>
       <li><a href="ratbag.html#ratbag.Profile">Profile (class in ratbag)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Button.profile">profile (ratbag.Button attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ratbag.html#ratbag.Profile.Capability">Profile.Capability (class in ratbag)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ratbag.html#ratbag.ActionSpecial.Special.PROFILE_CYCLE_DOWN">PROFILE_CYCLE_DOWN (ratbag.ActionSpecial.Special attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.ActionSpecial.Special.PROFILE_CYCLE_UP">PROFILE_CYCLE_UP (ratbag.ActionSpecial.Special attribute)</a>
@@ -491,8 +514,6 @@
       <li><a href="ratbag.html#ratbag.ActionSpecial.Special.PROFILE_UP">PROFILE_UP (ratbag.ActionSpecial.Special attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Device.profiles">profiles (ratbag.Device property)</a>
-</li>
-      <li><a href="ratbag.html#ratbag.ProtocolError">ProtocolError</a>
 </li>
   </ul></td>
 </tr></table>
@@ -569,6 +590,8 @@
 </li>
       <li><a href="ratbag.html#ratbag.parser.Result">Result (class in ratbag.parser)</a>
 </li>
+      <li><a href="ratbag.html#ratbag.Device.resync">resync (ratbag.Device attribute)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Led.Colordepth.RGB_111">RGB_111 (ratbag.Led.Colordepth attribute)</a>
 </li>
       <li><a href="ratbag.html#ratbag.Led.Colordepth.RGB_888">RGB_888 (ratbag.Led.Colordepth attribute)</a>
@@ -607,10 +630,10 @@
       </ul></li>
       <li><a href="ratbag.html#ratbag.Resolution.set_dpi">set_dpi() (ratbag.Resolution method)</a>
 </li>
-      <li><a href="ratbag.html#ratbag.Led.set_effect_duration">set_effect_duration() (ratbag.Led method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ratbag.html#ratbag.Led.set_effect_duration">set_effect_duration() (ratbag.Led method)</a>
+</li>
       <li><a href="ratbag.html#ratbag.Profile.set_enabled">set_enabled() (ratbag.Profile method)</a>
 
       <ul>
@@ -622,8 +645,6 @@
       <li><a href="ratbag.html#ratbag.Profile.set_report_rate">set_report_rate() (ratbag.Profile method)</a>
 </li>
       <li><a href="ratbag.html#ratbag.parser.Result.size">size (ratbag.parser.Result attribute)</a>
-</li>
-      <li><a href="ratbag.html#ratbag.SomethingIsMissingError">SomethingIsMissingError</a>
 </li>
       <li><a href="ratbag.html#ratbag.parser.Spec">Spec (class in ratbag.parser)</a>
 </li>
@@ -647,8 +668,6 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ratbag.html#ratbag.SomethingIsMissingError.thing">thing (ratbag.SomethingIsMissingError attribute)</a>
-</li>
       <li><a href="ratbag.html#ratbag.parser.Parser.to_object">to_object() (ratbag.parser.Parser class method)</a>
 </li>
   </ul></td>
@@ -669,8 +688,6 @@
         <li><a href="ratbag.html#ratbag.ActionSpecial.Special.UNKNOWN">(ratbag.ActionSpecial.Special attribute)</a>
 </li>
       </ul></li>
-      <li><a href="ratbag.html#ratbag.UnsupportedDeviceError">UnsupportedDeviceError</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ratbag.html#ratbag.CommitTransaction.used">used (ratbag.CommitTransaction property)</a>

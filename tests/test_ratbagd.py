@@ -15,7 +15,7 @@ from itertools import count
 import attr
 import xml.etree.ElementTree as ET
 import pathlib
-from ratbagd import Ratbagd
+from ratbag.cli.ratbagd import Ratbagd
 
 import ratbag as ratbag_mod
 import pytest

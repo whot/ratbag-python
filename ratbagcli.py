@@ -583,5 +583,38 @@ def ratbagcli_list(ctx):
         pass
 
 
+@ratbagcli.command(name="list-supported-devices")
+@click.pass_context
+def ratbagcli_list_supported(ctx):
+    """
+    List all known devices
+    """
+    from ratbag.util import load_data_files
+
+    click.echo("# The following devices are known to ratbag.")
+    click.echo("# A device may have multiple entries, one for each USB ID.")
+    click.echo("# This list is sorted by device name.")
+
+    devices = []
+
+    files = load_data_files()
+    for f in sorted(files, key=lambda x: x.name):
+        if not devices:
+            click.echo("devices:")
+            devices.append(f)
+
+        for match in f.matches:
+
+            def q(s):
+                return f"'{s}'"
+
+            click.echo(
+                f" - {{ match: {q(match):>22s}, driver: {q(f.driver):>20s}, name: '{f.name}' }}"
+            )
+
+    if not devices:
+        click.echo("# No supported devices found. This is an installation issue")
+
+
 if __name__ == "__main__":
     ratbagcli()

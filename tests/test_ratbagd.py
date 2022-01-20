@@ -7,8 +7,8 @@
 
 from dbus_next import BusType, Message
 from dbus_next.glib import MessageBus
-from unittest.mock import patch, MagicMock
-from gi.repository import GLib, GObject
+from unittest.mock import MagicMock
+from gi.repository import GLib
 from typing import List, Tuple
 from itertools import count
 

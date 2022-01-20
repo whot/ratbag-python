@@ -120,6 +120,40 @@ def test_parser():
     reverse = Parser.from_object(result.object, spec)
     assert reverse[-2] << 8 | reverse[-1] == sum(range(11))
 
+    data = bytes(range(12))
+    spec = [
+        Spec("H", "something"),
+        Spec("BB", "other"),
+        Spec("H", "intlist", greedy=True),
+    ]
+    result = Parser.to_object(data, spec)
+    assert result.size == len(data)
+    assert result.object.intlist == [0x0405, 0x0607, 0x0809, 0x0A0B]
+
+    data = bytes(range(64, 73))
+    spec = [
+        Spec("B", "something"),
+        Spec(
+            "B",
+            "string",
+            greedy=True,
+            convert_from_data=lambda s: bytes(s).decode("utf-8"),
+        ),
+    ]
+    result = Parser.to_object(data, spec)
+    assert result.size == len(data)
+    assert result.object.string == "ABCDEFGH"
+
+    # Only last one can be greedy
+    with pytest.raises(AssertionError):
+        data = bytes(range(12))
+        spec = [
+            Spec("H", "something"),
+            Spec("BB", "other", greedy=True),
+            Spec("H", "intlist"),
+        ]
+        result = Parser.to_object(data, spec)
+
 
 def test_data_files():
     datafiles = ratbag.util.load_data_files()

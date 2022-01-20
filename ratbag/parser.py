@@ -99,6 +99,34 @@ class Spec(object):
     than 1, the resulting attribute is a list with ``repeat`` elements (each
     element may be tuple, see ``format``).
     """
+    greedy: bool = attr.ib(default=False)
+    """
+    If true, ``repeat`` is ignored and the current field repeats until the
+    remainder of the available data. This takes the current format spec into
+    account. For example, a `HH` tuple has 4 bytes and will repeat 5 times in
+    a data size 20.
+
+    If the data size is not a multiple of the current format size, the
+    remainder is silently skipped:
+
+        >>> spec = Spec("H", "foo", greedy=True)
+        >>> data = Parser.to_object(bytes(5), spec)
+        >>> assert data.object.size == 4
+
+
+    """
+    convert_from_data: Optional[Callable[[Any], Any]] = attr.ib(default=None)
+    """
+    Conversion function for the data. An example for converting a sequence of
+    bytes to a string:
+
+        >>> spec = Spec("B", "foo", repeat=3, convert_from_data=lambda s: bytes(s).decode("utf-8"))
+        >>> data = Parser.to_object("bar".encode("utf-8"), spec)
+        >>> assert data.object.foo == "bar"
+
+    Note that the conversion happens once all ``repeat`` have been completed,
+    i.e. the input value for ``repeat > 1`` is a list.
+    """
     convert_to_data: Optional[Callable[[ConverterArg], Any]] = attr.ib(default=None)
     """
     Conversion function of this attribute to data. This function takes the
@@ -161,13 +189,20 @@ class Parser(object):
         object). Otherwise, a new generic object is created with all
         attributes as specified in the parser specs.
         """
+        # Only the last element can be greedy
+        assert all([spec.greedy is False for spec in list(reversed(specs))[1:]])
+
         if obj is None:
             obj = _ResultObject()
 
         offset = 0
         for spec in specs:
             endian = {"BE": ">", "le": "<"}[spec.endian]
-            for idx in range(spec.repeat):
+            if spec.greedy:
+                repeat = len(data[offset:]) // struct.calcsize(spec.format)
+            else:
+                repeat = spec.repeat
+            for idx in range(repeat):
                 val = struct.unpack_from(endian + spec.format, data, offset=offset)
                 if spec.name == "_":
                     debugstr = "<pad bytes>"
@@ -176,7 +211,7 @@ class Parser(object):
                 else:
                     if spec._count == 1:
                         val = val[0]
-                    if spec.repeat > 1:
+                    if repeat > 1:
                         debugstr = f"self.{spec.name:24s} += {val}"
                         if idx == 0:
                             setattr(obj, spec.name, [])
@@ -184,10 +219,16 @@ class Parser(object):
                     else:
                         debugstr = f"self.{spec.name:24s} = {val}"
                         setattr(obj, spec.name, val)
+
                 logger.debug(
                     f"offset {offset:02d}: {as_hex(data[offset:offset+spec._size]):5s} → {debugstr}"
                 )
                 offset += spec._size
+
+            if spec.convert_from_data is not None:
+                val = spec.convert_from_data(getattr(obj, spec.name))
+                setattr(obj, spec.name, val)
+
         return Result(obj, offset)
 
     @classmethod

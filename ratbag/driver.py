@@ -238,7 +238,7 @@ class HidrawMonitor(GObject.Object):
         >>> monitor = HidrawMonitor.instance()
         >>> monitor.connect("rodent-found", lambda mon, r: print(f"Rodent: {r}"))  # doctest: +SKIP
         >>> monitor.start()
-        >>> monitor.list()  # This emits the "rodent-found" signal for existing devices
+        >>> already_plugged_devices = monitor.list()
 
     The :class:`Rodent` is initalized but not open, a driver should call
     :meth:`Rodent.open()` before using the device.
@@ -262,22 +262,20 @@ class HidrawMonitor(GObject.Object):
         self._disabled = False
         self._fake_rodents = []
 
-    def _cb_add_udev_device(self, udev_device):
-        logger.debug(f"udev hidraw device: {udev_device.device_node}")
-        info = DeviceInfo.from_path(pathlib.Path(udev_device.device_node))
-        rodent = Rodent.from_device_info(info)
-        self.emit("rodent-found", rodent)
-
-    def list(self):
+    def list(self) -> List["Rodent"]:
         """
         List current devices and emit the ``"rodent-found"`` signal for them.
         """
+        rodents = []
+
         if not self._disabled:
             for device in self._context.list_devices(subsystem="hidraw"):
-                self._cb_add_udev_device(device)
+                rodents.append(Rodent.from_udev_device(device))
 
         for rodent in self._fake_rodents:
-            self.emit("rodent-found", rodent)
+            rodents.append(rodent)
+
+        return rodents
 
     def start(self):
         """
@@ -299,6 +297,10 @@ class HidrawMonitor(GObject.Object):
             while device:
                 logger.debug(f"udev monitor: {device.action} {device.device_node}")
                 if device.action == "add":
+
+                    def _cb_add_udev_device(self, udev_device):
+                        self.emit("rodent-found", Rodent.from_udev_device(device))
+
                     self._cb_add_udev_device(device)
                 device = monitor.poll(0)
             return True  # keep the callback
@@ -505,6 +507,11 @@ class Rodent(GObject.Object):
     def from_device_info(cls, info: DeviceInfo) -> "ratbag.driver.Rodent":
         r = Rodent(info)
         return r
+
+    @classmethod
+    def from_udev_device(cls, udev_device: pyudev.Device) -> "ratbag.driver.Rodent":
+        info = DeviceInfo.from_path(pathlib.Path(udev_device.device_node))
+        return Rodent.from_device_info(info)
 
     @classmethod
     def from_device(cls, device: Union[pathlib.Path, "ratbag.driver.Rodent"]):
@@ -895,7 +902,8 @@ class HidrawDriver(Driver):
         monitor = ratbag.driver.HidrawMonitor.instance()
         monitor.connect("rodent-found", rodent_found)
         monitor.start()
-        monitor.list()
+        for r in monitor.list():
+            rodent_found(monitor, r)
 
     def probe(self, rodent: Rodent, config: DeviceConfig):
         raise NotImplementedError("Function must be implemented in subclass")

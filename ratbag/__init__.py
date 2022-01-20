@@ -107,33 +107,16 @@ class Ratbag(GObject.Object):
 
         from ratbag.driver import DeviceConfig
 
-        # FIXME: this needs to use the install path
-        path = Path("data")
-        if not path.exists():
-            path = Path("/usr/share/libratbag/data")
-            if not path.exists():
-                raise NotImplementedError(
-                    "Missing data files: none in /usr/share/libratbag, none in $PWD/data"
-                )
-        datafiles = ratbag.util.load_data_files(path)
+        datafiles = ratbag.util.load_data_files()
 
         # drivers want the list of all entries passed as one, so we need to
         # extract them first, into a dict of "drivername" : [dev1, dev2, ...]
         drivers: Dict[str, List["ratbag.driver.DeviceConfig"]] = {}
         for f in datafiles:
-            drivername = f["Device"]["Driver"]
-            match = f["Device"]["DeviceMatch"]
-            try:
-                config = f["Driver/{drivername}"]
-            except KeyError:
-                config: Dict[str, Any] = {}
-
-            for match in map(lambda x: x.strip(), match.split(";")):
-                if not match:
-                    continue
-                supported_devices = drivers.get(drivername, [])
-                supported_devices.append(DeviceConfig(match, config))
-                drivers[drivername] = supported_devices
+            for match in f.matches:
+                supported_devices = drivers.get(f.driver, [])
+                supported_devices.append(DeviceConfig(match, f.driver_options))
+                drivers[f.driver] = supported_devices
 
         for drivername, supported_devices in drivers.items():
             try:

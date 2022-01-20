@@ -13,6 +13,7 @@ import attr
 import binascii
 import configparser
 import logging
+import pkg_resources
 import pyudev
 import struct
 
@@ -82,19 +83,53 @@ def find_hidraw_devices() -> List[str]:
     return devices
 
 
-def load_data_files(path: Path) -> List[configparser.ConfigParser]:
+@attr.s
+class DataFile:
+    name: str = attr.ib()
+    matches: List[str] = attr.ib()
+    driver: str = attr.ib()
+    driver_options: Dict[str, str] = attr.ib(default=attr.Factory(dict))
+
+    @classmethod
+    def from_config_parser(cls, parser: configparser.ConfigParser):
+        name = parser["Device"]["Name"]
+        matchstr = parser["Device"]["DeviceMatch"]
+        matches = [x.strip() for x in matchstr.split(";") if x.strip()]
+        driver = parser["Device"]["Driver"]
+
+        try:
+            driver_options = dict(parser.items(f"Driver/{driver}"))
+        except configparser.NoSectionError:
+            driver_options = {}
+
+        return cls(
+            name=name, matches=matches, driver=driver, driver_options=driver_options
+        )
+
+
+def load_data_files() -> List[DataFile]:
     """
     :return: a list of ``configparser.ConfigParser`` objects
     """
-    assert path is not None
 
     files = []
-    for f in Path(path).glob("**/*.device"):
+    for f in filter(
+        lambda n: n.endswith(".device"),
+        pkg_resources.resource_listdir("ratbag", "devices"),
+    ):
         parser = configparser.ConfigParser()
         # don't convert keys to lowercase
         parser.optionxform = lambda option: option  # type: ignore
-        parser.read(f)
-        files.append(parser)
+        stream = (
+            pkg_resources.resource_stream("ratbag", f"devices/{f}")
+            .read()
+            .decode("utf-8")
+        )
+        parser.read_string(stream)
+        try:
+            files.append(DataFile.from_config_parser(parser))
+        except Exception as e:
+            logger.error(f"Failed to parse {f}: {str(e)}")
 
     if not files:
         raise FileNotFoundError("Unable to find data files")

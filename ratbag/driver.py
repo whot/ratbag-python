@@ -923,13 +923,13 @@ class HidrawDriver(Driver):
                     rodent.open()
                     self.emit("rodent-found", rodent)
                     self.probe(rodent, match)
-                except UnsupportedDeviceError:
-                    logger.info(
-                        f"Skipping unsupported device {rodent.name} ({rodent.path})"
-                    )
                 except SomethingIsMissingError as e:
                     logger.info(
                         f"Skipping device {rodent.name} ({rodent.path}): missing {e.thing}"
+                    )
+                except UnsupportedDeviceError:
+                    logger.info(
+                        f"Skipping unsupported device {rodent.name} ({rodent.path})"
                     )
                 except ProtocolError as e:
                     logger.info(

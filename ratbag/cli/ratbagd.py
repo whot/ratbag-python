@@ -247,8 +247,8 @@ class RatbagButton(ServiceInterface):
             action = ratbag.ActionSpecial(
                 self._button, ratbag.ActionSpecial.Special(variant.value)
             )
-        if action.type == ratbag.Action.Type.KEY:
-            action = None  # FIXME
+        # if action.type == ratbag.Action.Type.KEY:
+        #    action = None  # FIXME
         if action.type == ratbag.Action.Type.MACRO:
             events = [(ratbag.ActionMacro.Event(t), v) for t, v in variant.value]
             action = ratbag.ActionMacro(self._button, events=events)

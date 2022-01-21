@@ -192,6 +192,14 @@ class Parser(object):
         # Only the last element can be greedy
         assert all([spec.greedy is False for spec in list(reversed(specs))[1:]])
 
+        # This parser is quite noisy but if the input is a zero-byte array
+        # (used by some drivers to init an object with all spec fields) we
+        # disable the logger. This should be handled better (specifically: the
+        # driver shouldn't need to do this) but for now it'll do.
+        disable_logger = data == bytes(len(data))
+        if disable_logger:
+            logger.debug("Parsing zero byte array, detailed output is skipped")
+
         if obj is None:
             obj = _ResultObject()
 
@@ -220,9 +228,10 @@ class Parser(object):
                         debugstr = f"self.{spec.name:24s} = {val}"
                         setattr(obj, spec.name, val)
 
-                logger.debug(
-                    f"offset {offset:02d}: {as_hex(data[offset:offset+spec._size]):5s} → {debugstr}"
-                )
+                if not disable_logger:
+                    logger.debug(
+                        f"offset {offset:02d}: {as_hex(data[offset:offset+spec._size]):5s} → {debugstr}"
+                    )
                 offset += spec._size
 
             if spec.convert_from_data is not None:

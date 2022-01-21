@@ -301,6 +301,15 @@ class HidrawMonitor(GObject.Object):
                         self.emit("rodent-found", rodent)
 
                     add_udev_device(device)
+                elif device.action == "remove":
+                    try:
+                        r = next(
+                            r for r in self._rodents if r.path == device.device_node
+                        )
+                        r.emit("disconnected")
+                        self._rodents.remove(r)
+                    except StopIteration:
+                        pass
 
                 device = monitor.poll(0)
             return True  # keep the callback
@@ -460,6 +469,11 @@ class Rodent(GObject.Object):
     """
 
     __gsignals__ = {
+        "disconnected": (
+            GObject.SignalFlags.RUN_FIRST,
+            None,
+            (),
+        ),
         "data-to-device": (
             GObject.SignalFlags.RUN_FIRST,
             None,

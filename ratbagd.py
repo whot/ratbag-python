@@ -3,4 +3,4 @@
 import ratbag.cli.ratbagd
 
 if __name__ == "__main__":
-    ratbag.cli.ratbagd.main
+    ratbag.cli.ratbagd.main()

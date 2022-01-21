@@ -315,7 +315,7 @@ class HidrawMonitor(GObject.Object):
                 device = monitor.poll(0)
             return True  # keep the callback
 
-        GObject.io_add_watch(monitor, GObject.IO_IN, udev_monitor_callback, monitor)
+        GLib.io_add_watch(monitor, 0, GLib.IO_IN, udev_monitor_callback, monitor)
         monitor.start()
 
         for device in self._context.list_devices(subsystem="hidraw"):

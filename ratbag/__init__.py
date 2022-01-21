@@ -653,7 +653,7 @@ class Profile(Feature):
         """
         return self._leds
 
-    @GObject.Property(type=int, default=0)
+    @GObject.Property(type=int, default=0, flags=GObject.ParamFlags.READABLE)
     def report_rate(self) -> int:
         """The report rate in Hz. If the profile does not support configurable
         (or queryable) report rates, the report rate is always ``None``"""
@@ -685,7 +685,7 @@ class Profile(Feature):
         """
         return self._capabilities
 
-    @GObject.Property(type=bool, default=True)
+    @GObject.Property(type=bool, default=True, flags=GObject.ParamFlags.READABLE)
     def enabled(self) -> bool:
         """
         ``True`` if this profile is enabled.
@@ -701,7 +701,7 @@ class Profile(Feature):
             self.dirty = True  # type: ignore
             self.notify("enabled")
 
-    @GObject.Property(type=bool, default=False)
+    @GObject.Property(type=bool, default=False, flags=GObject.ParamFlags.READABLE)
     def active(self) -> bool:
         """
         ``True`` if this profile is active, ``False`` otherwise. Note that
@@ -716,12 +716,13 @@ class Profile(Feature):
         if not self.active:
             for p in filter(lambda p: p.active, self.device.profiles):
                 p._active = False
+                p.dirty = True  # type: ignore
                 p.notify("active")
             self._active = True
-            self.notify("active")
             self.dirty = True  # type: ignore
+            self.notify("active")
 
-    @GObject.Property(type=bool, default=False)
+    @GObject.Property(type=bool, default=False, flags=GObject.ParamFlags.READABLE)
     def default(self) -> bool:
         """
         ``True`` if this profile is the default profile, ``False`` otherwise.
@@ -844,7 +845,7 @@ class Resolution(Feature):
         """
         return self._capabilities
 
-    @GObject.Property(type=bool, default=True)
+    @GObject.Property(type=bool, default=True, flags=GObject.ParamFlags.READABLE)
     def enabled(self) -> bool:
         return self._enabled
 
@@ -854,7 +855,7 @@ class Resolution(Feature):
             self.notify("enabled")
             self.dirty = True  # type: ignore
 
-    @GObject.Property(type=bool, default=False)
+    @GObject.Property(type=bool, default=False, flags=GObject.ParamFlags.READABLE)
     def active(self) -> bool:
         """
         ``True`` if this resolution is active, ``False`` otherwise. This
@@ -863,23 +864,20 @@ class Resolution(Feature):
         """
         return self._active
 
-    @active.setter  # type: ignore
-    def active(self, active: bool) -> None:
-        if self._active != active:
-            self._active = active
-            self.notify("active")
-            self.dirty = True  # type: ignore
-
     def set_active(self) -> None:
         """
         Set this resolution to be the active resolution.
         """
         if not self.active:
             for r in self.profile.resolutions:
-                r.active = False
-            self.active = True
+                if r._active:
+                    r._active = False
+                    r.notify("active")
+                    r.dirty = True  # type: ignore
+            self._active = True
+            self.dirty = True  # type: ignore
 
-    @GObject.Property(type=bool, default=False)
+    @GObject.Property(type=bool, default=False, flags=GObject.ParamFlags.READABLE)
     def default(self) -> bool:
         """
         ``True`` if this resolution is the default resolution, ``False`` otherwise.
@@ -902,7 +900,7 @@ class Resolution(Feature):
             self.notify("default")
             self.dirty = True  # type: ignore
 
-    @GObject.Property
+    @GObject.Property(flags=GObject.ParamFlags.READABLE)
     def dpi(self) -> Tuple[int, int]:
         """
         A tuple of `(x, y)` resolution values. If this device does not have
@@ -1206,7 +1204,9 @@ class Button(Feature):
         """
         return self._types
 
-    @GObject.Property(type=ratbag.Action, default=None)
+    @GObject.Property(
+        type=ratbag.Action, default=None, flags=GObject.ParamFlags.READABLE
+    )
     def action(self) -> Action:
         """
         The currently assigned action. This action is guaranteed to be of
@@ -1271,7 +1271,7 @@ class Led(Feature):
         self._modes = tuple(modes)
         self.profile._add_led(self)
 
-    @GObject.Property
+    @GObject.Property(flags=GObject.ParamFlags.READABLE)
     def color(self) -> Tuple[int, int, int]:
         """
         Return a triplet of ``(r, g, b)`` of positive integers. If any color
@@ -1304,7 +1304,7 @@ class Led(Feature):
     def colordepth(self) -> Colordepth:
         return self._colordepth
 
-    @GObject.Property(type=int, default=0)
+    @GObject.Property(type=int, default=0, flags=GObject.ParamFlags.READABLE)
     def brightness(self) -> int:
         return self._brightness
 
@@ -1320,7 +1320,7 @@ class Led(Feature):
             self._brightness = brightness
             self.dirty = True  # type: ignore
 
-    @GObject.Property(type=int, default=0)
+    @GObject.Property(type=int, default=0, flags=GObject.ParamFlags.READABLE)
     def effect_duration(self) -> int:
         return self._effect_duration
 
@@ -1338,7 +1338,7 @@ class Led(Feature):
             self.notify("effect_duration")
             self.dirty = True  # type: ignore
 
-    @GObject.Property
+    @GObject.Property(flags=GObject.ParamFlags.READABLE)
     def mode(self) -> Mode:
         return self._mode
 

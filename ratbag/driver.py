@@ -17,7 +17,7 @@ import struct
 
 from typing import Any, Dict, List, Optional, Tuple, Union, Type
 
-from gi.repository import GObject
+from gi.repository import GObject, GLib
 
 import ratbag
 import ratbag.hid
@@ -918,24 +918,30 @@ class HidrawDriver(Driver):
             except StopIteration:
                 return
 
-            try:
-                rodent.open()
-                self.emit("rodent-found", rodent)
-                self.probe(rodent, match)
-            except UnsupportedDeviceError:
-                logger.info(
-                    f"Skipping unsupported device {rodent.name} ({rodent.path})"
-                )
-            except SomethingIsMissingError as e:
-                logger.info(
-                    f"Skipping device {rodent.name} ({rodent.path}): missing {e.thing}"
-                )
-            except ProtocolError as e:
-                logger.info(
-                    f"Skipping device {rodent.name} ({rodent.path}): protocol error: {e.message}"
-                )
-            except PermissionError as e:
-                logger.error(f"Unable to open device at {rodent.path}: {e}")
+            def delayed_open(rodent, match):
+                try:
+                    rodent.open()
+                    self.emit("rodent-found", rodent)
+                    self.probe(rodent, match)
+                except UnsupportedDeviceError:
+                    logger.info(
+                        f"Skipping unsupported device {rodent.name} ({rodent.path})"
+                    )
+                except SomethingIsMissingError as e:
+                    logger.info(
+                        f"Skipping device {rodent.name} ({rodent.path}): missing {e.thing}"
+                    )
+                except ProtocolError as e:
+                    logger.info(
+                        f"Skipping device {rodent.name} ({rodent.path}): protocol error: {e.message}"
+                    )
+                except PermissionError as e:
+                    logger.error(f"Unable to open device at {rodent.path}: {e}")
+
+            # We're too fast for some devices, so let's call probe and the
+            # signals etc. all after a timeout to give the device a chance to
+            # get ready.
+            GLib.timeout_add(300, delayed_open, rodent, match)
 
         monitor = ratbag.driver.HidrawMonitor.instance()
         monitor.connect("rodent-found", rodent_found)

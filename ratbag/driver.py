@@ -261,19 +261,16 @@ class HidrawMonitor(GObject.Object):
         self._has_started = False
         self._disabled = False
         self._fake_rodents = []
+        self._rodents = []
 
     def list(self) -> List["Rodent"]:
         """
-        List current devices and emit the ``"rodent-found"`` signal for them.
+        List current devices
         """
-        rodents = []
+        rodents = self._fake_rodents.copy()
 
         if not self._disabled:
-            for device in self._context.list_devices(subsystem="hidraw"):
-                rodents.append(Rodent.from_udev_device(device))
-
-        for rodent in self._fake_rodents:
-            rodents.append(rodent)
+            rodents.extend(self._rodents)
 
         return rodents
 
@@ -299,7 +296,9 @@ class HidrawMonitor(GObject.Object):
                 if device.action == "add":
 
                     def add_udev_device(udev_device):
-                        self.emit("rodent-found", Rodent.from_udev_device(device))
+                        rodent = Rodent.from_udev_device(device)
+                        self._rodents.append(rodent)
+                        self.emit("rodent-found", rodent)
 
                     add_udev_device(device)
 
@@ -308,6 +307,9 @@ class HidrawMonitor(GObject.Object):
 
         GObject.io_add_watch(monitor, GObject.IO_IN, udev_monitor_callback, monitor)
         monitor.start()
+
+        for device in self._context.list_devices(subsystem="hidraw"):
+            self._rodents.append(Rodent.from_udev_device(device))
 
     def disable(self):
         """

@@ -252,7 +252,7 @@ class RatbagButton(ServiceInterface):
         if action.type == ratbag.Action.Type.MACRO:
             events = [(ratbag.ActionMacro.Event(t), v) for t, v in variant.value]
             action = ratbag.ActionMacro(self._button, events=events)
-        self._button.action = action
+        self._button.set_action(action)
 
     @dbus_property(access=PropertyAccess.READ)
     def ActionTypes(self) -> "au":  # type: ignore

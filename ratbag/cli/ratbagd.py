@@ -374,7 +374,7 @@ class RatbagdDevice(ServiceInterface):
 
     @method()
     def Commit(self) -> "u":  # type: ignore
-        logger.debug(f"Committing state {self._device.name}")
+        logger.debug(f"Committing state to {self._device.name}")
         self._device.commit()
         return 0
 

@@ -107,6 +107,7 @@ def ratbag_driver(name):
 
     def decorator_ratbag_driver(cls):
         DRIVERS[name] = cls
+        cls.DRIVER_NAME = name
         return cls
 
     return decorator_ratbag_driver
@@ -907,26 +908,34 @@ class HidrawDriver(Driver):
 
     def start(self):
         def rodent_found(monitor, rodent):
-            for d in self.supported_devices:
-                if d.usbid == rodent.usbid:
-                    try:
-                        rodent.open()
-                        self.emit("rodent-found", rodent)
-                        self.probe(rodent, d)
-                    except UnsupportedDeviceError:
-                        logger.info(
-                            f"Skipping unsupported device {rodent.name} ({rodent.path})"
-                        )
-                    except SomethingIsMissingError as e:
-                        logger.info(
-                            f"Skipping device {rodent.name} ({rodent.path}): missing {e.thing}"
-                        )
-                    except ProtocolError as e:
-                        logger.info(
-                            f"Skipping device {rodent.name} ({rodent.path}): protocol error: {e.message}"
-                        )
-                    except PermissionError as e:
-                        logger.error(f"Unable to open device at {rodent.path}: {e}")
+            try:
+                match = next(
+                    d for d in self.supported_devices if d.usbid == rodent.usbid
+                )
+                logger.debug(
+                    f"Using driver '{self.DRIVER_NAME}' for {rodent.usbid} {rodent.path}"
+                )
+            except StopIteration:
+                return
+
+            try:
+                rodent.open()
+                self.emit("rodent-found", rodent)
+                self.probe(rodent, match)
+            except UnsupportedDeviceError:
+                logger.info(
+                    f"Skipping unsupported device {rodent.name} ({rodent.path})"
+                )
+            except SomethingIsMissingError as e:
+                logger.info(
+                    f"Skipping device {rodent.name} ({rodent.path}): missing {e.thing}"
+                )
+            except ProtocolError as e:
+                logger.info(
+                    f"Skipping device {rodent.name} ({rodent.path}): protocol error: {e.message}"
+                )
+            except PermissionError as e:
+                logger.error(f"Unable to open device at {rodent.path}: {e}")
 
         monitor = ratbag.driver.HidrawMonitor.instance()
         monitor.connect("rodent-found", rodent_found)

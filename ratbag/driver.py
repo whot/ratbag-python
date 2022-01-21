@@ -298,14 +298,16 @@ class HidrawMonitor(GObject.Object):
                 logger.debug(f"udev monitor: {device.action} {device.device_node}")
                 if device.action == "add":
 
-                    def _cb_add_udev_device(self, udev_device):
+                    def add_udev_device(udev_device):
                         self.emit("rodent-found", Rodent.from_udev_device(device))
 
-                    self._cb_add_udev_device(device)
+                    add_udev_device(device)
+
                 device = monitor.poll(0)
             return True  # keep the callback
 
         GObject.io_add_watch(monitor, GObject.IO_IN, udev_monitor_callback, monitor)
+        monitor.start()
 
     def disable(self):
         """

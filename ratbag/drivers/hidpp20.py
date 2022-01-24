@@ -338,64 +338,66 @@ class Hidpp20Device(GObject.Object):
             sector_size=sector_size,
         ).run()
         logger.debug(mem_query)
+        if mem_query.checksum != crc(mem_query.data):
+            raise ratbag.driver.ProtocolError.from_rodent(
+                self.hidraw_device, "Invalid checksum for onboard profiles"
+            )
+
         self.profiles = []
 
-        if mem_query.checksum == crc(mem_query.data):
-            for idx in range(desc_query.reply.profile_count):
-                profile_address = ProfileAddress.from_sector(mem_query.data, idx)
-                if not profile_address:
-                    continue
+        for idx in range(desc_query.reply.profile_count):
+            profile_address = ProfileAddress.from_sector(mem_query.data, idx)
+            if not profile_address:
+                continue
 
-                profile_query = QueryOnboardProfilesMemReadSector.instance(
-                    self, profile_address.address, sector_size=sector_size
-                ).run()
-                logger.debug(profile_query)
-                if profile_query.checksum != crc(profile_query.data):
-                    # FIXME: libratbag reads the ROM instead in this case
-                    logger.error(f"CRC validation failed for profile {idx}")
-                    continue
+            profile_query = QueryOnboardProfilesMemReadSector.instance(
+                self, profile_address.address, sector_size=sector_size
+            ).run()
+            logger.debug(profile_query)
+            if profile_query.checksum != crc(profile_query.data):
+                # FIXME: libratbag reads the ROM instead in this case
+                logger.error(f"CRC validation failed for profile {idx}")
+                continue
 
-                if FeatureName.ADJUSTIBLE_DPI in self.features:
-                    scount_query = QueryAdjustibleDpiGetCount.instance(self).run()
-                    # FIXME: there's a G602 quirk for the two queries in
-                    # libratbag
-                    for idx in range(scount_query.reply.sensor_count):
-                        dpi_list_query = QueryAdjustibleDpiGetDpiList.instance(
-                            self, idx
-                        ).run()
-                        logger.debug(dpi_list_query)
-                        if dpi_list_query.reply.dpi_steps:
-                            steps = dpi_list_query.reply.dpi_steps
-                            dpi_min = min(dpi_list_query.reply.dpis)
-                            dpi_max = max(dpi_list_query.reply.dpis)
-                            dpi_list = list(range(dpi_min, dpi_max + 1, steps))
-                        else:
-                            dpi_list = dpi_list_query.reply.dpis
+            if FeatureName.ADJUSTIBLE_DPI in self.features:
+                scount_query = QueryAdjustibleDpiGetCount.instance(self).run()
+                # FIXME: there's a G602 quirk for the two queries in
+                # libratbag
+                for idx in range(scount_query.reply.sensor_count):
+                    dpi_list_query = QueryAdjustibleDpiGetDpiList.instance(
+                        self, idx
+                    ).run()
+                    logger.debug(dpi_list_query)
+                    if dpi_list_query.reply.dpi_steps:
+                        steps = dpi_list_query.reply.dpi_steps
+                        dpi_min = min(dpi_list_query.reply.dpis)
+                        dpi_max = max(dpi_list_query.reply.dpis)
+                        dpi_list = list(range(dpi_min, dpi_max + 1, steps))
+                    else:
+                        dpi_list = dpi_list_query.reply.dpis
 
-                        dpi_query = QueryAdjustibleDpiGetDpi.instance(self, idx).run()
-                        logger.debug(dpi_query)
-                else:
-                    dpi_list = []
+                    dpi_query = QueryAdjustibleDpiGetDpi.instance(self, idx).run()
+                    logger.debug(dpi_query)
+            else:
+                dpi_list = []
 
-                # FIXME: this should only be run once per device, no need to
-                # run this per-profile
-                if FeatureName.ADJUSTIBLE_REPORT_RATE in self.features:
-                    rates_query = QueryAdjustibleReportRateGetList.instance(self).run()
-                    report_rates = rates_query.reply.report_rates
-                else:
-                    report_rates = []
+            # FIXME: this should only be run once per device, no need to
+            # run this per-profile
+            if FeatureName.ADJUSTIBLE_REPORT_RATE in self.features:
+                rates_query = QueryAdjustibleReportRateGetList.instance(self).run()
+                report_rates = rates_query.reply.report_rates
+            else:
+                report_rates = []
 
-                profile = Profile.from_data(
-                    address=profile_address.address,
-                    enabled=profile_address.enabled,
-                    data=profile_query.data,
-                )
-                profile.dpi_list = dpi_list
-                profile.report_rates = report_rates
-                logger.debug(profile)
-                self.profiles.append(profile)
-        else:
-            logger.error("CRC validation failed for sector")
+            profile = Profile.from_data(
+                address=profile_address.address,
+                enabled=profile_address.enabled,
+                data=profile_query.data,
+            )
+            profile.dpi_list = dpi_list
+            profile.report_rates = report_rates
+            logger.debug(profile)
+            self.profiles.append(profile)
 
     def send(self, bytes: bytes) -> None:
         """

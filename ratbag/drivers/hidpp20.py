@@ -343,6 +343,13 @@ class Hidpp20Device(GObject.Object):
                 self.hidraw_device, "Invalid checksum for onboard profiles"
             )
 
+        # Enough to run this once per device, doesn't need to be per profile
+        if FeatureName.ADJUSTIBLE_REPORT_RATE in self.features:
+            rates_query = QueryAdjustibleReportRateGetList.instance(self).run()
+            report_rates = rates_query.reply.report_rates
+        else:
+            report_rates = []
+
         self.profiles = []
 
         for idx in range(desc_query.reply.profile_count):
@@ -380,14 +387,6 @@ class Hidpp20Device(GObject.Object):
                     logger.debug(dpi_query)
             else:
                 dpi_list = []
-
-            # FIXME: this should only be run once per device, no need to
-            # run this per-profile
-            if FeatureName.ADJUSTIBLE_REPORT_RATE in self.features:
-                rates_query = QueryAdjustibleReportRateGetList.instance(self).run()
-                report_rates = rates_query.reply.report_rates
-            else:
-                report_rates = []
 
             profile = Profile.from_data(
                 address=profile_address.address,

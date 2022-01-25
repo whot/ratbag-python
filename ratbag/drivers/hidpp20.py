@@ -5,7 +5,7 @@
 # This file is formatted with Python Black
 #
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import attr
 import enum
@@ -118,6 +118,7 @@ class Profile(object):
     dpi_list: List[int] = attr.ib(default=attr.Factory(list))
     report_rates: List[int] = attr.ib(default=attr.Factory(list))
     initial_data: bytes = attr.ib(default=bytes())
+    leds: List["Led"] = attr.ib(default=attr.Factory(list))
     """
     The initial data this profile was created from. This data is constant
     for the life of the profile and can be used to restore the profile to
@@ -152,14 +153,18 @@ class Profile(object):
             Spec("B", "_", repeat=10),  # reserved
             Spec("H", "powersafe_timeout", endian="le"),
             Spec("H", "poweroff_timeout", endian="le"),
-            Spec("II", "_button_bindings", repeat=16),  # FIXME: check this again
-            Spec("H", "_name", repeat=16, endian="le"),
-            # next are 11 bytes per leds, times 2 leds, times 2
-            # next are 2 unused bytes
-            # last 2 bytes are the 16-bit crc
+            Spec("I", "_button_bindings", repeat=16),
+            Spec("I", "_alternate_button_bindings", repeat=16),
+            Spec("B", "_name", repeat=16 * 3, endian="le"),
+            Spec("B" * 11, "_leds", repeat=2),
+            Spec("B" * 11, "_alt_leds", repeat=2),
+            Spec("BB", "_"),
         ]
 
         Parser.to_object(data, spec, profile)
+        for leddata in profile._leds:  # type: ignore
+            profile.leds.append(Led.from_data(leddata))
+
         return profile
 
     def __str__(self):
@@ -195,6 +200,81 @@ class ProfileAddress(object):
         enabled = data[addr_offset + OnboardProfile.Sector.ENABLED_INDEX.value] != 0
 
         return cls(result.addr, enabled)
+
+
+@attr.s
+class Led(object):
+    class Mode(enum.IntEnum):
+        OFF = 0x00
+        ON = 0x01
+        CYCLE = 0x03
+        COLOR_WAVE = 0x04
+        STARLIGHT = 0x05
+        BREATHING = 0x0A
+        RIPPLE = 0x0B
+        CUSTOM = 0x0C
+
+    mode: "Led.Mode" = attr.ib(default=Mode.OFF)
+    color: Tuple[int, int, int] = attr.ib(default=(0, 0, 0))
+    brightness: int = attr.ib(default=255)
+    period: int = attr.ib(default=0)
+
+    @classmethod
+    def from_data(cls, data: bytes) -> "Led":
+        # input data are 11 bytes for this LED, first byte is the mode
+        mode = Led.Mode(data[0])
+
+        def intensity(x):
+            return x if x else 100  # 1-100 percent, 0 means 100
+
+        mapping: Dict["Led.Mode", List[Spec]] = {
+            Led.Mode.OFF: [],
+            Led.Mode.ON: [Spec("BBB", "colors")],
+            Led.Mode.CYCLE: [
+                Spec("BBBBB", "_"),
+                Spec("H", "period"),
+                Spec(
+                    "B",
+                    "intensity",
+                    convert_from_data=intensity,
+                ),  # 1-100 percent, 0 means 100
+            ],
+            Led.Mode.COLOR_WAVE: [],  # dunno
+            Led.Mode.STARLIGHT: [
+                Spec("BBB", "color_sky"),
+                Spec("BBB", "color_star"),
+            ],
+            Led.Mode.BREATHING: [
+                Spec("BBB", "color"),
+                Spec("H", "period"),
+                Spec("B", "waveform"),
+                Spec(
+                    "B",
+                    "intensity",
+                    convert_from_data=intensity,
+                ),  # 1-100 percent, 0 means 100
+            ],
+            Led.Mode.RIPPLE: [
+                Spec("BBB", "color"),
+                Spec("B", "_"),
+                Spec("H", "period"),
+            ],
+            Led.Mode.CUSTOM: [],  # dunno
+        }
+
+        specs = [
+            Spec(
+                "B",
+                "mode",
+                convert_from_data=lambda m: Led.Mode(m),
+            )
+        ] + mapping[mode]
+
+        result = Parser.to_object(bytes(data), specs)
+        led = cls(mode=result.object.mode)
+        for name in [s.name for s in specs]:
+            setattr(led, name, getattr(result.object, name))
+        return led
 
 
 class Hidpp20Device(GObject.Object):
@@ -476,6 +556,29 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
             )
             for dpi_idx, dpi in enumerate(profile.dpi):
                 ratbag.Resolution(p, dpi_idx, (dpi, dpi), dpi_list=profile.dpi_list)
+            for led_idx, led in enumerate(profile.leds):
+                kwargs = {
+                    "modes": tuple(m for m in ratbag.Led.Mode),
+                    "colordepth": ratbag.Led.Colordepth.RGB_888,  # FIXME
+                }
+                if led.mode == Led.Mode.ON:
+                    kwargs["color"] = led.color
+                    kwargs["brightness"] = 100
+                elif led.mode == Led.Mode.OFF:
+                    pass
+                elif led.mode == Led.Mode.CYCLE:
+                    kwargs["effect_duration"] = led.period
+                    kwargs["brightness"] = led.intensity
+                elif led.mode == Led.Mode.BREATHING:
+                    kwargs["color"] = led.color
+                    kwargs["brightness"] = led.intensity
+                    kwargs["effect_duration"] = led.period
+                else:
+                    # FIXME: we need an unknown mode here
+                    pass
+
+                ratbag.Led(p, led_idx, **kwargs)
+
         self.emit("device-added", ratbag_device)
 
 

@@ -211,7 +211,14 @@ class Parser(object):
             else:
                 repeat = spec.repeat
             for idx in range(repeat):
-                val = struct.unpack_from(endian + spec.format, data, offset=offset)
+                try:
+                    val = struct.unpack_from(endian + spec.format, data, offset=offset)
+                except struct.error as e:
+                    logger.error(
+                        f"Parser error while parsing spec {spec} at offset {offset}: {e}"
+                    )
+                    raise e
+
                 if spec.name == "_":
                     debugstr = "<pad bytes>"
                 elif spec.name == "?":

@@ -527,14 +527,11 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
     def probe(self, rodent, config):
         try:
             quirk = config.quirk
+            quirk = [x for x in Hidpp20Driver.Quirk if x.value == quirk][0]
         except AttributeError:
             quirk = None
-
-        if quirk is not None:
-            try:
-                quirk = [x for x in Hidpp20Driver.Quirk if x.value == quirk][0]
-            except IndexError:
-                raise ratbag.ConfigError(f"Invalid quirk value '{quirk}'")
+        except IndexError:
+            raise ratbag.ConfigError(f"Invalid quirk value '{quirk}'")
 
         # Usually we default to the receiver IDX and let the kernel sort it
         # out, but some devices need to have the index hardcoded in the data

@@ -432,6 +432,8 @@ class Hidpp20Device(GObject.Object):
 
         self.profiles = []
 
+        # Profiles are stored in the various sectors, we need to read out each
+        # sector and then parse it from the bytes we have.
         for idx in range(desc_query.reply.profile_count):
             profile_address = ProfileAddress.from_sector(mem_query.data, idx)
             if not profile_address:

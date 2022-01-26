@@ -542,7 +542,7 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
         ratbag_device = ratbag.Device(self, device.path, device.name, rodent.model)
         ratbag_device.connect("commit", device.cb_commit)
         device.start()
-        # Device probe/start was successful if no exception occurs. Now fill in the
+        # Device start was successful if no exception occurs. Now fill in the
         # ratbag device.
         for idx, profile in enumerate(device.profiles):
             p = ratbag.Profile(
@@ -745,10 +745,15 @@ class QueryProtocolVersion(Query):
 
 @attr.s
 class QueryRootGetFeature(Query):
+    """
+    Query the device for the available feature set. The reply contains the
+    ``feature_index`` which can be used to query more information about this
+    feature.
+    """
     feature: FeatureName = attr.ib(default=FeatureName.ROOT)
 
     @classmethod
-    def instance(cls, device, feature):
+    def instance(cls, device, feature: FeatureName):
         return cls(
             device=device,
             feature=feature,

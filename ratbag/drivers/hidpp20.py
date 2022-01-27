@@ -23,8 +23,15 @@ logger = logging.getLogger(__name__)
 
 
 RECEIVER_IDX = 0xFF
-REPORT_ID_SHORT = 0x10
-REPORT_ID_LONG = 0x11
+
+
+class ReportID(enum.IntEnum):
+    SHORT = 0x10
+    LONG = 0x11
+
+    @property
+    def size(self):
+        return {ReportID.LONG: 20, ReportID.SHORT: 7}[self]
 
 
 class FeatureName(enum.IntEnum):
@@ -287,7 +294,7 @@ class Hidpp20Device(GObject.Object):
 
     .. attribute:: supported_requests
 
-        A list of supported requests (``REPORT_ID_SHORT`, ``REPORT_ID_LONG``)
+        A list of supported requests (``ReportId.SHORT`, ``ReportId.LONG``)
 
     .. attribute:: protocol_version
 
@@ -320,12 +327,10 @@ class Hidpp20Device(GObject.Object):
 
     def start(self) -> None:
         supported = [
-            id
-            for id in self.hidraw_device.report_ids["input"]
-            if id in (REPORT_ID_SHORT, REPORT_ID_LONG)
+            id for id in self.hidraw_device.report_ids["input"] if id in tuple(ReportID)
         ]
 
-        required = (REPORT_ID_SHORT, REPORT_ID_LONG)
+        required = (ReportID.SHORT, ReportID.LONG)
         if not (set(supported) & set(required)):
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
                 self.hidraw_device, "HID++ short/long reports"
@@ -617,13 +622,10 @@ class Query(object):
 
     """
 
-    LONG_MESSAGE_LENGTH = 20
-    SHORT_MESSAGE_LENGTH = 7
-
     device: Hidpp20Device = attr.ib()
-    report_id: int = attr.ib(
-        default=REPORT_ID_SHORT,
-        validator=attr.validators.in_([REPORT_ID_SHORT, REPORT_ID_LONG]),
+    report_id: ReportID = attr.ib(
+        default=ReportID.SHORT,
+        validator=attr.validators.in_(list(ReportID)),
     )
     page: int = attr.ib(default=0x00)
     command: int = attr.ib(default=0x00)
@@ -644,10 +646,7 @@ class Query(object):
         self.command |= 0x8
         self._device_index = self.device.index
 
-        query_len = {
-            REPORT_ID_LONG: Query.LONG_MESSAGE_LENGTH,
-            REPORT_ID_SHORT: Query.SHORT_MESSAGE_LENGTH,
-        }[self.report_id]
+        query_len = self.report_id.size
 
         # header is always the same
         spec = [
@@ -750,6 +749,7 @@ class QueryRootGetFeature(Query):
     ``feature_index`` which can be used to query more information about this
     feature.
     """
+
     feature: FeatureName = attr.ib(default=FeatureName.ROOT)
 
     @classmethod
@@ -899,12 +899,12 @@ class QueryOnboardProfilesMemRead(Query):
         # read past sector_size, so when we are left with less than 16
         # bytes to read we start reading from sector_size - 16
         #
-        # 16 == LONG_MESSAGE_LENGTH minus 4 byte header
+        # 16 == ReportID.LONG.size minus 4 byte header
         if offset > sector_size - 16:
             raise ValueError(f"Invalid offset {offset} for sector size {sector_size}")
         return cls(
             device=device,
-            report_id=REPORT_ID_LONG,
+            report_id=ReportID.LONG,
             page=device.features[FeatureName.ONBOARD_PROFILES].index,
             command=0x50,
             query_spec=[
@@ -929,7 +929,7 @@ class QueryOnboardProfilesMemReadSector(Query):
         # calling run() those queries are executed and their data is combined
         # into a single object again.
 
-        # 16 == LONG_MESSAGE_LENGTH minus 4 byte header
+        # 16 == ReportID.LONG.size minus 4 byte header
         offset_range = list(range(0, sector_size, 16))
         # The firmware replies with an ERR_INVALID_ARGUMENT if we try to
         # read past sector_size, so when we are left with less than 16

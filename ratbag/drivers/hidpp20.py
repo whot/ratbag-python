@@ -631,10 +631,10 @@ class Query(object):
     report_id: ReportID = attr.ib(
         validator=attr.validators.in_(list(ReportID)),
     )
-    page: int = attr.ib(default=0x00)
-    command: int = attr.ib(default=0x00)
-    query_spec: List[Spec] = attr.ib(default=attr.Factory(list))
-    reply_spec: List[Spec] = attr.ib(default=attr.Factory(list))
+    page: int = attr.ib()
+    command: int = attr.ib()
+    query_spec: List[Spec] = attr.ib()
+    reply_spec: List[Spec] = attr.ib()
 
     @page.validator
     def _check_page(self, attribute, value):
@@ -741,7 +741,7 @@ class QueryProtocolVersion(Query):
             report_id=ReportID.SHORT,
             page=FeatureName.ROOT.value,
             command=0x10,
-            # no query spec
+            query_spec=[],
             reply_spec=[Spec("B", "major"), Spec("B", "minor")],
         )
 
@@ -792,7 +792,7 @@ class QueryFeatureSetCount(Query):
             page=root_feature_query.reply.feature_index,
             command=0x00,  # GET_COUNT
             feature=root_feature_query.feature,
-            # no query spec
+            query_spec=[],
             reply_spec=[Spec("B", "count")],
         )
 
@@ -834,7 +834,7 @@ class QueryOnboardProfilesDesc(Query):
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ONBOARD_PROFILES].index,
             command=0x00,
-            # no query spec
+            query_spec=[],
             reply_spec=[
                 Spec("B", "memory_model_id"),
                 Spec("B", "profile_format_id"),
@@ -877,7 +877,7 @@ class QueryOnboardProfilesGetMode(Query):
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ONBOARD_PROFILES].index,
             command=0x20,
-            # no query spec
+            query_spec=[],
             reply_spec=[Spec("B", "mode")],
         )
 
@@ -927,8 +927,8 @@ class QueryOnboardProfilesMemRead(Query):
 
 
 @attr.s
-class QueryOnboardProfilesMemReadSector(Query):
-    _queries = attr.ib(default=attr.Factory(list))
+class QueryOnboardProfilesMemReadSector:
+    queries = attr.ib(default=attr.Factory(list))
 
     @classmethod
     def instance(
@@ -948,18 +948,20 @@ class QueryOnboardProfilesMemReadSector(Query):
         offset_range[-1] = min(offset_range[-1], sector_size - 16)
         queries = [
             QueryOnboardProfilesMemRead.instance(
-                feature_lut, sector=sector, sector_size=sector_size, offset=off
+                feature_lut=feature_lut,
+                sector=sector,
+                sector_size=sector_size,
+                offset=off,
             )
             for off in offset_range
         ]
         return QueryOnboardProfilesMemReadSector(
-            report_id=ReportID.SHORT,
             queries=queries,
         )
 
     def run(self, device: Hidpp20Device):
         queries = map(
-            lambda x: x.run(device), sorted(self._queries, key=lambda x: x.offset)  # type: ignore
+            lambda x: x.run(device), sorted(self.queries, key=lambda x: x.offset)  # type: ignore
         )
         data: List[int] = []
         for query in queries:
@@ -984,7 +986,7 @@ class QueryAdjustibleDpiGetCount(Query):
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ADJUSTIBLE_DPI].index,
             command=0x00,  # GET_SENSOR_COUNT
-            # no query spec
+            query_spec=[],
             reply_spec=[Spec("B", "sensor_count")],
         )
 
@@ -1054,7 +1056,7 @@ class QueryAdjustibleReportRateGetList(Query):
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ADJUSTIBLE_REPORT_RATE].index,
             command=0x00,  # LIST
-            # no query spec
+            query_spec=[],
             reply_spec=[
                 Spec("B", "flags"),
             ],

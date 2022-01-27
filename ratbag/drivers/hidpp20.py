@@ -353,30 +353,21 @@ class Hidpp20Device(GObject.Object):
         self.protocol_version = (version.reply.major, version.reply.minor)
 
     def _init_features(self) -> None:
-        feature_set = QueryRootGetFeature.instance(FeatureName.FEATURE_SET).run(
-            self
-        )  # PAGE_FEATURE_SET
-        logger.debug(feature_set)
-        feature_count = QueryFeatureSetCount.instance(feature_set).run(self)
-        logger.debug(feature_count)
-
+        # Since we have a list of features we know how to handle, iterate
+        # through those and query each. libratbag used a combination of
+        # QueryGetFeature(ROOT) to get the FEATURE_SET feature, then
+        # QueryFeatureSetCount and QueryFeatureSetId to list/iterate through them.
+        # But since we cannot handle featuers we don't know about, we might as
+        # well just query for each feature.
         features = []
-        for idx in range(feature_count.reply.count):
-            query = QueryFeatureSetId.instance(feature_set, idx).run(self)
-            logger.debug(query)
-
-            fid = query.reply.feature_id
-            ftype = query.reply.feature_type
-
+        for f in [fn for fn in FeatureName if fn is not FeatureName.ROOT]:
+            query = QueryGetFeature.instance(f).run(self)
             try:
-                name = FeatureName(fid)
-                features.append(Feature(name, idx, ftype))
-                logger.debug(f"device has feature {name.name}")
-            except ValueError:
-                # We're intentionally skipping unknown features here, if we can't
-                # name them we don't know how to handle them
+                features.append(query.reply.feature)
+                logger.debug(f"Feature: {query.reply.feature}")
+            except AttributeError:
+                logger.debug(f"Feature {f.name} is not supported")
                 pass
-
         self.features = dict(zip([f.name for f in features], features))
 
     def _init_profiles(self) -> None:
@@ -744,24 +735,24 @@ class QueryProtocolVersion(Query):
 
 
 @attr.s
-class QueryRootGetFeature(Query):
+class QueryGetFeature(Query):
     """
     Query the device for the available feature set. The reply contains the
-    ``feature_index`` which can be used to query more information about this
+    ``feature`` which can be used to query more information about this
     feature.
     """
 
-    feature: FeatureName = attr.ib(default=FeatureName.ROOT)
+    feature_name: FeatureName = attr.ib()
 
     @classmethod
-    def instance(cls, feature: FeatureName):
+    def instance(cls, feature_name: FeatureName):
         return cls(
             report_id=ReportID.SHORT,
-            feature=feature,
+            feature_name=feature_name,
             page=FeatureName.ROOT.value,
             command=0x00,  # GET_FEATURE
             query_spec=[
-                Spec("H", "feature", convert_to_data=lambda arg: int(arg.value)),
+                Spec("H", "feature_name", convert_to_data=lambda arg: int(arg.value)),
             ],
             reply_spec=[
                 Spec("B", "feature_index"),
@@ -770,9 +761,17 @@ class QueryRootGetFeature(Query):
             ],
         )
 
+    def parse_reply(self):
+        if self.reply.feature_index != 0:
+            self.reply.feature = Feature(
+                name=self.feature_name,
+                index=self.reply.feature_index,
+                type=self.reply.feature_type,
+            )
+
     def __str__(self):
         return (
-            f"{type(self).__name__}: {self.feature.name} (0x{self.feature.value:04x}) at index {self.reply.feature_index}, "
+            f"{type(self).__name__}: {self.feature_name.name} (0x{self.feature_name.value:04x}) at index {self.reply.feature_index}, "
             f"type {self.reply.feature_type} "
             f"version {self.reply.feature_version}"
         )
@@ -780,15 +779,15 @@ class QueryRootGetFeature(Query):
 
 @attr.s
 class QueryFeatureSetCount(Query):
-    feature: FeatureName = attr.ib(default=FeatureName.ROOT)
+    feature: Feature = attr.ib()
 
     @classmethod
-    def instance(cls, root_feature_query):
+    def instance(cls, feature: Feature):
         return cls(
             report_id=ReportID.SHORT,
-            page=root_feature_query.reply.feature_index,
+            page=feature.index,
             command=0x00,  # GET_COUNT
-            feature=root_feature_query.feature,
+            feature=feature,
             query_spec=[],
             reply_spec=[Spec("B", "count")],
         )
@@ -801,18 +800,18 @@ class QueryFeatureSetCount(Query):
             self.reply.count += 1
 
     def __str__(self):
-        return f"{type(self).__name__}: {self.feature.name} (0x{self.feature.value:04x}) count {self.reply.count}"
+        return f"{type(self).__name__}: {self.feature.name} (0x{self.feature.name.value:04x}) count {self.reply.count}"
 
 
 @attr.s
 class QueryFeatureSetId(Query):
-    feature_index: int = attr.ib(default=0x00)
+    feature_index: int = attr.ib()
 
     @classmethod
-    def instance(cls, root_feature_query, index):
+    def instance(cls, feature, index):
         return cls(
             report_id=ReportID.SHORT,
-            page=root_feature_query.reply.feature_index,
+            page=feature.index,
             command=0x10,  # GET_FEATURE_ID
             feature_index=index,
             query_spec=[Spec("B", "feature_index")],

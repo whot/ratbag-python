@@ -338,11 +338,18 @@ class Hidpp20Device(GObject.Object):
 
         self.supported_requests = supported
 
-        self._init_protocol_version()
-        self._init_features()
-        self._init_profiles()
+        self._detect_protocol_version()
+        features = self._find_features()
+        required_features = (FeatureName.ONBOARD_PROFILES,)
+        missing_features = [f for f in required_features if f not in features]
+        if missing_features:
+            raise ratbag.driver.SomethingIsMissingError.from_rodent(
+                self.hidraw_device, f"HID++2.0 feature {missing_features}"
+            )
 
-    def _init_protocol_version(self) -> None:
+        self._init_profiles(features)
+
+    def _detect_protocol_version(self) -> Tuple[int, int]:
         # Get the protocol version and our feature set
         version = QueryProtocolVersion.instance().run(self)
         logger.debug(f"protocol version {version.reply.major}.{version.reply.minor}")
@@ -350,9 +357,9 @@ class Hidpp20Device(GObject.Object):
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
                 self.hidraw_device, "Protocol version 2.x"
             )
-        self.protocol_version = (version.reply.major, version.reply.minor)
+        return (version.reply.major, version.reply.minor)
 
-    def _init_features(self) -> None:
+    def _find_features(self) -> Dict[FeatureName, Feature]:
         # Since we have a list of features we know how to handle, iterate
         # through those and query each. libratbag used a combination of
         # QueryGetFeature(ROOT) to get the FEATURE_SET feature, then
@@ -368,15 +375,10 @@ class Hidpp20Device(GObject.Object):
             except AttributeError:
                 logger.debug(f"Feature {f.name} is not supported")
                 pass
-        self.features = dict(zip([f.name for f in features], features))
+        return {f.name: f for f in features}
 
-    def _init_profiles(self) -> None:
-        if FeatureName.ONBOARD_PROFILES not in self.features:
-            raise ratbag.driver.SomethingIsMissingError.from_rodent(
-                self.hidraw_device, "HID++2.0 feature ONBOARD_PROFILES"
-            )
-
-        desc_query = QueryOnboardProfilesDesc.instance(self.features).run(self)
+    def _init_profiles(self, features: Dict[FeatureName, Feature]) -> None:
+        desc_query = QueryOnboardProfilesDesc.instance(features).run(self)
         logger.debug(desc_query)
         if desc_query.reply.memory_model_id != OnboardProfile.MemoryType.G402.value:
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
@@ -398,7 +400,7 @@ class Hidpp20Device(GObject.Object):
 
         sector_size = desc_query.reply.sector_size
 
-        mode_query = QueryOnboardProfilesGetMode.instance(self.features).run(self)
+        mode_query = QueryOnboardProfilesGetMode.instance(features).run(self)
         logger.debug(mode_query)
         if mode_query.reply.mode != OnboardProfile.Mode.ONBOARD.value:
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
@@ -409,7 +411,7 @@ class Hidpp20Device(GObject.Object):
             # an exception
 
         mem_query = QueryOnboardProfilesMemReadSector.instance(
-            self.features,
+            features,
             OnboardProfile.Sector.USER_PROFILES_G402.value,
             sector_size=sector_size,
         ).run(self)
@@ -420,10 +422,8 @@ class Hidpp20Device(GObject.Object):
             )
 
         # Enough to run this once per device, doesn't need to be per profile
-        if FeatureName.ADJUSTIBLE_REPORT_RATE in self.features:
-            rates_query = QueryAdjustibleReportRateGetList.instance(self.features).run(
-                self
-            )
+        if FeatureName.ADJUSTIBLE_REPORT_RATE in features:
+            rates_query = QueryAdjustibleReportRateGetList.instance(features).run(self)
             report_rates = rates_query.reply.report_rates
         else:
             report_rates = []
@@ -438,7 +438,7 @@ class Hidpp20Device(GObject.Object):
                 continue
 
             profile_query = QueryOnboardProfilesMemReadSector.instance(
-                self.features, profile_address.address, sector_size=sector_size
+                features, profile_address.address, sector_size=sector_size
             ).run(self)
             logger.debug(profile_query)
             if profile_query.checksum != crc(profile_query.data):
@@ -446,15 +446,13 @@ class Hidpp20Device(GObject.Object):
                 logger.error(f"CRC validation failed for profile {idx}")
                 continue
 
-            if FeatureName.ADJUSTIBLE_DPI in self.features:
-                scount_query = QueryAdjustibleDpiGetCount.instance(self.features).run(
-                    self
-                )
+            if FeatureName.ADJUSTIBLE_DPI in features:
+                scount_query = QueryAdjustibleDpiGetCount.instance(features).run(self)
                 # FIXME: there's a G602 quirk for the two queries in
                 # libratbag
                 for idx in range(scount_query.reply.sensor_count):
                     dpi_list_query = QueryAdjustibleDpiGetDpiList.instance(
-                        self.features, idx
+                        features, idx
                     ).run(self)
                     logger.debug(dpi_list_query)
                     if dpi_list_query.reply.dpi_steps:
@@ -465,9 +463,9 @@ class Hidpp20Device(GObject.Object):
                     else:
                         dpi_list = dpi_list_query.reply.dpis
 
-                    dpi_query = QueryAdjustibleDpiGetDpi.instance(
-                        self.features, idx
-                    ).run(self)
+                    dpi_query = QueryAdjustibleDpiGetDpi.instance(features, idx).run(
+                        self
+                    )
                     logger.debug(dpi_query)
             else:
                 dpi_list = []

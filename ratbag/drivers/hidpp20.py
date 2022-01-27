@@ -350,7 +350,7 @@ class Hidpp20Device(GObject.Object):
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
                 self.hidraw_device, "Protocol version 2.x"
             )
-        self.protocol_version = (version.major, version.minor)
+        self.protocol_version = (version.reply.major, version.reply.minor)
 
     def _init_features(self) -> None:
         feature_set = QueryRootGetFeature.instance(FeatureName.FEATURE_SET).run(
@@ -732,9 +732,6 @@ class QueryError(Exception):
 
 @attr.s
 class QueryProtocolVersion(Query):
-    major: int = attr.ib(default=0)
-    minor: int = attr.ib(default=0)
-
     @classmethod
     def instance(cls):
         return cls(

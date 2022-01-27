@@ -344,7 +344,7 @@ class Hidpp20Device(GObject.Object):
 
     def _init_protocol_version(self) -> None:
         # Get the protocol version and our feature set
-        version = QueryProtocolVersion.instance(self).run()
+        version = QueryProtocolVersion.instance().run(self)
         logger.debug(f"protocol version {version.reply.major}.{version.reply.minor}")
         if version.reply.major < 2:
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
@@ -353,16 +353,16 @@ class Hidpp20Device(GObject.Object):
         self.protocol_version = (version.major, version.minor)
 
     def _init_features(self) -> None:
-        feature_set = QueryRootGetFeature.instance(
-            self, FeatureName.FEATURE_SET
-        ).run()  # PAGE_FEATURE_SET
+        feature_set = QueryRootGetFeature.instance(FeatureName.FEATURE_SET).run(
+            self
+        )  # PAGE_FEATURE_SET
         logger.debug(feature_set)
-        feature_count = QueryFeatureSetCount.instance(self, feature_set).run()
+        feature_count = QueryFeatureSetCount.instance(feature_set).run(self)
         logger.debug(feature_count)
 
         features = []
         for idx in range(feature_count.reply.count):
-            query = QueryFeatureSetId.instance(self, feature_set, idx).run()
+            query = QueryFeatureSetId.instance(feature_set, idx).run(self)
             logger.debug(query)
 
             fid = query.reply.feature_id
@@ -385,7 +385,7 @@ class Hidpp20Device(GObject.Object):
                 self.hidraw_device, "HID++2.0 feature ONBOARD_PROFILES"
             )
 
-        desc_query = QueryOnboardProfilesDesc.instance(self).run()
+        desc_query = QueryOnboardProfilesDesc.instance(self.features).run(self)
         logger.debug(desc_query)
         if desc_query.reply.memory_model_id != OnboardProfile.MemoryType.G402.value:
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
@@ -407,7 +407,7 @@ class Hidpp20Device(GObject.Object):
 
         sector_size = desc_query.reply.sector_size
 
-        mode_query = QueryOnboardProfilesGetMode.instance(self).run()
+        mode_query = QueryOnboardProfilesGetMode.instance(self.features).run(self)
         logger.debug(mode_query)
         if mode_query.reply.mode != OnboardProfile.Mode.ONBOARD.value:
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
@@ -418,10 +418,10 @@ class Hidpp20Device(GObject.Object):
             # an exception
 
         mem_query = QueryOnboardProfilesMemReadSector.instance(
-            self,
+            self.features,
             OnboardProfile.Sector.USER_PROFILES_G402.value,
             sector_size=sector_size,
-        ).run()
+        ).run(self)
         logger.debug(mem_query)
         if mem_query.checksum != crc(mem_query.data):
             raise ratbag.driver.ProtocolError.from_rodent(
@@ -430,7 +430,9 @@ class Hidpp20Device(GObject.Object):
 
         # Enough to run this once per device, doesn't need to be per profile
         if FeatureName.ADJUSTIBLE_REPORT_RATE in self.features:
-            rates_query = QueryAdjustibleReportRateGetList.instance(self).run()
+            rates_query = QueryAdjustibleReportRateGetList.instance(self.features).run(
+                self
+            )
             report_rates = rates_query.reply.report_rates
         else:
             report_rates = []
@@ -445,8 +447,8 @@ class Hidpp20Device(GObject.Object):
                 continue
 
             profile_query = QueryOnboardProfilesMemReadSector.instance(
-                self, profile_address.address, sector_size=sector_size
-            ).run()
+                self.features, profile_address.address, sector_size=sector_size
+            ).run(self)
             logger.debug(profile_query)
             if profile_query.checksum != crc(profile_query.data):
                 # FIXME: libratbag reads the ROM instead in this case
@@ -454,13 +456,15 @@ class Hidpp20Device(GObject.Object):
                 continue
 
             if FeatureName.ADJUSTIBLE_DPI in self.features:
-                scount_query = QueryAdjustibleDpiGetCount.instance(self).run()
+                scount_query = QueryAdjustibleDpiGetCount.instance(self.features).run(
+                    self
+                )
                 # FIXME: there's a G602 quirk for the two queries in
                 # libratbag
                 for idx in range(scount_query.reply.sensor_count):
                     dpi_list_query = QueryAdjustibleDpiGetDpiList.instance(
-                        self, idx
-                    ).run()
+                        self.features, idx
+                    ).run(self)
                     logger.debug(dpi_list_query)
                     if dpi_list_query.reply.dpi_steps:
                         steps = dpi_list_query.reply.dpi_steps
@@ -470,7 +474,9 @@ class Hidpp20Device(GObject.Object):
                     else:
                         dpi_list = dpi_list_query.reply.dpis
 
-                    dpi_query = QueryAdjustibleDpiGetDpi.instance(self, idx).run()
+                    dpi_query = QueryAdjustibleDpiGetDpi.instance(
+                        self.features, idx
+                    ).run(self)
                     logger.debug(dpi_query)
             else:
                 dpi_list = []
@@ -598,7 +604,7 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
 # The instance then sets self.whatever for each whatever in the reply, so the
 # caller looks like this:
 #
-#    query = QuerySomeThing(device).run().
+#    query = QuerySomeThing(args).run(self).
 #    if query.some_field != 3:
 #        ...
 #
@@ -622,7 +628,6 @@ class Query(object):
 
     """
 
-    device: Hidpp20Device = attr.ib()
     report_id: ReportID = attr.ib(
         default=ReportID.SHORT,
         validator=attr.validators.in_(list(ReportID)),
@@ -642,9 +647,9 @@ class Query(object):
         if value < 0 or value > 0xFF:
             raise ValueError("command must be within 0..0xff")
 
-    def run(self):
+    def run(self, device: Hidpp20Device):
         self.command |= 0x8
-        self._device_index = self.device.index
+        self._device_index = device.index
 
         query_len = self.report_id.size
 
@@ -661,11 +666,11 @@ class Query(object):
         self._repeat = True
         while self._repeat:
             self._repeat = False
-            self.device.send(bytes(query))
-            reply = self.device.recv_sync()
+            device.send(bytes(query))
+            reply = device.recv_sync()
 
-            if reply[2] == 0x8F:
-                raise QueryError(self.device, self.bytes)
+            if reply is not None and reply[2] == 0x8F:
+                raise QueryError(device, reply)
 
             self.reply = self._autoparse(reply)
             self.parse_reply()
@@ -732,9 +737,8 @@ class QueryProtocolVersion(Query):
     minor: int = attr.ib(default=0)
 
     @classmethod
-    def instance(cls, device):
+    def instance(cls):
         return cls(
-            device=device,
             page=FeatureName.ROOT.value,
             command=0x10,
             # no query spec
@@ -753,9 +757,8 @@ class QueryRootGetFeature(Query):
     feature: FeatureName = attr.ib(default=FeatureName.ROOT)
 
     @classmethod
-    def instance(cls, device, feature: FeatureName):
+    def instance(cls, feature: FeatureName):
         return cls(
-            device=device,
             feature=feature,
             page=FeatureName.ROOT.value,
             command=0x00,  # GET_FEATURE
@@ -782,9 +785,8 @@ class QueryFeatureSetCount(Query):
     feature: FeatureName = attr.ib(default=FeatureName.ROOT)
 
     @classmethod
-    def instance(cls, device, root_feature_query):
+    def instance(cls, root_feature_query):
         return cls(
-            device=device,
             page=root_feature_query.reply.feature_index,
             command=0x00,  # GET_COUNT
             feature=root_feature_query.feature,
@@ -808,9 +810,8 @@ class QueryFeatureSetId(Query):
     feature_index: int = attr.ib(default=0x00)
 
     @classmethod
-    def instance(cls, device, root_feature_query, index):
+    def instance(cls, root_feature_query, index):
         return cls(
-            device=device,
             page=root_feature_query.reply.feature_index,
             command=0x10,  # GET_FEATURE_ID
             feature_index=index,
@@ -825,10 +826,9 @@ class QueryFeatureSetId(Query):
 @attr.s
 class QueryOnboardProfilesDesc(Query):
     @classmethod
-    def instance(cls, device):
+    def instance(cls, feature_lut: Dict[FeatureName, Feature]):
         return cls(
-            device=device,
-            page=device.features[FeatureName.ONBOARD_PROFILES].index,
+            page=feature_lut[FeatureName.ONBOARD_PROFILES].index,
             command=0x00,
             # no query spec
             reply_spec=[
@@ -868,10 +868,9 @@ class QueryOnboardProfilesDesc(Query):
 @attr.s
 class QueryOnboardProfilesGetMode(Query):
     @classmethod
-    def instance(cls, device):
+    def instance(cls, feature_lut: Dict[FeatureName, Feature]):
         return cls(
-            device=device,
-            page=device.features[FeatureName.ONBOARD_PROFILES].index,
+            page=feature_lut[FeatureName.ONBOARD_PROFILES].index,
             command=0x20,
             # no query spec
             reply_spec=[Spec("B", "mode")],
@@ -894,7 +893,13 @@ class QueryOnboardProfilesMemRead(Query):
             raise ValueError("offset must be within 0..0xffff")
 
     @classmethod
-    def instance(cls, device, sector: int, sector_size: int, offset: int):
+    def instance(
+        cls,
+        feature_lut: Dict[FeatureName, Feature],
+        sector: int,
+        sector_size: int,
+        offset: int,
+    ):
         # The firmware replies with an ERR_INVALID_ARGUMENT if we try to
         # read past sector_size, so when we are left with less than 16
         # bytes to read we start reading from sector_size - 16
@@ -903,9 +908,8 @@ class QueryOnboardProfilesMemRead(Query):
         if offset > sector_size - 16:
             raise ValueError(f"Invalid offset {offset} for sector size {sector_size}")
         return cls(
-            device=device,
             report_id=ReportID.LONG,
-            page=device.features[FeatureName.ONBOARD_PROFILES].index,
+            page=feature_lut[FeatureName.ONBOARD_PROFILES].index,
             command=0x50,
             query_spec=[
                 Spec("H", "sector"),
@@ -922,7 +926,9 @@ class QueryOnboardProfilesMemReadSector(Query):
     _queries = attr.ib(default=attr.Factory(list))
 
     @classmethod
-    def instance(cls, device, sector: int, sector_size: int):
+    def instance(
+        cls, feature_lut: Dict[FeatureName, Feature], sector: int, sector_size: int
+    ):
         # Note: this class is a helper around the need for sending multiple
         # queries to the device to get the full sector. Our instance() method
         # returns a wrapper class that contains all actual queries, when
@@ -937,18 +943,19 @@ class QueryOnboardProfilesMemReadSector(Query):
         offset_range[-1] = min(offset_range[-1], sector_size - 16)
         queries = [
             QueryOnboardProfilesMemRead.instance(
-                device, sector=sector, sector_size=sector_size, offset=off
+                feature_lut, sector=sector, sector_size=sector_size, offset=off
             )
             for off in offset_range
         ]
         return QueryOnboardProfilesMemReadSector(
-            device=device,
             queries=queries,
         )
 
-    def run(self):
-        queries = map(lambda x: x.run(), sorted(self._queries, key=lambda x: x.offset))
-        data = []
+    def run(self, device: Hidpp20Device):
+        queries = map(
+            lambda x: x.run(device), sorted(self._queries, key=lambda x: x.offset)  # type: ignore
+        )
+        data: List[int] = []
         for query in queries:
             # The special offset handling at the end
             skip_index = len(data) - query.offset
@@ -966,10 +973,9 @@ class QueryOnboardProfilesMemReadSector(Query):
 @attr.s
 class QueryAdjustibleDpiGetCount(Query):
     @classmethod
-    def instance(cls, device):
+    def instance(cls, feature_lut: Dict[FeatureName, Feature]):
         return cls(
-            device=device,
-            page=device.features[FeatureName.ADJUSTIBLE_DPI].index,
+            page=feature_lut[FeatureName.ADJUSTIBLE_DPI].index,
             command=0x00,  # GET_SENSOR_COUNT
             # no query spec
             reply_spec=[Spec("B", "sensor_count")],
@@ -984,11 +990,10 @@ class QueryAdjustibleDpiGetDpiList(Query):
     sensor_index: int = attr.ib(default=0)
 
     @classmethod
-    def instance(cls, device, sensor_index):
+    def instance(cls, feature_lut: Dict[FeatureName, Feature], sensor_index):
         # FIXME: check
         return cls(
-            device=device,
-            page=device.features[FeatureName.ADJUSTIBLE_DPI].index,
+            page=feature_lut[FeatureName.ADJUSTIBLE_DPI].index,
             command=0x10,  # GET_SENSOR_DPI_LIST
             query_spec=[Spec("B", "sensor_index")],
             reply_spec=[
@@ -1016,10 +1021,9 @@ class QueryAdjustibleDpiGetDpi(Query):
     sensor_index: int = attr.ib(default=0)
 
     @classmethod
-    def instance(cls, device, sensor_index):
+    def instance(cls, feature_lut: Dict[FeatureName, Feature], sensor_index):
         return cls(
-            device=device,
-            page=device.features[FeatureName.ADJUSTIBLE_DPI].index,
+            page=feature_lut[FeatureName.ADJUSTIBLE_DPI].index,
             command=0x20,  # GET_SENSOR_DPI
             query_spec=[Spec("B", "sensor_index")],
             reply_spec=[
@@ -1036,10 +1040,9 @@ class QueryAdjustibleDpiGetDpi(Query):
 @attr.s
 class QueryAdjustibleReportRateGetList(Query):
     @classmethod
-    def instance(cls, device):
+    def instance(cls, feature_lut: Dict[FeatureName, Feature]):
         return cls(
-            device=device,
-            page=device.features[FeatureName.ADJUSTIBLE_REPORT_RATE].index,
+            page=feature_lut[FeatureName.ADJUSTIBLE_REPORT_RATE].index,
             command=0x00,  # LIST
             # no query spec
             reply_spec=[

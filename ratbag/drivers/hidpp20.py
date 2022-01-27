@@ -629,7 +629,6 @@ class Query(object):
     """
 
     report_id: ReportID = attr.ib(
-        default=ReportID.SHORT,
         validator=attr.validators.in_(list(ReportID)),
     )
     page: int = attr.ib(default=0x00)
@@ -739,6 +738,7 @@ class QueryProtocolVersion(Query):
     @classmethod
     def instance(cls):
         return cls(
+            report_id=ReportID.SHORT,
             page=FeatureName.ROOT.value,
             command=0x10,
             # no query spec
@@ -759,6 +759,7 @@ class QueryRootGetFeature(Query):
     @classmethod
     def instance(cls, feature: FeatureName):
         return cls(
+            report_id=ReportID.SHORT,
             feature=feature,
             page=FeatureName.ROOT.value,
             command=0x00,  # GET_FEATURE
@@ -787,6 +788,7 @@ class QueryFeatureSetCount(Query):
     @classmethod
     def instance(cls, root_feature_query):
         return cls(
+            report_id=ReportID.SHORT,
             page=root_feature_query.reply.feature_index,
             command=0x00,  # GET_COUNT
             feature=root_feature_query.feature,
@@ -812,6 +814,7 @@ class QueryFeatureSetId(Query):
     @classmethod
     def instance(cls, root_feature_query, index):
         return cls(
+            report_id=ReportID.SHORT,
             page=root_feature_query.reply.feature_index,
             command=0x10,  # GET_FEATURE_ID
             feature_index=index,
@@ -828,6 +831,7 @@ class QueryOnboardProfilesDesc(Query):
     @classmethod
     def instance(cls, feature_lut: Dict[FeatureName, Feature]):
         return cls(
+            report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ONBOARD_PROFILES].index,
             command=0x00,
             # no query spec
@@ -870,6 +874,7 @@ class QueryOnboardProfilesGetMode(Query):
     @classmethod
     def instance(cls, feature_lut: Dict[FeatureName, Feature]):
         return cls(
+            report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ONBOARD_PROFILES].index,
             command=0x20,
             # no query spec
@@ -948,6 +953,7 @@ class QueryOnboardProfilesMemReadSector(Query):
             for off in offset_range
         ]
         return QueryOnboardProfilesMemReadSector(
+            report_id=ReportID.SHORT,
             queries=queries,
         )
 
@@ -975,6 +981,7 @@ class QueryAdjustibleDpiGetCount(Query):
     @classmethod
     def instance(cls, feature_lut: Dict[FeatureName, Feature]):
         return cls(
+            report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ADJUSTIBLE_DPI].index,
             command=0x00,  # GET_SENSOR_COUNT
             # no query spec
@@ -993,6 +1000,7 @@ class QueryAdjustibleDpiGetDpiList(Query):
     def instance(cls, feature_lut: Dict[FeatureName, Feature], sensor_index):
         # FIXME: check
         return cls(
+            report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ADJUSTIBLE_DPI].index,
             command=0x10,  # GET_SENSOR_DPI_LIST
             query_spec=[Spec("B", "sensor_index")],
@@ -1023,6 +1031,7 @@ class QueryAdjustibleDpiGetDpi(Query):
     @classmethod
     def instance(cls, feature_lut: Dict[FeatureName, Feature], sensor_index):
         return cls(
+            report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ADJUSTIBLE_DPI].index,
             command=0x20,  # GET_SENSOR_DPI
             query_spec=[Spec("B", "sensor_index")],
@@ -1042,6 +1051,7 @@ class QueryAdjustibleReportRateGetList(Query):
     @classmethod
     def instance(cls, feature_lut: Dict[FeatureName, Feature]):
         return cls(
+            report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ADJUSTIBLE_REPORT_RATE].index,
             command=0x00,  # LIST
             # no query spec

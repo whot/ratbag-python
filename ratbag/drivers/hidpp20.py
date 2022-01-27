@@ -55,24 +55,24 @@ class FeatureName(enum.IntEnum):
 
 
 class OnboardProfile:
-    class MemoryType(enum.Enum):
+    class MemoryType(enum.IntEnum):
         G402 = 0x01
 
-    class ProfileType(enum.Enum):
+    class ProfileType(enum.IntEnum):
         G402 = 0x01
         G303 = 0x02
         G900 = 0x03
         G915 = 0x04
 
-    class MacroType(enum.Enum):
+    class MacroType(enum.IntEnum):
         G402 = 0x01
 
-    class Mode(enum.Enum):
+    class Mode(enum.IntEnum):
         NO_CHANGE = 0x00
         ONBOARD = 0x01
         HOST = 0x02
 
-    class Sector(enum.Enum):
+    class Sector(enum.IntEnum):
         USER_PROFILES_G402 = 0x0000
         ROM_PROFILES_G402 = 0x0100
 
@@ -194,17 +194,17 @@ class ProfileAddress(object):
         addr_offset = 4 * index
         spec = [Spec("H", "addr", endian="BE")]
         result = Parser.to_object(data[addr_offset:], spec).object
-        if result.addr == OnboardProfile.Sector.END_OF_PROFILE_DIRECTORY.value:
+        if result.addr == OnboardProfile.Sector.END_OF_PROFILE_DIRECTORY:
             return None
 
         # profile address sanity check
-        expected_addr = OnboardProfile.Sector.USER_PROFILES_G402.value | (index + 1)
+        expected_addr = OnboardProfile.Sector.USER_PROFILES_G402 | (index + 1)
         if result.addr != expected_addr:
             logger.error(
                 f"profile {index}: expected address 0x{expected_addr:04x}, have 0x{result.address:04x}"
             )
 
-        enabled = data[addr_offset + OnboardProfile.Sector.ENABLED_INDEX.value] != 0
+        enabled = data[addr_offset + OnboardProfile.Sector.ENABLED_INDEX] != 0
 
         return cls(result.addr, enabled)
 
@@ -380,12 +380,12 @@ class Hidpp20Device(GObject.Object):
     def _init_profiles(self, features: Dict[FeatureName, Feature]) -> None:
         desc_query = QueryOnboardProfilesDesc.instance(features).run(self)
         logger.debug(desc_query)
-        if desc_query.reply.memory_model_id != OnboardProfile.MemoryType.G402.value:
+        if desc_query.reply.memory_model_id != OnboardProfile.MemoryType.G402:
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
                 self.hidraw_device,
                 f"Unsupported memory model {desc_query.memory_model_id}",
             )
-        if desc_query.reply.macro_format_id != OnboardProfile.MacroType.G402.value:
+        if desc_query.reply.macro_format_id != OnboardProfile.MacroType.G402:
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
                 self.hidraw_device,
                 f"Unsupported macro format {desc_query.macro_format_id}",
@@ -402,7 +402,7 @@ class Hidpp20Device(GObject.Object):
 
         mode_query = QueryOnboardProfilesGetMode.instance(features).run(self)
         logger.debug(mode_query)
-        if mode_query.reply.mode != OnboardProfile.Mode.ONBOARD.value:
+        if mode_query.reply.mode != OnboardProfile.Mode.ONBOARD:
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
                 self.hidraw_device,
                 f"Device not in Onboard mode ({mode_query.reply.mode})",
@@ -412,7 +412,7 @@ class Hidpp20Device(GObject.Object):
 
         mem_query = QueryOnboardProfilesMemReadSector.instance(
             features,
-            OnboardProfile.Sector.USER_PROFILES_G402.value,
+            OnboardProfile.Sector.USER_PROFILES_G402,
             sector_size=sector_size,
         ).run(self)
         logger.debug(mem_query)
@@ -725,7 +725,7 @@ class QueryProtocolVersion(Query):
     def instance(cls):
         return cls(
             report_id=ReportID.SHORT,
-            page=FeatureName.ROOT.value,
+            page=FeatureName.ROOT,
             command=0x10,
             query_spec=[],
             reply_spec=[Spec("B", "major"), Spec("B", "minor")],
@@ -747,10 +747,10 @@ class QueryGetFeature(Query):
         return cls(
             report_id=ReportID.SHORT,
             feature_name=feature_name,
-            page=FeatureName.ROOT.value,
+            page=FeatureName.ROOT,
             command=0x00,  # GET_FEATURE
             query_spec=[
-                Spec("H", "feature_name", convert_to_data=lambda arg: int(arg.value)),
+                Spec("H", "feature_name"),
             ],
             reply_spec=[
                 Spec("B", "feature_index"),
@@ -769,7 +769,7 @@ class QueryGetFeature(Query):
 
     def __str__(self):
         return (
-            f"{type(self).__name__}: {self.feature_name.name} (0x{self.feature_name.value:04x}) at index {self.reply.feature_index}, "
+            f"{type(self).__name__}: {self.feature_name.name} (0x{self.feature_name:04x}) at index {self.reply.feature_index}, "
             f"type {self.reply.feature_type} "
             f"version {self.reply.feature_version}"
         )
@@ -798,7 +798,7 @@ class QueryFeatureSetCount(Query):
             self.reply.count += 1
 
     def __str__(self):
-        return f"{type(self).__name__}: {self.feature.name} (0x{self.feature.name.value:04x}) count {self.reply.count}"
+        return f"{type(self).__name__}: {self.feature.name} (0x{self.feature.name:04x}) count {self.reply.count}"
 
 
 @attr.s

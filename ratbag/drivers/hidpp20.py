@@ -963,13 +963,22 @@ class QueryOnboardProfilesMemReadSector:
             skip_index = len(data) - query.offset
             data.extend(query.reply.data[skip_index:])
 
-        obj = Parser.to_object(
-            bytes(data),
-            specs=[Spec("B" * (len(data) - 2), "data"), Spec("H", "checksum")],
-        ).object
+        @attr.s
+        class SectorData:
+            data: bytes = attr.ib(default=bytes())
+            checksum: int = attr.ib(default=0)
 
-        obj.data = bytes(obj.data)
-        return obj
+        sector_data = SectorData()
+        Parser.to_object(
+            bytes(data),
+            specs=[
+                Spec("B" * (len(data) - 2), "data", convert_from_data=lambda x: bytes(x)),
+                Spec("H", "checksum"),
+            ],
+            obj=sector_data,
+        )
+
+        return sector_data
 
 
 @attr.s

@@ -80,6 +80,74 @@ class OnboardProfile:
         ENABLED_INDEX = 2
 
 
+class LogicalMapping(enum.IntEnum):
+    NONE = 0
+    VOLUME_UP = 1
+    VOLUME_DOWN = 2
+    MUTE = 3
+    PLAY_PAUSE = 4
+    NEXT = 5
+    PREVIOUS = 6
+    STOP = 7
+    LEFT = 80
+    RIGHT = 81
+    MIDDLE = 82
+    BACK = 83
+    FORWARD = 86
+    BUTTON6 = 89
+    BUTTON7 = 90
+    LEFT_SCROLL = 91
+    BUTTON8 = 92
+    RIGHT_SCROLL = 93
+    BUTTON9 = 94
+    BUTTON10 = 95
+    BUTTON11 = 96
+    BUTTON12 = 97
+    BUTTON13 = 98
+    BUTTON14 = 99
+    BUTTON15 = 100
+    BUTTON16 = 101
+    BUTTON17 = 102
+    BUTTON18 = 103
+    BUTTON19 = 104
+    BUTTON20 = 105
+    BUTTON21 = 106
+    BUTTON22 = 107
+    BUTTON23 = 108
+    BUTTON24 = 109
+    SECOND_LEFT = 184
+    APPSWITCHGESTURE = 195
+    SMARTSHIFT = 196
+    LEDTOGGLE = 315
+
+
+class PhysicalMapping(enum.IntEnum):
+    NONE = 0
+    VOLUME_UP = 1
+    VOLUME_DOWN = 2
+    MUTE = 3
+    PLAY_PAUSE = 4
+    NEXT = 5
+    PREVIOUS = 6
+    STOP = 7
+    LEFT_CLICK = 56
+    RIGHT_CLICK = 57
+    MIDDLE_CLICK = 58
+    WHEEL_SIDE_CLICK_LEFT = 59
+    BACK_CLICK = 60
+    WHEEL_SIDE_CLICK_RIGHT = 61
+    FORWARD_CLICK = 62
+    LEFT_SCROLL = 63
+    RIGHT_SCROLL = 64
+    DO_NOTHING = 98
+    GESTURE_BUTTON = 156
+    SMARTSHIFT = 157
+    GESTURE_BUTTON2 = (
+        169  # should be GESTURE_BUTTON too but we can't do that with an enum
+    )
+    LEDTOGGLE = 221
+
+
 # the following crc computation has been provided by Logitech
 def crc(data: bytes) -> int:
     def clamp(v: int) -> int:
@@ -427,6 +495,19 @@ class Hidpp20Device(GObject.Object):
             report_rates = rates_query.reply.report_rates
         else:
             report_rates = []
+
+        # Enough to run this once per device, doesn't need to be per profile
+        if FeatureName.SPECIAL_KEYS_BUTTONS in features:
+            count_query = QuerySpecialKeyButtonsGetCount.instance(features).run(self)
+            for idx in range(count_query.reply.count):
+                info_query = QuerySpecialKeyButtonsGetInfo.instance(features, idx).run(
+                    self
+                )
+                logger.debug(info_query)
+                reporting_query = QuerySpecialKeyButtonsGetReporting.instance(
+                    features, idx
+                ).run(self)
+                logger.debug(reporting_query)
 
         self.profiles = []
 
@@ -972,7 +1053,9 @@ class QueryOnboardProfilesMemReadSector:
         Parser.to_object(
             bytes(data),
             specs=[
-                Spec("B" * (len(data) - 2), "data", convert_from_data=lambda x: bytes(x)),
+                Spec(
+                    "B" * (len(data) - 2), "data", convert_from_data=lambda x: bytes(x)
+                ),
                 Spec("H", "checksum"),
             ],
             obj=sector_data,
@@ -1080,3 +1163,76 @@ class QueryAdjustibleReportRateGetList(Query):
 
     def __str__(self):
         return f"{type(self).__name__}: report-rates {self.reply.report_rates}"
+
+
+@attr.s
+class QuerySpecialKeyButtonsGetCount(Query):
+    @classmethod
+    def instance(cls, feature_lut: Dict[FeatureName, Feature]):
+        return cls(
+            report_id=ReportID.SHORT,
+            page=feature_lut[FeatureName.SPECIAL_KEYS_BUTTONS].index,
+            command=0x00,  # GET_COUNT
+            query_spec=[],
+            reply_spec=[
+                Spec("B", "count"),
+            ],
+        )
+
+
+@attr.s
+class QuerySpecialKeyButtonsGetInfo(Query):
+    index: int = attr.ib()
+
+    @classmethod
+    def instance(cls, feature_lut: Dict[FeatureName, Feature], index: int):
+        return cls(
+            report_id=ReportID.SHORT,
+            page=feature_lut[FeatureName.SPECIAL_KEYS_BUTTONS].index,
+            command=0x10,  # GET_INFO
+            index=index,
+            query_spec=[
+                Spec("B", "index"),
+            ],
+            reply_spec=[
+                Spec("H", "control_id"),
+                Spec("H", "task_id"),
+                Spec("B", "flags"),
+                Spec("B", "position"),
+                Spec("B", "group"),
+                Spec("B", "group_mask"),
+                Spec("raw_xy", "group_mask", convert_from_data=lambda x: x & 0x01),
+            ],
+        )
+
+    def parse_reply(self):
+        self.logical_mapping = LogicalMapping(self.control_id)
+        self.physical_mapping = LogicalMapping(self.task_id)
+
+
+@attr.s
+class QuerySpecialKeyButtonsGetReporting(Query):
+    index: int = attr.ib()
+
+    @classmethod
+    def instance(cls, feature_lut: Dict[FeatureName, Feature], index: int):
+        return cls(
+            report_id=ReportID.SHORT,
+            page=feature_lut[FeatureName.SPECIAL_KEYS_BUTTONS].index,
+            command=0x20,  # GET_REPORTING
+            index=index,
+            query_spec=[
+                Spec("B", "index"),
+            ],
+            reply_spec=[
+                Spec("BB", "_"),
+                Spec("H", "remapped"),
+                Spec("B", "flags"),
+            ],
+        )
+
+    def parse_reply(self):
+        self.reply.raw_xy = not not (self.flags & 0x10)
+        self.reply.persist = not not (self.flags & 0x04)
+        self.reply.divert = not not (self.flags & 0x01)
+        self.logical_mapping = LogicalMapping(self.remapped)

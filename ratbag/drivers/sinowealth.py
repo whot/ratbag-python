@@ -24,6 +24,7 @@ CONFIG_SIZE_USED_MIN = 131
 CONFIG_SIZE_USED_MAX = 167
 
 CONFIG_FLAGS_XY_RESOLUTION = 0x80
+CONFIG_FLAGS_REPORT_RATE_MASK = 0x0F
 
 
 class ReportID(enum.IntEnum):
@@ -92,9 +93,11 @@ class Config(object):
                 2: 250,
                 3: 500,
                 4: 1000,
-            }[obj.config & 0b111]
+            }[obj.config & CONFIG_FLAGS_REPORT_RATE_MASK]
         except KeyError:
-            logger.error(f"Invalid report rate {obj.config & 0b111}")
+            logger.error(
+                f"Invalid report rate {obj.config & CONFIG_FLAGS_REPORT_RATE_MASK}"
+            )
             report_rate = 0
 
         xy_independent = bool(obj.config & CONFIG_FLAGS_XY_RESOLUTION)

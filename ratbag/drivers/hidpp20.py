@@ -1267,3 +1267,119 @@ class QueryBatteryVoltageGetVoltage(Query):
                 Spec("H", "voltage"),
             ],
         )
+
+
+@attr.s
+class QueryLedSwControlGetLedCount(Query):
+    @classmethod
+    def instance(cls, feature_lut: Dict[FeatureName, Feature]):
+        return cls(
+            report_id=ReportID.SHORT,
+            page=feature_lut[FeatureName.LED_SW_CONTROL].index,
+            command=0x00,  # GET_LED_COUNT
+            query_spec=[],
+            reply_spec=[
+                Spec("B", "count"),
+            ],
+        )
+
+
+@attr.s
+class QueryLedSwControlGetLedInfo(Query):
+    index: int = attr.ib()
+
+    @classmethod
+    def instance(cls, feature_lut: Dict[FeatureName, Feature], index: int):
+        return cls(
+            report_id=ReportID.SHORT,
+            page=feature_lut[FeatureName.LED_SW_CONTROL].index,
+            command=0x10,  # GET_LED_INFO
+            index=index,
+            query_spec=[
+                Spec("B", "index"),
+            ],
+            reply_spec=[
+                Spec("B", "index"),
+                Spec("B", "type"),
+                Spec("B", "physical_count"),
+                Spec("H", "caps"),
+                Spec("B", "nvconfig_caps"),
+            ],
+        )
+
+
+@attr.s
+class QueryLedSwControlGetSwCtrl(Query):
+    @classmethod
+    def instance(cls, feature_lut: Dict[FeatureName, Feature]):
+        return cls(
+            report_id=ReportID.SHORT,
+            page=feature_lut[FeatureName.LED_SW_CONTROL].index,
+            command=0x20,  # GET_SW_CTRL
+            query_spec=[],
+            reply_spec=[
+                Spec("B", "is_sw_control", convert_from_data=lambda x: bool(x)),
+            ],
+        )
+
+
+# FIXME: need some sort of mapping to Led.Mode
+class SwLedMode(enum.IntEnum):
+    OFF = 0x1
+    ON = 0x2
+    BLINK = 0x4
+    TRAVEL = 0x8
+    RAMP_UP = 0x10
+    RAMP_DOWN = 0x20
+    HEARTBEAT = 0x40
+    BREATHING = 0x80
+
+
+@attr.s
+class QueryLedSwControlGetLedState(Query):
+    index: int = attr.ib()
+
+    @classmethod
+    def instance(cls, feature_lut: Dict[FeatureName, Feature], index: int):
+        return cls(
+            report_id=ReportID.SHORT,
+            page=feature_lut[FeatureName.LED_SW_CONTROL].index,
+            command=0x40,  # GET_LED_STATE
+            index=index,
+            query_spec=[
+                Spec("B", "index"),
+            ],
+            reply_spec=[Spec("B", "index"), Spec("H", "mode"), Spec("BBBBBB", "data")],
+        )
+
+    def parse_reply(self):
+        self.reply.mode = SwLedMode(self.mode)
+        specs = []
+        if self.reply.mode == SwLedMode.ON:
+            specs = [
+                Spec(
+                    "H", "info"
+                ),  # FIXME: "index" in libratbag but pretty sure this is wrong
+            ]
+        elif self.reply.mode == SwLedMode.BLINK:
+            specs = [
+                Spec(
+                    "H", "info"
+                ),  # FIXME: "index" in libratbag but pretty sure this is wrong
+                Spec("H", "on_time"),
+                Spec("H", "off_time"),
+            ]
+        elif self.reply.mode == SwLedMode.BREATHING:
+            specs = [
+                Spec("H", "brightness"),
+                Spec("H", "period"),
+                Spec("H", "timeout"),
+            ]
+        elif self.reply.mode == SwLedMode.TRAVEL:
+            specs = [
+                Spec("H", "_"),
+                Spec("H", "delay"),
+            ]
+
+        if specs:
+            Parser.to_object(bytes(self.data), specs, obj=self.reply)

@@ -23,6 +23,8 @@ logger = logging.getLogger(__name__)
 CONFIG_SIZE_USED_MIN = 131
 CONFIG_SIZE_USED_MAX = 167
 
+CONFIG_FLAGS_XY_RESOLUTION = 0x80
+
 
 class ReportID(enum.IntEnum):
     CONFIG = 0x4
@@ -95,7 +97,7 @@ class Config(object):
             logger.error(f"Invalid report rate {obj.config & 0b111}")
             report_rate = 0
 
-        xy_independent = bool(obj.config & 0x80)
+        xy_independent = bool(obj.config & CONFIG_FLAGS_XY_RESOLUTION)
 
         def raw2dpi(raw: int) -> int:
             return (raw + 1) * 100

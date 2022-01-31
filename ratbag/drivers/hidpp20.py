@@ -1236,3 +1236,34 @@ class QuerySpecialKeyButtonsGetReporting(Query):
         self.reply.persist = not not (self.flags & 0x04)
         self.reply.divert = not not (self.flags & 0x01)
         self.logical_mapping = LogicalMapping(self.remapped)
+
+
+@attr.s
+class QueryBatteryLevelGetLevel(Query):
+    @classmethod
+    def instance(cls, feature_lut: Dict[FeatureName, Feature]):
+        return cls(
+            report_id=ReportID.SHORT,
+            page=feature_lut[FeatureName.BATTERY_LEVEL_STATUS].index,
+            command=0x00,  # LEVEL_STATUS
+            query_spec=[],
+            reply_spec=[
+                Spec("B", "level"),
+                Spec("B", "next_level"),
+            ],
+        )
+
+
+@attr.s
+class QueryBatteryVoltageGetVoltage(Query):
+    @classmethod
+    def instance(cls, feature_lut: Dict[FeatureName, Feature]):
+        return cls(
+            report_id=ReportID.SHORT,
+            page=feature_lut[FeatureName.BATTERY_VOLTAGE].index,
+            command=0x00,  # GET_BATTERY_VOLTAGE
+            query_spec=[],
+            reply_spec=[
+                Spec("H", "voltage"),
+            ],
+        )

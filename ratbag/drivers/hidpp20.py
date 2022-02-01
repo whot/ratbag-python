@@ -1280,8 +1280,8 @@ class QuerySpecialKeyButtonsGetInfo(Query):
         )
 
     def parse_reply(self):
-        self.logical_mapping = LogicalMapping(self.control_id)
-        self.physical_mapping = LogicalMapping(self.task_id)
+        self.reply.logical_mapping = LogicalMapping(self.reply.control_id)
+        self.reply.physical_mapping = LogicalMapping(self.reply.task_id)
 
 
 @attr.s
@@ -1309,7 +1309,7 @@ class QuerySpecialKeyButtonsGetReporting(Query):
         self.reply.raw_xy = not not (self.flags & 0x10)
         self.reply.persist = not not (self.flags & 0x04)
         self.reply.divert = not not (self.flags & 0x01)
-        self.logical_mapping = LogicalMapping(self.remapped)
+        self.reply.logical_mapping = LogicalMapping(self.reply.remapped)
 
 
 # --------------------------------------------------------------------------------------

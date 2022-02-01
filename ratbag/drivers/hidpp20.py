@@ -800,6 +800,16 @@ class QueryError(Exception):
         self.command = bytes[4]
 
 
+# --------------------------------------------------------------------------------------
+# 0x0000: Root
+# --------------------------------------------------------------------------------------
+
+
+class CmdRoot(enum.IntEnum):
+    GET_FEATURE = 0x00
+    GET_PROTOCOL_VERSION = 0x10
+
+
 @attr.s
 class QueryProtocolVersion(Query):
     @classmethod
@@ -807,7 +817,7 @@ class QueryProtocolVersion(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=FeatureName.ROOT,
-            command=0x10,
+            command=CmdRoot.GET_PROTOCOL_VERSION,
             query_spec=[],
             reply_spec=[Spec("B", "major"), Spec("B", "minor")],
         )
@@ -829,7 +839,7 @@ class QueryGetFeature(Query):
             report_id=ReportID.SHORT,
             feature_name=feature_name,
             page=FeatureName.ROOT,
-            command=0x00,  # GET_FEATURE
+            command=CmdRoot.GET_FEATURE,
             query_spec=[
                 Spec("H", "feature_name"),
             ],
@@ -856,6 +866,16 @@ class QueryGetFeature(Query):
         )
 
 
+# --------------------------------------------------------------------------------------
+# 0x0001: Feature Set
+# --------------------------------------------------------------------------------------
+
+
+class CmdFeatureSet(enum.IntEnum):
+    GET_COUNT = 0x00
+    GET_FEATURE_ID = 0x10
+
+
 @attr.s
 class QueryFeatureSetCount(Query):
     feature: Feature = attr.ib()
@@ -865,7 +885,7 @@ class QueryFeatureSetCount(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature.index,
-            command=0x00,  # GET_COUNT
+            command=CmdFeatureSet.GET_COUNT,
             feature=feature,
             query_spec=[],
             reply_spec=[Spec("B", "count")],
@@ -891,7 +911,7 @@ class QueryFeatureSetId(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature.index,
-            command=0x10,  # GET_FEATURE_ID
+            command=CmdFeatureSet.GET_FEATURE_ID,
             feature_index=index,
             query_spec=[Spec("B", "feature_index")],
             reply_spec=[
@@ -901,6 +921,25 @@ class QueryFeatureSetId(Query):
         )
 
 
+# --------------------------------------------------------------------------------------
+# 0x8100: Onboard Profiles
+# --------------------------------------------------------------------------------------
+
+
+class CmdOnboardProfiles(enum.IntEnum):
+    GET_PROFILES_DESC = 0x00
+    SET_ONBOARD_MODE = 0x10
+    GET_ONBOARD_MODE = 0x20
+    SET_CURRENT_PROFILE = 0x30
+    GET_CURRENT_PROFILE = 0x40
+    MEMORY_READ = 0x50
+    MEMORY_ADDR_WRITE = 0x60
+    MEMORY_WRITE = 0x70
+    MEMORY_WRITE_END = 0x80
+    GET_CURRENT_DPI_INDEX = 0xB0
+    SET_CURRENT_DPI_INDEX = 0xC0
+
+
 @attr.s
 class QueryOnboardProfilesDesc(Query):
     @classmethod
@@ -908,7 +947,7 @@ class QueryOnboardProfilesDesc(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ONBOARD_PROFILES].index,
-            command=0x00,
+            command=CmdOnboardProfiles.GET_PROFILES_DESC,
             query_spec=[],
             reply_spec=[
                 Spec("B", "memory_model_id"),
@@ -951,7 +990,7 @@ class QueryOnboardProfilesGetMode(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ONBOARD_PROFILES].index,
-            command=0x20,
+            command=CmdOnboardProfiles.GET_ONBOARD_MODE,
             query_spec=[],
             reply_spec=[Spec("B", "mode")],
         )
@@ -990,7 +1029,7 @@ class QueryOnboardProfilesMemRead(Query):
         return cls(
             report_id=ReportID.LONG,
             page=feature_lut[FeatureName.ONBOARD_PROFILES].index,
-            command=0x50,
+            command=CmdOnboardProfiles.MEMORY_READ,
             query_spec=[
                 Spec("H", "sector"),
                 Spec("H", "offset"),
@@ -1064,6 +1103,18 @@ class QueryOnboardProfilesMemReadSector:
         return sector_data
 
 
+# --------------------------------------------------------------------------------------
+# 0x2201: Adjustible DPI
+# --------------------------------------------------------------------------------------
+
+
+class CmdAdjustibleDpi(enum.IntEnum):
+    GET_SENSOR_COUNT = 0x00
+    GET_SENSOR_DPI_LIST = 0x10
+    GET_SENSOR_DPI = 0x20
+    SET_SENSOR_DPI = 0x30
+
+
 @attr.s
 class QueryAdjustibleDpiGetCount(Query):
     @classmethod
@@ -1071,7 +1122,7 @@ class QueryAdjustibleDpiGetCount(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ADJUSTIBLE_DPI].index,
-            command=0x00,  # GET_SENSOR_COUNT
+            command=CmdAdjustibleDpi.GET_SENSOR_COUNT,
             query_spec=[],
             reply_spec=[Spec("B", "sensor_count")],
         )
@@ -1090,7 +1141,7 @@ class QueryAdjustibleDpiGetDpiList(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ADJUSTIBLE_DPI].index,
-            command=0x10,  # GET_SENSOR_DPI_LIST
+            command=CmdAdjustibleDpi.GET_SENSOR_DPI_LIST,
             query_spec=[Spec("B", "sensor_index")],
             reply_spec=[
                 Spec("B", "sensor_index"),
@@ -1121,7 +1172,7 @@ class QueryAdjustibleDpiGetDpi(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ADJUSTIBLE_DPI].index,
-            command=0x20,  # GET_SENSOR_DPI
+            command=CmdAdjustibleDpi.GET_SENSOR_DPI,
             query_spec=[Spec("B", "sensor_index")],
             reply_spec=[
                 Spec("B", "sensor_index"),
@@ -1134,6 +1185,17 @@ class QueryAdjustibleDpiGetDpi(Query):
         return f"{type(self).__name__}: sensor-index {self.reply.sensor_index} dpi {self.reply.dpi} default_dpi {self.reply.default_dpi}"
 
 
+# --------------------------------------------------------------------------------------
+# 0x8060: Adjustible Report Rate
+# --------------------------------------------------------------------------------------
+
+
+class CmdAdjustibleReporRate(enum.IntEnum):
+    GET_REPORT_RATE_LIST = 0x00
+    GET_REPORT_RATE = 0x10
+    SET_REPORT_RATE = 0x20
+
+
 @attr.s
 class QueryAdjustibleReportRateGetList(Query):
     @classmethod
@@ -1141,7 +1203,7 @@ class QueryAdjustibleReportRateGetList(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.ADJUSTIBLE_REPORT_RATE].index,
-            command=0x00,  # LIST
+            command=CmdAdjustibleReporRate.GET_REPORT_RATE_LIST,
             query_spec=[],
             reply_spec=[
                 Spec("B", "flags"),
@@ -1165,6 +1227,18 @@ class QueryAdjustibleReportRateGetList(Query):
         return f"{type(self).__name__}: report-rates {self.reply.report_rates}"
 
 
+# --------------------------------------------------------------------------------------
+# 0x1b04: Special keys and mouse buttons
+# --------------------------------------------------------------------------------------
+
+
+class CmdSpecialKeyButtons(enum.IntEnum):
+    GET_COUNT = 0x00
+    GET_INFO = 0x10
+    GET_REPORTING = 0x20
+    SET_REPORTING = 0x30
+
+
 @attr.s
 class QuerySpecialKeyButtonsGetCount(Query):
     @classmethod
@@ -1172,7 +1246,7 @@ class QuerySpecialKeyButtonsGetCount(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.SPECIAL_KEYS_BUTTONS].index,
-            command=0x00,  # GET_COUNT
+            command=CmdSpecialKeyButtons.GET_COUNT,
             query_spec=[],
             reply_spec=[
                 Spec("B", "count"),
@@ -1189,7 +1263,7 @@ class QuerySpecialKeyButtonsGetInfo(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.SPECIAL_KEYS_BUTTONS].index,
-            command=0x10,  # GET_INFO
+            command=CmdSpecialKeyButtons.GET_INFO,
             index=index,
             query_spec=[
                 Spec("B", "index"),
@@ -1219,7 +1293,7 @@ class QuerySpecialKeyButtonsGetReporting(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.SPECIAL_KEYS_BUTTONS].index,
-            command=0x20,  # GET_REPORTING
+            command=CmdSpecialKeyButtons.GET_REPORTING,
             index=index,
             query_spec=[
                 Spec("B", "index"),
@@ -1238,6 +1312,16 @@ class QuerySpecialKeyButtonsGetReporting(Query):
         self.logical_mapping = LogicalMapping(self.remapped)
 
 
+# --------------------------------------------------------------------------------------
+# 0x1000: Battery level status
+# --------------------------------------------------------------------------------------
+
+
+class CmdBatteryLevel(enum.IntEnum):
+    GET_LEVEL_STATUS = 0x00
+    GET_BATTERY_CAPABILITY = 0x10
+
+
 @attr.s
 class QueryBatteryLevelGetLevel(Query):
     @classmethod
@@ -1245,13 +1329,23 @@ class QueryBatteryLevelGetLevel(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.BATTERY_LEVEL_STATUS].index,
-            command=0x00,  # LEVEL_STATUS
+            command=CmdBatteryLevel.GET_LEVEL_STATUS,
             query_spec=[],
             reply_spec=[
                 Spec("B", "level"),
                 Spec("B", "next_level"),
             ],
         )
+
+
+# --------------------------------------------------------------------------------------
+# 0x1001: Battery voltage
+# --------------------------------------------------------------------------------------
+
+
+class CmdBatteryVoltage(enum.IntEnum):
+    GET_BATTERY_VOLTAGE = 0x00
+    GET_SHOW_BATTERY_STATUS = 0x10
 
 
 @attr.s
@@ -1261,12 +1355,27 @@ class QueryBatteryVoltageGetVoltage(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.BATTERY_VOLTAGE].index,
-            command=0x00,  # GET_BATTERY_VOLTAGE
+            command=CmdBatteryVoltage.GET_BATTERY_VOLTAGE,
             query_spec=[],
             reply_spec=[
                 Spec("H", "voltage"),
             ],
         )
+
+
+# --------------------------------------------------------------------------------------
+# 0x1300: Non-RGB LED support
+# --------------------------------------------------------------------------------------
+
+
+class CmdLedSwControl(enum.IntEnum):
+    GET_LED_COUNT = 0x00
+    GET_LED_INFO = 0x10
+    GET_SW_CTRL = 0x20
+    SET_SW_CTRL = 0x30
+    GET_LED_STATE = 0x40
+    SET_LED_STATE = 0x50
+    GET_NV_CONFIG = 0x60
 
 
 @attr.s
@@ -1276,7 +1385,7 @@ class QueryLedSwControlGetLedCount(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.LED_SW_CONTROL].index,
-            command=0x00,  # GET_LED_COUNT
+            command=CmdLedSwControl.GET_LED_COUNT,
             query_spec=[],
             reply_spec=[
                 Spec("B", "count"),
@@ -1293,7 +1402,7 @@ class QueryLedSwControlGetLedInfo(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.LED_SW_CONTROL].index,
-            command=0x10,  # GET_LED_INFO
+            command=CmdLedSwControl.GET_LED_INFO,
             index=index,
             query_spec=[
                 Spec("B", "index"),
@@ -1315,7 +1424,7 @@ class QueryLedSwControlGetSwCtrl(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.LED_SW_CONTROL].index,
-            command=0x20,  # GET_SW_CTRL
+            command=CmdLedSwControl.GET_SW_CTRL,
             query_spec=[],
             reply_spec=[
                 Spec("B", "is_sw_control", convert_from_data=lambda x: bool(x)),
@@ -1344,7 +1453,7 @@ class QueryLedSwControlGetLedState(Query):
         return cls(
             report_id=ReportID.SHORT,
             page=feature_lut[FeatureName.LED_SW_CONTROL].index,
-            command=0x40,  # GET_LED_STATE
+            command=CmdLedSwControl.GET_LED_STATE,
             index=index,
             query_spec=[
                 Spec("B", "index"),
@@ -1383,3 +1492,54 @@ class QueryLedSwControlGetLedState(Query):
 
         if specs:
             Parser.to_object(bytes(self.data), specs, obj=self.reply)
+
+
+# --------------------------------------------------------------------------------------
+# 0x1b00: KBD reprogrammable keys and mouse buttons
+# --------------------------------------------------------------------------------------
+
+
+class CmdReprogrammableKeys(enum.IntEnum):
+    GET_COUNT = 0x00
+    GET_CTRL_ID_INFO = 0x10
+
+
+@attr.s
+class QueryReprogrammableKeysGetCount(Query):
+    @classmethod
+    def instance(cls, feature_lut: Dict[FeatureName, Feature]):
+        return cls(
+            report_id=ReportID.SHORT,
+            page=feature_lut[FeatureName.KBD_REPROGRAMMABLE_KEYS].index,
+            command=CmdReprogrammableKeys.GET_COUNT,
+            query_spec=[],
+            reply_spec=[
+                Spec("B", "count"),
+            ],
+        )
+
+
+@attr.s
+class QueryReprogrammableKeysGetInfo(Query):
+    index: int = attr.ib()
+
+    @classmethod
+    def instance(cls, feature_lut: Dict[FeatureName, Feature], index: int):
+        return cls(
+            report_id=ReportID.SHORT,
+            page=feature_lut[FeatureName.KBD_REPROGRAMMABLE_KEYS].index,
+            command=CmdReprogrammableKeys.GET_CTRL_ID_INFO,
+            index=index,
+            query_spec=[
+                Spec("b", "index"),
+            ],
+            reply_spec=[
+                Spec("H", "control_id"),
+                Spec("H", "task_id"),
+                Spec("B", "flags"),
+            ],
+        )
+
+    def parse_reply(self):
+        self.reply.logical_mapping = LogicalMapping(self.reply.control_id)
+        self.reply.physical_mapping = LogicalMapping(self.reply.task_id)

@@ -4,6 +4,51 @@ A Python implementation of libratbag, intended to replace libratbag
 eventually. Some of the motivation is discussed in
 https://github.com/libratbag/libratbag/issues/1247
 
+## Tools
+
+Note that read/write permissions are required on the `/dev/hidraw`
+devices. This means you need to run any tool as root or, alternatively and
+even less secure: `chmod o+rw /dev/hidrawN` where `N` is the number of your
+device.
+
+### ratbagcli
+
+This package provides the `ratbagcli` commandline tool to interact with a
+device. To list all devices and show information about a specific device, use
+the `list` and `show` subcommands:
+
+```
+$ ratbagcli list
+devices:
+- Logitech Gaming Mouse G303
+
+$ ratbagcli show G303
+devices:
+- name: Logitech Gaming Mouse G303
+  path: /dev/hidraw2
+  profiles:
+  ...
+```
+
+To change the configuration on a device, use `apply-config`. To check if any
+config was **not** applied, use `verify-config`.
+```
+$ ratbagcli apply-config config/defaults.yml G303
+$ ratbagcli verify-config config/defaults.yml G303
+```
+
+### ratbagd
+
+This package ships with a (mostly) drop-in replacement for libratbag's
+ratbagd.
+
+```
+# Install the policy file
+$ cp dbus/org.freedesktop.ratbag1.conf /etc/dbus-1/system.d/
+# Run ratbagd on the system bus
+$ ratbagd
+```
+
 ## Architecture
 
 The public API, i.e. the bits to be consumed by various tools is in the

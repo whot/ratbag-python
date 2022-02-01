@@ -71,10 +71,10 @@ class Config(object):
             Spec("B", "?"),
             Spec("B", "config_write"),
             Spec("BBBBBB", "?"),
-            Spec("B", "config"),
-            Spec("B", "dpi_count"),  # two nibbles!
+            Spec("B", "config"),  # Second nibble is the eport rate.
+            Spec("B", "dpi"),  # Two nibbles: active DPI (out of enabled ones) and DPI count.
             Spec("B", "dpi_disabled_slots"),  # bit mask
-            Spec("B", "dpi", repeat=16),
+            Spec("B", "dpis", repeat=16),
             Spec("BBB", "dpi_color", repeat=8),
             Spec("B", "rgb_effect"),
             Spec("B", "glorious_mode"),
@@ -107,7 +107,7 @@ class Config(object):
             # TODO: support different sensors. This is for PWM3360.
             return (raw + 1) * 100
 
-        converted = [raw2dpi(r) for r in obj.dpi]
+        converted = [raw2dpi(r) for r in obj.dpis]
         if xy_independent:
             dpis = list(zip(converted[::2], converted[1::2]))
         else:

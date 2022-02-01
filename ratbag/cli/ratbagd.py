@@ -34,7 +34,7 @@ def _init_logger(conf=None, verbose=False):
             xdg = os.getenv("XDG_CONFIG_HOME")
             if xdg is None:
                 xdg = Path.home() / ".config"
-            conf = Path(xdg) / "ratbagd" / "config-logger.yml"
+            conf = Path(xdg) / "ratbag" / "config-logger.yml"
     if Path(conf).exists():
         with open(conf) as fd:
             yml = yaml.safe_load(fd)

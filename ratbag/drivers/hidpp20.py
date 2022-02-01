@@ -401,6 +401,7 @@ class Hidpp20Device(GObject.Object):
         GObject.Object.__init__(self)
         self.index = device_index
         self.hidraw_device = hidraw_device
+        self.firmware_version = ""
 
     @property
     def name(self) -> str:
@@ -432,6 +433,7 @@ class Hidpp20Device(GObject.Object):
                 self.hidraw_device, f"HID++2.0 feature {missing_features}"
             )
 
+        self.firmware_version = self._detect_firmware_version(features)
         self._init_profiles(features)
 
     def _detect_protocol_version(self) -> Tuple[int, int]:
@@ -443,6 +445,17 @@ class Hidpp20Device(GObject.Object):
                 self.hidraw_device, "Protocol version 2.x"
             )
         return (version.reply.major, version.reply.minor)
+
+    def _detect_firmware_version(self, feature_lut: Dict[FeatureName, Feature]) -> str:
+        info = QueryDeviceInfoGetDeviceInfo.instance(feature_lut).run(self)
+        logger.debug(info)
+        for idx in range(info.reply.count):
+            fwquery = QueryDeviceInfoGetFwInfo.instance(feature_lut, idx).run(self)
+            logger.debug(fwquery)
+            if fwquery.reply.type == QueryDeviceInfoGetFwInfo.Type.DFU:  # the DFU
+                return fwquery.reply.firmware_version
+
+        return ""
 
     def _find_features(self) -> Dict[FeatureName, Feature]:
         # Since we have a list of features we know how to handle, iterate
@@ -639,9 +652,15 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
         index = getattr(config, "device_index", RECEIVER_IDX)
         device = Hidpp20Device(rodent, index)
 
-        ratbag_device = ratbag.Device(self, device.path, device.name, rodent.model)
-        ratbag_device.connect("commit", device.cb_commit)
         device.start()
+        ratbag_device = ratbag.Device(
+            self,
+            path=device.path,
+            name=device.name,
+            model=rodent.model,
+            firmware_version=device.firmware_version,
+        )
+        ratbag_device.connect("commit", device.cb_commit)
         # Device start was successful if no exception occurs. Now fill in the
         # ratbag device.
         for idx, profile in enumerate(device.profiles):
@@ -940,6 +959,80 @@ class QueryFeatureSetId(Query):
                 Spec("H", "feature_id"),
                 Spec("B", "feature_type"),
             ],
+        )
+
+
+# --------------------------------------------------------------------------------------
+# 0x0003: Device Info
+# --------------------------------------------------------------------------------------
+
+
+class CmdDeviceInfo(enum.IntEnum):
+    GET_DEVICE_INFO = 0x00
+    GET_FW_INFO = 0x10
+
+
+@attr.s
+class QueryDeviceInfoGetDeviceInfo(Query):
+    @classmethod
+    def instance(cls, feature_lut: Dict[FeatureName, Feature]):
+        return cls(
+            report_id=ReportID.SHORT,
+            page=feature_lut[FeatureName.DEVICE_INFO].index,
+            command=CmdDeviceInfo.GET_DEVICE_INFO,
+            query_spec=[],
+            reply_spec=[
+                Spec("B", "count"),
+                # don't care about the rest here
+            ],
+        )
+
+    def __str__(self):
+        return f"{type(self).__name__}: count: {self.reply.count}"
+
+
+@attr.s
+class QueryDeviceInfoGetFwInfo(Query):
+    class Type(enum.IntEnum):
+        MAIN = 0x00
+        DFU = 0x01
+        HW = 0x02
+
+    index: int = attr.ib()
+
+    @classmethod
+    def instance(cls, feature_lut: Dict[FeatureName, Feature], index: int):
+        return cls(
+            report_id=ReportID.SHORT,
+            page=feature_lut[FeatureName.DEVICE_INFO].index,
+            command=CmdDeviceInfo.GET_FW_INFO,
+            index=index,
+            query_spec=[Spec("B", "index")],
+            reply_spec=[
+                Spec(
+                    "B",
+                    "type",
+                    convert_from_data=lambda x: QueryDeviceInfoGetFwInfo.Type(x),
+                ),
+                Spec(
+                    "BBB",
+                    "prefix",
+                    convert_from_data=lambda x: bytes(x).decode("utf-8"),
+                ),
+                Spec("B", "number", convert_from_data=lambda x: f"{x:02x}"),
+                Spec("B", "revision", convert_from_data=lambda x: f"{x:02x}"),
+                Spec("H", "build", convert_from_data=lambda x: f"{x:04x}"),
+                # don't care about the rest
+            ],
+        )
+
+    def parse_reply(self):
+        self.reply.firmware_version = f"{self.reply.prefix}{self.reply.number}.{self.reply.revision}.{self.reply.build}"
+
+    def __str__(self):
+        return (
+            f"{type(self).__name__}: type: {self.reply.type} "
+            f"version: {self.reply.firmware_version}"
         )
 
 

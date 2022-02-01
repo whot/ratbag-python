@@ -257,7 +257,9 @@ class SinowealthDevice:
             caps = [ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION]
         else:
             caps = []
-        dpi_list = tuple(range(200, 8200 + 1, 50))
+        # TODO: set the DPI range according to found sensor.
+        # NOTE: 10200 is the biggest commonly supported resolution, it's used by PWM3327.
+        dpi_list = tuple(range(100, 10200 + 1, 100))
         for ridx, dpi in enumerate(config.dpis):
             ratbag.Resolution(
                 p,

@@ -336,6 +336,12 @@ class Device(GObject.Object):
 
         The path to the source device
 
+    .. attribute:: firmware_version
+
+        A device-specific string with the firmware version, or the empty
+        string. For devices with a major/minor or purely numeric firmware
+        version, the conversion into a string is implementation-defined.
+
     GObject Signals:
 
     - ``disconnected``: this device has been disconnected
@@ -373,13 +379,19 @@ class Device(GObject.Object):
         pass
 
     def __init__(
-        self, driver: "ratbag.driver.Driver", path: str, name: str, model: str
+        self,
+        driver: "ratbag.driver.Driver",
+        path: str,
+        name: str,
+        model: str,
+        firmware_version: str = "",
     ):
         GObject.Object.__init__(self)
         self.driver = driver
         self.path = path
         self.name = name
         self.model = model
+        self.firmware_version = firmware_version
         self._profiles: Tuple[Profile, ...] = tuple()
         self._driver = driver
         self._dirty = False
@@ -495,6 +507,7 @@ class Device(GObject.Object):
             "name": self.name,
             "path": str(self.path),
             "profiles": [p.as_dict() for p in self.profiles],
+            "firmware_version": self.firmware_version,
         }
 
 

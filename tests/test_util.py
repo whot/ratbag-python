@@ -154,6 +154,38 @@ def test_parser():
         ]
         result = Parser.to_object(data, spec)
 
+    data = bytes(range(64, 73))
+    spec = [
+        Spec("B", "something"),
+        Spec("8s", "string", convert_from_data=lambda s: s.decode("utf-8")),
+    ]
+    result = Parser.to_object(data, spec)
+    assert result.size == len(data)
+    assert result.object.string == "ABCDEFGH"
+
+    data = bytes(range(64, 73))
+    spec = [
+        Spec("B", "something"),
+        Spec(
+            "2s",
+            "string",
+            repeat=4,
+            convert_from_data=lambda ss: list(s.decode("utf-8") for s in ss),
+        ),
+    ]
+    result = Parser.to_object(data, spec)
+    assert result.size == len(data)
+    assert result.object.string == ["AB", "CD", "EF", "GH"]
+
+    # Disallow anything but string repeats
+    with pytest.raises(AssertionError):
+        data = bytes(range(64, 73))
+        spec = [
+            Spec("B", "something"),
+            Spec("8B", "invalid"),
+        ]
+        result = Parser.to_object(data, spec)
+
 
 def test_data_files():
     datafiles = ratbag.util.load_data_files()

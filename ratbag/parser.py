@@ -36,6 +36,7 @@ See the :class:`Spec` documentation for details on the format.
 
 import attr
 import logging
+import re
 import struct
 
 from ratbag.util import as_hex
@@ -84,6 +85,15 @@ class Spec(object):
     The format, must be compatible to Python's ``struct`` format specifiers,
     excluding the endian prefixes. If the format contains more than one
     element, the respective object attribute is a tuple.
+
+    With the exception of fixed-length strings (``4s`` for a 4-byte string)
+    this format must not contain any repeat specifiers. Use the ``repeat``
+    attribute instead. IOW:
+
+        >>> Spec("3s", "string")  # One 3-byte string
+        >>> Spec("s", "string", repeat=3)  # Three 1-byte strings
+        >>> Spec("3H", "foo")  # Not permitted
+
     """
     name: str = attr.ib()
     """
@@ -121,6 +131,8 @@ class Spec(object):
     bytes to a string:
 
         >>> spec = Spec("B", "foo", repeat=3, convert_from_data=lambda s: bytes(s).decode("utf-8"))
+        # Or alternatively use the string length format:
+        >>> spec = Spec("3s", "foo", convert_from_data=lambda s: s.decode("utf-8"))
         >>> data = Parser.to_object("bar".encode("utf-8"), spec)
         >>> assert data.object.foo == "bar"
 
@@ -153,7 +165,14 @@ class Spec(object):
 
     def __attrs_post_init__(self):
         self._size = struct.calcsize(self.format)
-        self._count = len(self.format)
+        invalid = re.findall(r"\d+[^s\d]+", self.format)
+        assert not invalid, f"Invalid use of repeat found in pattern(s): {invalid}"
+
+        # struct allows repeats which are useful for strings in particular.
+        # Where they're used, make the count a function of the struct format
+        # specifiers only, not the repeats, i.e. a format like "3s" is one
+        # string, not a tuple of two.
+        self._count = len(re.sub(r"[0-9]", "", self.format))
 
     @repeat.validator
     def _check_repeat(self, attribute, value):

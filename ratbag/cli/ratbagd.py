@@ -24,9 +24,24 @@ PATH_PREFIX = "/org/freedesktop/ratbag1"
 NAME_PREFIX = "org.freedesktop.ratbag1"
 
 
-def _init_logger(verbose=False):
-    lvl = logging.DEBUG if verbose else logging.INFO
-    logging.basicConfig(format="%(levelname)s: %(name)s: %(message)s", level=lvl)
+def _init_logger(conf=None, verbose=False):
+    import yaml
+    import logging.config
+
+    if conf is None:
+        conf = Path("config-logger.yml")
+        if not conf.exists():
+            xdg = os.getenv("XDG_CONFIG_HOME")
+            if xdg is None:
+                xdg = Path.home() / ".config"
+            conf = Path(xdg) / "ratbagd" / "config-logger.yml"
+    if Path(conf).exists():
+        with open(conf) as fd:
+            yml = yaml.safe_load(fd)
+        logging.config.dictConfig(yml)
+    else:
+        lvl = logging.DEBUG if verbose else logging.INFO
+        logging.basicConfig(format="%(levelname)s: %(name)s: %(message)s", level=lvl)
 
 
 def make_name(name: str) -> str:

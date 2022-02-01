@@ -210,7 +210,11 @@ class Profile(object):
             self._name.index(b"\xff")  # type: ignore
         except ValueError:
             # we're not using the default name, so let's decode this
-            return bytes(self._name).decode("utf-8").rstrip("\x00")  # type: ignore
+            # On my device the name is utf-16, not utf-8, decoding it as
+            # utf-8 will produce a string that's not compatible with DBus
+            # I'm not sure if this is default or just happens to be the case
+            # on this device
+            return bytes(self._name).decode("utf-16").rstrip("\x00")  # type: ignore
 
         return f"Profile {self.address}"
 

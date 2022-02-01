@@ -244,7 +244,7 @@ class Profile(object):
 
     def __str__(self):
         return (
-            f"{self.name}: {self.report_rate}Hz, "
+            f"{self.name or '<unnamed>'}: {self.report_rate}Hz, "
             f"{self.default_dpi}/{self.switched_dpi}dpi "
             f"{[x for x in self.dpi]} "
             f"{self.colors} "

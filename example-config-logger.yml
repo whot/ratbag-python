@@ -22,6 +22,22 @@ loggers:
     level: DEBUG
     handlers: [console]
     propagate: no
+  ratbag.driver:
+    level: DEBUG
+    handlers: [console]
+    propagate: no
+  ratbag.drivers.*:
+    level: DEBUG
+    handlers: [console]
+    propagate: no
+  ratbag.parser:
+    level: DEBUG
+    handlers: [console]
+    propagate: no
+  ratbagd:
+    level: DEBUG
+    handlers: [console]
+    propagate: no
 root:
   level: DEBUG
   handlers: [console]

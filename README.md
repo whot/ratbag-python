@@ -49,6 +49,22 @@ $ cp dbus/org.freedesktop.ratbag1.conf /etc/dbus-1/system.d/
 $ ratbagd
 ```
 
+## Debugging
+
+ratbag comes with a fair bit of debugging output that can be enabled through
+the `--verbose` commandline in `ratbagcli` or, more fine-grained, through a
+logging config file.
+
+The file needs to be named `config-logger.yml` in `$PWD` or `$XDG_CONFIG_HOME/ratbag/`.
+
+```
+$ cp example-config-logger.yml config-logger.yml
+# edit config-logger.yml to your liking
+$ ratbagcli show G303
+```
+
+By default log data is printed to stderr.
+
 ## Architecture
 
 The public API, i.e. the bits to be consumed by various tools is in the

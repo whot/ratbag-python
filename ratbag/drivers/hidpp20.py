@@ -293,6 +293,19 @@ class Led(object):
         RIPPLE = 0x0B
         CUSTOM = 0x0C
 
+        def to_ratbag_mode(self) -> ratbag.Led.Mode:
+            return {
+                Led.Mode.OFF: ratbag.Led.Mode.OFF,
+                Led.Mode.ON: ratbag.Led.Mode.ON,
+                Led.Mode.CYCLE: ratbag.Led.Mode.CYCLE,
+                # we pretend anything else is breathing
+                Led.Mode.COLOR_WAVE: ratbag.Led.Mode.BREATHING,
+                Led.Mode.STARLIGHT: ratbag.Led.Mode.BREATHING,
+                Led.Mode.BREATHING: ratbag.Led.Mode.BREATHING,
+                Led.Mode.RIPPLE: ratbag.Led.Mode.BREATHING,
+                Led.Mode.CUSTOM: ratbag.Led.Mode.BREATHING,
+            }[self]
+
     mode: "Led.Mode" = attr.ib(default=Mode.OFF)
     color: Tuple[int, int, int] = attr.ib(default=(0, 0, 0))
     brightness: int = attr.ib(default=255)
@@ -646,7 +659,8 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
 
             for led_idx, led in enumerate(profile.leds):
                 kwargs = {
-                    "modes": tuple(m for m in ratbag.Led.Mode),
+                    "mode": led.mode.to_ratbag_mode(),
+                    "modes": tuple(set(m.to_ratbag_mode() for m in Led.Mode)),
                     "colordepth": ratbag.Led.Colordepth.RGB_888,  # FIXME
                 }
                 if led.mode == Led.Mode.ON:

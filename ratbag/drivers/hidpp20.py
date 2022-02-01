@@ -783,7 +783,7 @@ class Query(object):
                 raise QueryError(device, reply)
 
             self.reply = self._autoparse(reply)
-            self.parse_reply()
+            self.parse_reply(self.reply)
         return self
 
     def _autoparse(self, bytes):
@@ -802,7 +802,7 @@ class Query(object):
         result = Parser.to_object(bytes, spec, result_class=replyname)
         return result.object
 
-    def parse_reply(self):
+    def parse_reply(self, reply):
         """
         Override this in the subclass if :attr:`reply_format` autoparsing is
         insufficient. Parse the given bytes and set the required instance
@@ -893,12 +893,12 @@ class QueryGetFeature(Query):
             ],
         )
 
-    def parse_reply(self):
-        if self.reply.feature_index != 0:
-            self.reply.feature = Feature(
+    def parse_reply(self, reply):
+        if reply.feature_index != 0:
+            reply.feature = Feature(
                 name=self.feature_name,
-                index=self.reply.feature_index,
-                type=self.reply.feature_type,
+                index=reply.feature_index,
+                type=reply.feature_type,
             )
 
     def __str__(self):
@@ -934,12 +934,12 @@ class QueryFeatureSetCount(Query):
             reply_spec=[Spec("B", "count")],
         )
 
-    def parse_reply(self):
+    def parse_reply(self, reply):
         # feature set count does not include the root feature as documented
         # here:
         # https://6xq.net/git/lars/lshidpp.git/plain/doc/logitech_hidpp_2.0_specificati
         if self.feature == FeatureName.FEATURE_SET:
-            self.reply.count += 1
+            reply.count += 1
 
     def __str__(self):
         return f"{type(self).__name__}: {self.feature.name} (0x{self.feature.name:04x}) count {self.reply.count}"
@@ -1028,8 +1028,10 @@ class QueryDeviceInfoGetFwInfo(Query):
             ],
         )
 
-    def parse_reply(self):
-        self.reply.firmware_version = f"{self.reply.prefix}{self.reply.number}.{self.reply.revision}.{self.reply.build}"
+    def parse_reply(self, reply):
+        reply.firmware_version = (
+            f"{reply.prefix}{reply.number}.{reply.revision}.{reply.build}"
+        )
 
     def __str__(self):
         return (
@@ -1081,11 +1083,11 @@ class QueryOnboardProfilesDesc(Query):
             ],
         )
 
-    def parse_reply(self):
-        self.reply.has_g_shift = (self.reply.mechanical_layout & 0x03) == 0x02
-        self.reply.has_dpi_shift = ((self.reply.mechanical_layout & 0x0C) >> 2) == 0x02
-        self.reply.is_corded = (self.reply.various_info & 0x07) in [1, 4]
-        self.reply.is_wireless = (self.reply.various_info & 0x07) in [2, 4]
+    def parse_reply(self, reply):
+        reply.has_g_shift = (reply.mechanical_layout & 0x03) == 0x02
+        reply.has_dpi_shift = ((reply.mechanical_layout & 0x0C) >> 2) == 0x02
+        reply.is_corded = (reply.various_info & 0x07) in [1, 4]
+        reply.is_wireless = (reply.various_info & 0x07) in [2, 4]
 
     def __str__(self):
         return (
@@ -1266,15 +1268,13 @@ class QueryAdjustibleDpiGetDpiList(Query):
             ],
         )
 
-    def parse_reply(self):
+    def parse_reply(self, reply):
         # FIXME: libratbag has a G602 quirk here for the handling
         try:
-            self.reply.dpi_steps = [
-                v - 0xE000 for v in self.reply.values if v > 0xE000
-            ][0]
+            reply.dpi_steps = [v - 0xE000 for v in reply.values if v > 0xE000][0]
         except IndexError:
-            self.reply.dpi_steps = 0
-        self.reply.dpis = sorted([v for v in self.reply.values if 0 < v < 0xE000])
+            reply.dpi_steps = 0
+        reply.dpis = sorted([v for v in reply.values if 0 < v < 0xE000])
 
     def __str__(self):
         return f"{type(self).__name__}: sensor-index {self.reply.sensor_index} dpis {self.reply.dpis} steps {self.reply.dpi_steps}"
@@ -1327,7 +1327,7 @@ class QueryAdjustibleReportRateGetList(Query):
             ],
         )
 
-    def parse_reply(self):
+    def parse_reply(self, reply):
         # we only care about 'standard' rates
         rates = []
         if self.reply.flags & 0x80:
@@ -1396,9 +1396,9 @@ class QuerySpecialKeyButtonsGetInfo(Query):
             ],
         )
 
-    def parse_reply(self):
-        self.reply.logical_mapping = LogicalMapping(self.reply.control_id)
-        self.reply.physical_mapping = LogicalMapping(self.reply.task_id)
+    def parse_reply(self, reply):
+        reply.logical_mapping = LogicalMapping(self.reply.control_id)
+        reply.physical_mapping = LogicalMapping(self.reply.task_id)
 
 
 @attr.s
@@ -1422,11 +1422,11 @@ class QuerySpecialKeyButtonsGetReporting(Query):
             ],
         )
 
-    def parse_reply(self):
-        self.reply.raw_xy = not not (self.flags & 0x10)
-        self.reply.persist = not not (self.flags & 0x04)
-        self.reply.divert = not not (self.flags & 0x01)
-        self.reply.logical_mapping = LogicalMapping(self.reply.remapped)
+    def parse_reply(self, reply):
+        reply.raw_xy = not not (self.flags & 0x10)
+        reply.persist = not not (self.flags & 0x04)
+        reply.divert = not not (self.flags & 0x01)
+        reply.logical_mapping = LogicalMapping(reply.remapped)
 
 
 # --------------------------------------------------------------------------------------
@@ -1578,16 +1578,16 @@ class QueryLedSwControlGetLedState(Query):
             reply_spec=[Spec("B", "index"), Spec("H", "mode"), Spec("BBBBBB", "data")],
         )
 
-    def parse_reply(self):
-        self.reply.mode = SwLedMode(self.mode)
+    def parse_reply(self, reply):
+        reply.mode = SwLedMode(self.mode)
         specs = []
-        if self.reply.mode == SwLedMode.ON:
+        if reply.mode == SwLedMode.ON:
             specs = [
                 Spec(
                     "H", "info"
                 ),  # FIXME: "index" in libratbag but pretty sure this is wrong
             ]
-        elif self.reply.mode == SwLedMode.BLINK:
+        elif reply.mode == SwLedMode.BLINK:
             specs = [
                 Spec(
                     "H", "info"
@@ -1595,20 +1595,20 @@ class QueryLedSwControlGetLedState(Query):
                 Spec("H", "on_time"),
                 Spec("H", "off_time"),
             ]
-        elif self.reply.mode == SwLedMode.BREATHING:
+        elif reply.mode == SwLedMode.BREATHING:
             specs = [
                 Spec("H", "brightness"),
                 Spec("H", "period"),
                 Spec("H", "timeout"),
             ]
-        elif self.reply.mode == SwLedMode.TRAVEL:
+        elif reply.mode == SwLedMode.TRAVEL:
             specs = [
                 Spec("H", "_"),
                 Spec("H", "delay"),
             ]
 
         if specs:
-            Parser.to_object(bytes(self.data), specs, obj=self.reply)
+            Parser.to_object(bytes(self.data), specs, obj=reply)
 
 
 # --------------------------------------------------------------------------------------
@@ -1657,6 +1657,6 @@ class QueryReprogrammableKeysGetInfo(Query):
             ],
         )
 
-    def parse_reply(self):
-        self.reply.logical_mapping = LogicalMapping(self.reply.control_id)
-        self.reply.physical_mapping = LogicalMapping(self.reply.task_id)
+    def parse_reply(self, reply):
+        reply.logical_mapping = LogicalMapping(reply.control_id)
+        reply.physical_mapping = LogicalMapping(reply.task_id)

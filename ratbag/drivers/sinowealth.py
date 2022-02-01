@@ -72,7 +72,8 @@ class Config(object):
             Spec("B", "config_write"),
             Spec("BBBBBB", "?"),
             Spec("B", "config"),  # Second nibble is the eport rate.
-            Spec("B", "dpi"),  # Two nibbles: active DPI (out of enabled ones) and DPI count.
+            # Two nibbles: active DPI (out of enabled ones) and DPI count.
+            Spec("B", "dpi"),
             Spec("B", "dpi_disabled_slots"),  # bit mask
             Spec("B", "dpis", repeat=16),
             Spec("BBB", "dpi_color", repeat=8),
@@ -81,7 +82,24 @@ class Config(object):
             Spec("B", "glorious_direction"),
             Spec("B", "single_mode"),
             Spec("BBB", "single_color"),
-            # FIXME: there's a bunch of other fields here
+            Spec("B", "breathing7_mode"),
+            Spec("B", "breathing7_colorcount"),
+            Spec("BBB", "breathing7_color", repeat=7),
+            Spec("B", "tail_mode"),
+            Spec("B", "breathing_mode"),
+            Spec("B", "constant_color_mode"),
+            Spec("BBB", "constant_color_colors", repeat=6),
+            Spec("B", "?", repeat=13),
+            Spec("B", "rave_mode"),
+            Spec("BBB", "rave_colors", repeat=2),
+            Spec("B", "wave_mode"),
+            Spec("B", "breathing1_mode"),
+            Spec("BBB", "breathing1_color"),
+            # 0x1 - 2 mm.
+            # 0x2 - 3 mm.
+            # 0xff - indicates that lift off distance is changed with a dedicated command. Not constant, so do **NOT** overwrite it.
+            Spec("B", "lift_off_distance"),
+            Spec("B", "?"),
             Spec("B", "_", greedy=True),
         ]
 

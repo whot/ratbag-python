@@ -186,6 +186,35 @@ def test_parser():
         ]
         result = Parser.to_object(data, spec)
 
+    # Test the class name for the reply object
+    data = bytes(range(64, 73))
+    spec = [Spec("B", "something")]
+    result = Parser.to_object(data, spec, result_class="Foo")
+    assert type(result.object).__name__ == "Foo"
+
+    # Test instantiating the right class for the reply object
+    class TestResult(object):
+        def __init__(self, something):
+            pass
+
+    result = Parser.to_object(data, spec, result_class=TestResult)
+    assert isinstance(result.object, TestResult)
+
+    # Passing a string creates a new class of that name, not our class
+    result = Parser.to_object(data, spec, result_class="TestResult")
+    assert not isinstance(result.object, TestResult)
+    assert type(result.object).__name__ == "TestResult"
+    obj1 = result.object
+
+    # Make sure we can do this with different specs
+    spec = [Spec("B", "other")]
+    result = Parser.to_object(data, spec, result_class="TestResult")
+    assert not isinstance(result.object, TestResult)
+    assert type(result.object).__name__ == "TestResult"
+    obj2 = result.object
+
+    assert type(obj1) != type(obj2)
+
 
 def test_data_files():
     datafiles = ratbag.util.load_data_files()

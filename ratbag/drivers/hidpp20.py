@@ -778,7 +778,9 @@ class Query(object):
             Spec("B", "command"),
         ] + self.reply_spec
 
-        result = Parser.to_object(bytes, spec)
+        # QueryFooBar should return a ResultFooBar class
+        replyname = type(self).__name__.replace("Query", "Result")
+        result = Parser.to_object(bytes, spec, result_class=replyname)
         return result.object
 
     def parse_reply(self):

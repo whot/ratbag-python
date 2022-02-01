@@ -104,6 +104,7 @@ class Config(object):
         xy_independent = bool(obj.config & CONFIG_FLAGS_XY_RESOLUTION)
 
         def raw2dpi(raw: int) -> int:
+            # TODO: support different sensors. This is for PWM3360.
             return (raw + 1) * 100
 
         converted = [raw2dpi(r) for r in obj.dpi]

@@ -167,14 +167,8 @@ class Query:
                 rodent, f"Unexpected reply data size {len(reply_data)}"
             )
 
-        # Parse to the properties
-        rspec = [
-            Spec("B", "report_id"),
-            Spec("B", "cmd"),
-        ] + self.reply_spec
-
         reply = Reply()
-        Parser.to_object(reply_data, rspec, obj=reply)
+        Parser.to_object(reply_data, self.reply_spec, obj=reply)
         self.parse_reply(reply)
         return reply
 

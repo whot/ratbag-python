@@ -41,18 +41,9 @@ import struct
 
 from ratbag.util import as_hex
 
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 logger = logging.getLogger(__name__)
-
-
-class _ResultObject(object):
-    """
-    A generic object that has its attribute is set, used if :meth:`Parser.to_object`
-    has an ``obj`` argument of ``None``.
-    """
-
-    pass
 
 
 @attr.s
@@ -200,13 +191,35 @@ class Result(object):
 @attr.s
 class Parser(object):
     @classmethod
-    def to_object(cls, data: bytes, specs: List[Spec], obj: object = None) -> Result:
+    def to_object(
+        cls,
+        data: bytes,
+        specs: List[Spec],
+        obj: object = None,
+        result_class: Union[str, Type] = "_ResultObject",
+    ) -> Result:
         """
         Convert the given data into an object according to the specs. If
         ``obj`` is not ``None``, the attributes are set on that
         object (resetting any attributes of the same name already set on the
         object). Otherwise, a new generic object is created with all
         attributes as specified in the parser specs.
+
+        The ``result_class`` specifies either the type of class to
+        instantiate, or the name of the created class for this object.
+
+            >>> specs = [Spec("B", "field")]
+            >>> r = Parser.to_object(bytes(16), specs, result_class = "Foo")
+            >>> print(type(r.object).__name__)
+            Foo
+            >>> class Bar:
+            ...     def __init__(self, field):
+            ...         pass
+            >>> r = Parser.to_object(bytes(16), specs, result_class = Bar)
+            >>> assert isinstance(r.object, Bar)
+
+        Where an existing type is used, that type must take all Spec fields as
+        keyword arguments in the constructor.
         """
         # Only the last element can be greedy
         assert all([spec.greedy is False for spec in list(reversed(specs))[1:]])
@@ -219,8 +232,10 @@ class Parser(object):
         if disable_logger:
             logger.debug("Parsing zero byte array, detailed output is skipped")
 
-        if obj is None:
-            obj = _ResultObject()
+        # All parsing data is temporarily stored in this dictionary which is
+        # simply: { spec.name: parsed_value }
+        # Once we're done parsing we move all these to the object passed in
+        values: Dict[str, Any] = {}
 
         offset = 0
         for spec in specs:
@@ -248,11 +263,11 @@ class Parser(object):
                     if repeat > 1:
                         debugstr = f"self.{spec.name:24s} += {val}"
                         if idx == 0:
-                            setattr(obj, spec.name, [])
-                        getattr(obj, spec.name).append(val)
+                            values[spec.name] = []
+                        values[spec.name].append(val)
                     else:
                         debugstr = f"self.{spec.name:24s} = {val}"
-                        setattr(obj, spec.name, val)
+                        values[spec.name] = val
 
                 if not disable_logger:
                     logger.debug(
@@ -261,8 +276,25 @@ class Parser(object):
                 offset += spec._size
 
             if spec.convert_from_data is not None:
-                val = spec.convert_from_data(getattr(obj, spec.name))
-                setattr(obj, spec.name, val)
+                values[spec.name] = spec.convert_from_data(values[spec.name])
+
+        # if we don't have an object, construct an attr class with the spec
+        # names (skipping padding/unknown). This makes printing and inspecting
+        # results a lot saner.
+        if obj is None:
+            vals = {n.lstrip("_"): v for n, v in values.items()}
+
+            if isinstance(result_class, str):
+                c = attr.make_class(result_class, attrs=list(values.keys()))
+                # private fields in attr drop the leading underscore in the
+                # constructor
+                obj = c(**vals)
+            else:
+                # Instantiate the given directly
+                obj = result_class(**vals)
+        else:
+            for name, value in values.items():
+                setattr(obj, name, value)
 
         return Result(obj, offset)
 

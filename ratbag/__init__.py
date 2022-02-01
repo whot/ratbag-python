@@ -1302,6 +1302,7 @@ class Led(Feature):
             self.notify("color")
             self.dirty = True  # type: ignore
 
+    @property
     def colordepth(self) -> Colordepth:
         return self._colordepth
 

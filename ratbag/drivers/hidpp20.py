@@ -439,7 +439,9 @@ class Hidpp20Device(GObject.Object):
             query = QueryGetFeature.instance(f).run(self)
             try:
                 features.append(query.reply.feature)
-                logger.debug(f"Feature: {query.reply.feature}")
+                logger.debug(
+                    f"Feature {f.name} is at index {query.reply.feature.index}"
+                )
             except AttributeError:
                 logger.debug(f"Feature {f.name} is not supported")
                 pass

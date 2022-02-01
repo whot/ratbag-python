@@ -4,13 +4,6 @@ A Python implementation of libratbag, intended to replace libratbag
 eventually. Some of the motivation is discussed in
 https://github.com/libratbag/libratbag/issues/1247
 
-## Setup
-
-This repository needs the libratbag data files to work, usually in
-/usr/share/libratbag after installing libratbag. Alternatively, symlink to the
-`data/` directory in the libratbag git tree in the root directory of this
-repository.
-
 ## Architecture
 
 The public API, i.e. the bits to be consumed by various tools is in the

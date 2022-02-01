@@ -779,6 +779,7 @@ class Profile(Feature):
             "buttons": [b.as_dict() for b in self.buttons],
             "report_rates": [r for r in self.report_rates],
             "report_rate": self.report_rate or 0,
+            "leds": [l.as_dict() for l in self.leds],
         }
 
 
@@ -1360,3 +1361,17 @@ class Led(Feature):
         Return a tuple of the available :class:`Led.Mode` for this LED
         """
         return self._modes
+
+    def as_dict(self) -> Dict[str, Any]:
+        """
+        Returns this resolution as a dictionary that can e.g. be printed as YAML
+        or JSON.
+        """
+        return {
+            "index": self.index,
+            "color": list(self.color),
+            "colordepth": self.colordepth.name,
+            "brightness": self.brightness,
+            "mode": self.mode.name,
+            "modes": [m.name for m in self.modes],
+        }

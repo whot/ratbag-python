@@ -636,8 +636,10 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
                 report_rates=profile.report_rates,
                 active=idx == 0,  # FIXME
             )
+
             for dpi_idx, dpi in enumerate(profile.dpi):
                 ratbag.Resolution(p, dpi_idx, (dpi, dpi), dpi_list=profile.dpi_list)
+
             for led_idx, led in enumerate(profile.leds):
                 kwargs = {
                     "modes": tuple(m for m in ratbag.Led.Mode),

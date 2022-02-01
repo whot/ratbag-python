@@ -300,7 +300,7 @@ class RatbagProfile(ServiceInterface):
 
     @dbus_property(access=PropertyAccess.READ)
     def Name(self) -> "s":  # type: ignore
-        return self._profile.name
+        return self._profile.name or f"Profile {self._profile.index}"
 
     @dbus_property(access=PropertyAccess.READ)
     def Capabilities(self) -> "au":  # type: ignore

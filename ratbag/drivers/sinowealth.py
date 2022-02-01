@@ -54,6 +54,7 @@ class Config(object):
     converting it back into whatever bytes the device needs.
     """
 
+    dpi_disabled_slots: int = attr.ib()
     report_rate: int = attr.ib()
     independent_xy_resolution: bool = attr.ib()
     dpis: List[Tuple[int, int]] = attr.ib()
@@ -72,7 +73,7 @@ class Config(object):
             Spec("BBBBBB", "?"),
             Spec("B", "config"),
             Spec("B", "dpi_count"),  # two nibbles!
-            Spec("B", "dpi_enabled"),
+            Spec("B", "dpi_disabled_slots"),  # bit mask
             Spec("B", "dpi", repeat=16),
             Spec("BBB", "dpi_color", repeat=8),
             Spec("B", "rgb_effect"),
@@ -114,6 +115,7 @@ class Config(object):
         # Now create the Config object with all the data we have converted
         # already
         return cls(
+            dpi_disabled_slots=obj.dpi_disabled_slots,
             report_rate=report_rate,
             independent_xy_resolution=xy_independent,
             dpis=dpis,
@@ -263,7 +265,7 @@ class SinowealthDevice:
                 capabilities=caps,
                 dpi_list=dpi_list,
                 dpi=dpi,
-                enabled=dpi[0] != 0,  # should use dpi_enabled?
+                enabled=not (config.dpi_disabled_slots & 1 << ridx),
             )
 
         self.ratbag_device.connect("commit", self.cb_commit)

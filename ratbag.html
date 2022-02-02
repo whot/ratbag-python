@@ -185,6 +185,14 @@ property</p></li>
 <dd><p>The format, must be compatible to Python’s <code class="docutils literal notranslate"><span class="pre">struct</span></code> format specifiers,
 excluding the endian prefixes. If the format contains more than one
 element, the respective object attribute is a tuple.</p>
+<p>With the exception of fixed-length strings (<code class="docutils literal notranslate"><span class="pre">4s</span></code> for a 4-byte string)
+this format must not contain any repeat specifiers. Use the <code class="docutils literal notranslate"><span class="pre">repeat</span></code>
+attribute instead. IOW:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Spec</span><span class="p">(</span><span class="s2">&quot;3s&quot;</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">)</span>  <span class="c1"># One 3-byte string</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Spec</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># Three 1-byte strings</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Spec</span><span class="p">(</span><span class="s2">&quot;3H&quot;</span><span class="p">,</span> <span class="s2">&quot;foo&quot;</span><span class="p">)</span>  <span class="c1"># Not permitted</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py attribute">
@@ -229,6 +237,8 @@ remainder is silently skipped:</p>
 <dd><p>Conversion function for the data. An example for converting a sequence of
 bytes to a string:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spec</span> <span class="o">=</span> <span class="n">Spec</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">convert_from_data</span><span class="o">=</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+<span class="go"># Or alternatively use the string length format:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spec</span> <span class="o">=</span> <span class="n">Spec</span><span class="p">(</span><span class="s2">&quot;3s&quot;</span><span class="p">,</span> <span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="n">convert_from_data</span><span class="o">=</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">Parser</span><span class="o">.</span><span class="n">to_object</span><span class="p">(</span><span class="s2">&quot;bar&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">spec</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">data</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">foo</span> <span class="o">==</span> <span class="s2">&quot;bar&quot;</span>
 </pre></div>
@@ -288,12 +298,27 @@ instance with all attribute names as requested by the parser spec.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ratbag.parser.Parser.to_object">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.parser.Parser.to_object" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'_ResultObject'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.parser.Parser.to_object" title="Permalink to this definition"></a></dt>
 <dd><p>Convert the given data into an object according to the specs. If
 <code class="docutils literal notranslate"><span class="pre">obj</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>, the attributes are set on that
 object (resetting any attributes of the same name already set on the
 object). Otherwise, a new generic object is created with all
 attributes as specified in the parser specs.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">result_class</span></code> specifies either the type of class to
+instantiate, or the name of the created class for this object.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">specs</span> <span class="o">=</span> <span class="p">[</span><span class="n">Spec</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;field&quot;</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">Parser</span><span class="o">.</span><span class="n">to_object</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="mi">16</span><span class="p">),</span> <span class="n">specs</span><span class="p">,</span> <span class="n">result_class</span> <span class="o">=</span> <span class="s2">&quot;Foo&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">object</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="go">Foo</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Bar</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">Parser</span><span class="o">.</span><span class="n">to_object</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="mi">16</span><span class="p">),</span> <span class="n">specs</span><span class="p">,</span> <span class="n">result_class</span> <span class="o">=</span> <span class="n">Bar</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">object</span><span class="p">,</span> <span class="n">Bar</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Where an existing type is used, that type must take all Spec fields as
+keyword arguments in the constructor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference internal" href="#ratbag.parser.Result" title="ratbag.parser.Result"><code class="xref py py-class docutils literal notranslate"><span class="pre">Result</span></code></a></p>

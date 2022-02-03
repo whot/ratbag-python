@@ -413,10 +413,6 @@ def _init_logger(conf=None, verbose=False):
         logging.basicConfig(format="%(levelname)s: %(name)s: %(message)s", level=lvl)
 
 
-def _init_recorders(outfile):
-    return [ratbag.recorder.YamlDeviceRecorder({"logfile": outfile})]
-
-
 def _init_emulators(infile):
     return [ratbag.emulator.YamlEmulator(infile)]
 

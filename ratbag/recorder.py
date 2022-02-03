@@ -50,10 +50,11 @@ class YamlDeviceRecorder(ratbag.Recorder):
         super().__init__(self)
         self._filename = filename
         self.info = info
+        self.last_timestamp = datetime.datetime.now()
 
     def start(self) -> None:
         self.logfile = open(self._filename, "w")
-        now = datetime.datetime.now().strftime("%y-%m-%d %H:%M")
+        now = self.last_timestamp.strftime("%y-%m-%d %H:%M")
         self.logfile.write(
             f"# generated {now}\n"
             f"logger: {type(self).__name__}\n"
@@ -74,8 +75,19 @@ class YamlDeviceRecorder(ratbag.Recorder):
                 f"  - {{name: {key}, type: {tstr}, value: {value}}}{comment}\n"
             )
 
+        # So we definitely write out the first current time
+        self.last_timestamp = datetime.datetime.fromtimestamp(0)
         self.logfile.write("data:\n")
+        self._log_timestamp()
         self.logfile.flush()
+
+    def _log_timestamp(self) -> None:
+        ts = datetime.datetime.now()
+        td = ts - self.last_timestamp
+        if td > datetime.timedelta(minutes=5):
+            self.last_timestamp = ts
+            now = ts.strftime("%H:%M")
+            self.logfile.write(f"# Current time: {now}\n")
 
     def _log_bytes(self, data: bytes, prefix: str = "") -> None:
         GROUPING = 8
@@ -105,6 +117,8 @@ class YamlDeviceRecorder(ratbag.Recorder):
         data: bytes,
         extra: Dict[str, Any] = {"type": "fd"},
     ):
+        self._log_timestamp()
+
         it = iter(extra.items())
         k, v = next(it)
         self.logfile.write(f"  - {k}: {v}\n")

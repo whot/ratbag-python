@@ -153,8 +153,12 @@ class Ratbag(GObject.Object):
 
         driver.connect("device-added", cb_device_added)
         if self._blackbox:
-            if "rodent-found" in GObject.signal_list_names(type(driver)):
+            try:
                 driver.connect("rodent-found", cb_rodent_found)
+            except (AttributeError, TypeError) as e:
+                logger.warning(
+                    "Signal 'rodent-found' not available, cannot record: {e}"
+                )
 
     def start(self) -> None:
         """

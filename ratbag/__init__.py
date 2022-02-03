@@ -56,13 +56,6 @@ class Ratbag(GObject.Object):
         is rarely a need for setting this to ``False`` outside specific test
         cases.
 
-    Supported keys in ``config``:
-
-    - ``emulators``: a list of :class:`ratbag.emulator.YamlDevice` or similar
-      to emulate a device
-    - ``recorders``: a list of :class:`ratbag.recorder.SimpleRecorder` or
-      similar to record device interactions
-
     GObject Signals:
 
     - ``device-added`` Notification that a new :class:`ratbag.Device` was added

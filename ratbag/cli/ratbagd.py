@@ -31,6 +31,8 @@ def _init_logger(conf=None, verbose=False):
     if conf is None:
         conf = Path("config-logger.yml")
         if not conf.exists():
+            # FIXME: ratbagd will need to run as root, so XDG_CONFIG_HOME is
+            # probably not what you'd expect
             xdg = os.getenv("XDG_CONFIG_HOME")
             if xdg is None:
                 xdg = Path.home() / ".config"

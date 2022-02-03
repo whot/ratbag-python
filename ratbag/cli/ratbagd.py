@@ -14,9 +14,9 @@ from typing import List
 import dbus_next
 import logging
 import sys
+import os
 
 import ratbag
-from ratbag.driver import DeviceInfo
 
 logger = logging.getLogger("ratbagd")
 

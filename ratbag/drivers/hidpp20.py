@@ -229,12 +229,12 @@ class Profile(object):
             Spec("BBB", "colors"),
             Spec("B", "power_mode"),
             Spec("B", "angle_snapping"),
-            Spec("B", "_", repeat=10),  # reserved
+            Spec("B" * 10, "_"),  # reserved
             Spec("H", "powersafe_timeout", endian="le"),
             Spec("H", "poweroff_timeout", endian="le"),
             Spec("I", "_button_bindings", repeat=16),
             Spec("I", "_alternate_button_bindings", repeat=16),
-            Spec("B", "_name", repeat=16 * 3, endian="le"),
+            Spec("B" * 16 * 3, "_name"),
             Spec("B" * 11, "_leds", repeat=2),
             Spec("B" * 11, "_alt_leds", repeat=2),
             Spec("BB", "_"),
@@ -1155,7 +1155,7 @@ class QueryOnboardProfilesMemRead(Query):
                 Spec("H", "sector"),
                 Spec("H", "offset"),
             ],
-            reply_spec=[Spec("B", "data", repeat=16)],
+            reply_spec=[Spec("B" * 16, "data")],
             sector=sector,
             offset=offset,
         )

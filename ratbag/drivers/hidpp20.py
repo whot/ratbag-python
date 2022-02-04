@@ -182,6 +182,11 @@ class Color:
     def __str__(self):
         return f"rgb({self.red},{self.green},{self.blue})"
 
+    def __iter__(self):
+        yield self.red
+        yield self.green
+        yield self.blue
+
 
 @attr.s
 class Profile(object):

@@ -218,9 +218,9 @@ class QueryFWVersion(Query):
                 Spec("B", "report_id"),
                 Spec("B", "cmd"),
                 Spec(
-                    "BBBB",
+                    "4s",
                     "version",
-                    convert_from_data=lambda s: bytes(s).decode("utf-8"),
+                    convert_from_data=lambda s: s.decode("utf-8"),
                 ),
             ],
         )

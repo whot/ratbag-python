@@ -28,6 +28,14 @@ ratbag.drivers.hidpp20 module
    :undoc-members:
    :show-inheritance:
 
+ratbag.drivers.openinput module
+-------------------------------
+
+.. automodule:: ratbag.drivers.openinput
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 ratbag.drivers.roccat module
 ----------------------------
 

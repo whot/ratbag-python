@@ -186,6 +186,12 @@ class Query:
                 rodent, f"Unexpected reply data size {len(reply_data)}"
             )
 
+        if self.reply_report_id != reply_data[0]:
+            raise ratbag.driver.ProtocolError.from_rodent(
+                rodent,
+                f"Got reply for a different command {reply_data[1]} instead of {self.reply_report_id}",
+            )
+
         reply = Reply()
         Parser.to_object(reply_data, self.reply_spec, obj=reply)
         self.parse_reply(reply)

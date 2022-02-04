@@ -219,7 +219,11 @@ class Parser(object):
             >>> assert isinstance(r.object, Bar)
 
         Where an existing type is used, that type must take all Spec fields as
-        keyword arguments in the constructor.
+        keyword arguments in the constructor, except:
+
+        - Spec names with a single leading underscore are expected to drop that
+          underscore in the constructor.
+        - Spec names with a double leading underscore are ignored
         """
         # Only the last element can be greedy
         assert all([spec.greedy is False for spec in list(reversed(specs))[1:]])
@@ -282,10 +286,14 @@ class Parser(object):
         # names (skipping padding/unknown). This makes printing and inspecting
         # results a lot saner.
         if obj is None:
-            vals = {n.lstrip("_"): v for n, v in values.items()}
+            # names with a single underscore are kept (but drop the underscore
+            # for the constructor)
+            # names with a double underscore are ignored
+            public_names = list(filter(lambda k: not k.startswith("__"), values.keys()))
+            vals = {n.lstrip("_"): values[n] for n in public_names}
 
             if isinstance(result_class, str):
-                c = attr.make_class(result_class, attrs=list(values.keys()))
+                c = attr.make_class(result_class, attrs=public_names)
                 # private fields in attr drop the leading underscore in the
                 # constructor
                 obj = c(**vals)

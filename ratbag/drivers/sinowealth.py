@@ -157,6 +157,13 @@ class Query:
     reply_spec: List[Spec] = attr.ib()
 
     def run(self, rodent: ratbag.driver.Rodent) -> Reply:
+        # Use the long config if available, otherwise the short config
+        if (
+            self.reply_report_id == ReportID.CONFIG
+            and ReportID.CONFIG_LONG in rodent.report_ids["feature"]
+        ):
+            self.reply_report_id = ReportID.CONFIG_LONG
+
         qspec = [
             Spec("B", "report_id"),
             Spec("B", "cmd"),
@@ -164,15 +171,6 @@ class Query:
 
         query = Parser.from_object(self, qspec, pad_to=self.report_id.size)
         rodent.hid_set_feature(self.report_id, bytes(query))
-
-        # Use the long config if available, otherwise the short config
-        if (
-            self.reply_report_id == ReportID.CONFIG
-            and ReportID.CONFIG_LONG in rodent.report_ids["feature"]
-        ):
-            reply_report_id = ReportID.CONFIG_LONG
-        else:
-            reply_report_id = ReportID.CONFIG
 
         reply_data = rodent.hid_get_feature(self.reply_report_id)
         # Special handling for config queries:

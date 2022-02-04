@@ -447,7 +447,9 @@ class Led(object):
                 Led.Mode.BREATHING: ratbag.Led.Mode.BREATHING,
                 Led.Mode.RIPPLE: ratbag.Led.Mode.BREATHING,
                 Led.Mode.CUSTOM: ratbag.Led.Mode.BREATHING,
-            }[self]
+            }.get(
+                self, ratbag.Led.Mode.ON
+            )  # unhandled mode is just ON
 
     mode: Mode = attr.ib(default=Mode.OFF)
     color: Tuple[int, int, int] = attr.ib(default=(0, 0, 0))
@@ -838,7 +840,7 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
                     kwargs["brightness"] = led.intensity
                     kwargs["effect_duration"] = led.period
                 else:
-                    # FIXME: we need an unknown mode here
+                    # should never happen anyway, see to_ratbag_mode
                     pass
 
                 ratbag.Led(p, led_idx, **kwargs)

@@ -197,7 +197,7 @@ class Parser(object):
         specs: List[Spec],
         obj: object = None,
         result_class: Union[str, Type] = "_ResultObject",
-    ) -> Result:
+    ) -> Any:
         """
         Convert the given data into an object according to the specs. If
         ``obj`` is not ``None``, the attributes are set on that

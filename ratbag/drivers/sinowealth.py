@@ -210,6 +210,8 @@ class QueryFWVersion(Query):
             reply_report_id=ReportID.CMD,
             query_spec=[],
             reply_spec=[
+                Spec("B", "report_id"),
+                Spec("B", "cmd"),
                 Spec(
                     "BBBB",
                     "version",

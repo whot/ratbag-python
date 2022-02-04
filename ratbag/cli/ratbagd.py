@@ -483,8 +483,15 @@ def init_logdir(path):
             xdg = Path.home() / ".local" / "state"
         else:
             xdg = Path("/") / "var" / "log"
-    logdir = Path(xdg) / "ratbagd" / datetime.datetime.now().strftime("%y-%m-%d-%H%M%S")
+    basedir = Path(xdg) / "ratbagd"
+    logdir = basedir / datetime.datetime.now().strftime("%y-%m-%d-%H%M%S")
     logdir.mkdir(exist_ok=True, parents=True)
+
+    latest = basedir / "latest"
+    if latest.is_symlink() or not latest.exists():
+        latest.unlink(missing_ok=True)
+        latest.symlink_to(logdir)
+
     return logdir
 
 

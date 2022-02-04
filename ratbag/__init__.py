@@ -976,9 +976,8 @@ class Action(GObject.Object):
         MACRO = 4
         UNKNOWN = 1000
 
-    def __init__(self, parent):
+    def __init__(self):
         GObject.Object.__init__(self)
-        self._parent = parent
         self._type = Action.Type.UNKNOWN
 
     @property
@@ -1004,8 +1003,8 @@ class ActionNone(Action):
     event when physically presed down.
     """
 
-    def __init__(self, parent):
-        super().__init__(parent)
+    def __init__(self):
+        super().__init__()
         self._type: Action.Type = Action.Type.NONE
 
     def __str__(self) -> str:
@@ -1020,8 +1019,8 @@ class ActionButton(Action):
     at button 1 (left mouse button).
     """
 
-    def __init__(self, parent, button: int):
-        super().__init__(parent)
+    def __init__(self, button: int):
+        super().__init__()
         self._button = button
         self._type = Action.Type.BUTTON
 
@@ -1080,8 +1079,8 @@ class ActionSpecial(Action):
         SECOND_MODE = 0x40000011
         BATTERY_LEVEL = 0x40000012
 
-    def __init__(self, parent, special: Special):
-        super().__init__(parent)
+    def __init__(self, special: Special):
+        super().__init__()
         self._type = Action.Type.SPECIAL
         self._special = special
 
@@ -1120,11 +1119,10 @@ class ActionMacro(Action):
 
     def __init__(
         self,
-        parent,
         name: str = "Unnamed macro",
         events: List[Tuple[Event, int]] = [(Event.INVALID, 0)],
     ):
-        super().__init__(parent)
+        super().__init__()
         self._type = Action.Type.MACRO
         self._name = name
         self._events = events
@@ -1205,7 +1203,7 @@ class Button(Feature):
         super().__init__(profile.device, index)
         self.profile = profile
         self._types = tuple(set(types))
-        self._action = action or Action(self)
+        self._action = action or Action()
         self.profile._add_button(self)
 
     @property

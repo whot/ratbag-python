@@ -480,22 +480,20 @@ class RoccatKeyMapping(object):
         action = self.actions[idx][0]
         macro = self.macros.get(idx, None)
         if action == 0:
-            ratbag_action = ratbag.ActionNone(self)
+            ratbag_action = ratbag.ActionNone()
         elif action in [1, 2, 3]:
-            ratbag_action = ratbag.ActionButton(self, action)
+            ratbag_action = ratbag.ActionButton(action)
         # 5 is shortcut (modifier + key)
         elif action == 6:
-            ratbag_action = ratbag.ActionNone(self)
+            ratbag_action = ratbag.ActionNone()
         elif action in [7, 8]:
-            ratbag_action = ratbag.ActionButton(self, action - 3)
+            ratbag_action = ratbag.ActionButton(action - 3)
         elif action in RoccatKeyMapping.specials:
-            ratbag_action = ratbag.ActionSpecial(
-                self, RoccatKeyMapping.specials[action]
-            )
+            ratbag_action = ratbag.ActionSpecial(RoccatKeyMapping.specials[action])
         elif action == 48:
             assert macro is not None
             name, events = macro.to_ratbag()
-            ratbag_action = ratbag.ActionMacro(self, name, events)
+            ratbag_action = ratbag.ActionMacro(name, events)
         else:
             # For keycodes we pretend it's a macro
             assert macro is None
@@ -509,10 +507,10 @@ class RoccatKeyMapping(object):
                 ]
                 macro.length = 2
                 name, events = macro.to_ratbag()
-                ratbag_action = ratbag.ActionMacro(self, name, events)
+                ratbag_action = ratbag.ActionMacro(name, events)
             except KeyError:
                 logger.info(f"Unsupported action type {action}")
-                ratbag_action = ratbag.Action(self)
+                ratbag_action = ratbag.Action()
         return ratbag_action
 
     def button_update_from_ratbag(self, idx, ratbag_action):

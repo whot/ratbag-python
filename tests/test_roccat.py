@@ -323,7 +323,7 @@ class TestRoccatDriver(object):
 
         device = self.ratbag_device
         button = device.profiles[3].buttons[2]
-        button.set_action(ratbag.ActionButton(button, 1))  # change to left button
+        button.set_action(ratbag.ActionButton(1))  # change to left button
         device.commit(transaction)
         self.mainloop()
 

@@ -11,6 +11,8 @@ from pathlib import Path
 from gi.repository import GLib
 from typing import List
 
+import argparse
+import datetime
 import dbus_next
 import logging
 import sys
@@ -439,9 +441,55 @@ class Ratbagd(object):
         self.ratbag.start()
 
 
+def init_logdir(path):
+    xdg = path or os.getenv("XDG_STATE_HOME")
+    if not xdg:
+        if os.getuid() != 0:
+            xdg = Path.home() / ".local" / "state"
+        else:
+            xdg = Path("/") / "var" / "log"
+    logdir = Path(xdg) / "ratbagd" / datetime.datetime.now().strftime("%y-%m-%d-%H%M%S")
+    logdir.mkdir(exist_ok=True, parents=True)
+    return logdir
+
+
+desc = """
+This daemon needs sufficient privileges to access the devices and own the DBus
+name. This usually means it needs to be run as root.
+
+Log files and recordings of devices are stored in $XDG_STATE_HOME/ratbagd by
+default (or /var/log/ratbagd if run as root). The recordings contain all
+interactions of ratbagd with the device - this does not usually include
+sensitive data.
+"""
+
+
 def main():
+    parser = argparse.ArgumentParser(
+        description="A ratbag DBus daemon",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=desc,
+    )
+    parser.add_argument(
+        "--disable-recordings",
+        default=False,
+        action="store_true",
+        help="Disable device recordings",
+    )
+    parser.add_argument(
+        "--recordings-dir",
+        type=Path,
+        default=None,
+        help="Directory to store the recordings in",
+    )
+    ns = parser.parse_args()
     _init_logger(verbose=True)
-    rb = ratbag.Ratbag.create()
+    kwargs = {}
+    if not ns.disable_recordings:
+        logdir = init_logdir(ns.recordings_dir)
+        blackbox = ratbag.Blackbox(directory=logdir)
+        kwargs["blackbox"] = blackbox
+    rb = ratbag.Ratbag.create(**kwargs)
     ratbagd = Ratbagd(rb)
     try:
         ratbagd.init_dbus()

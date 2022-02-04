@@ -20,9 +20,6 @@ from ratbag.parser import Spec, Parser
 logger = logging.getLogger(__name__)
 
 
-CONFIG_SIZE_USED_MIN = 131
-CONFIG_SIZE_USED_MAX = 167
-
 CONFIG_FLAGS_XY_RESOLUTION = 0x80
 CONFIG_FLAGS_REPORT_RATE_MASK = 0x0F
 
@@ -35,8 +32,8 @@ class ReportID(enum.IntEnum):
     @property
     def size(self) -> int:
         return {
-            ReportID.CONFIG: 512,
-            ReportID.CONFIG_LONG: 512,
+            ReportID.CONFIG: 520,
+            ReportID.CONFIG_LONG: 520,
             ReportID.CMD: 6,
         }[self]
 
@@ -177,11 +174,15 @@ class Query:
         else:
             reply_report_id = ReportID.CONFIG
 
-        # GetFeature on the reply report ID
-        reply_data = rodent.hid_get_feature(reply_report_id)
-        if reply_report_id in (ReportID.CONFIG, ReportID.CONFIG_LONG) and not (
-            CONFIG_SIZE_USED_MIN <= len(reply_data) <= CONFIG_SIZE_USED_MAX
-        ):
+        reply_data = rodent.hid_get_feature(self.reply_report_id)
+        # Special handling for config queries:
+        if self.reply_report_id in (ReportID.CONFIG, ReportID.CONFIG_LONG):
+            if len(reply_data) != self.reply_report_id.size:
+                raise ratbag.driver.ProtocolError.from_rodent(
+                    rodent, f"Unexpected reply data size {len(reply_data)}"
+                )
+        # Real error check
+        elif len(reply_data) != len(query):
             raise ratbag.driver.ProtocolError.from_rodent(
                 rodent, f"Unexpected reply data size {len(reply_data)}"
             )

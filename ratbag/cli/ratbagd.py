@@ -11,6 +11,7 @@ from pathlib import Path
 from gi.repository import GLib
 from typing import List
 
+import attr
 import argparse
 import datetime
 import dbus_next
@@ -25,27 +26,61 @@ logger = logging.getLogger("ratbagd")
 PATH_PREFIX = "/org/freedesktop/ratbag1"
 NAME_PREFIX = "org.freedesktop.ratbag1"
 
+# Replacements in here: {console_log_level}, {log_level}, {log_file}
+log_config = """
+version: 1
+formatters:
+  simple:
+    format: '%(levelname).1s|%(name)s: %(message)s'
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: {console_log_level}
+    formatter: simple
+    stream: ext://sys.stdout
+  file:
+    class: logging.handlers.RotatingFileHandler
+    formatter: simple
+    level: {log_level}
+    filename: {log_file}
+    maxBytes: 4194304
+    backupCount: 5
+root:
+    level: DEBUG
+    handlers: [console, file]
+"""
 
-def _init_logger(conf=None, verbose=False):
+
+@attr.s
+class LogLevels(object):
+    console: int = attr.ib()
+    file: int = attr.ib()
+
+    @classmethod
+    def from_args(cls, console: str, file: str):
+        map = {
+            "disabled": logging.NOTSET,
+            "debug": logging.DEBUG,
+            "info": logging.INFO,
+            "warning": logging.WARNING,
+            "error": logging.ERROR,
+            "critical": logging.CRITICAL,
+        }
+        return cls(map[console], map[file])
+
+
+def init_logger(levels: LogLevels, logdir: Path) -> None:
     import yaml
     import logging.config
 
-    if conf is None:
-        conf = Path("config-logger.yml")
-        if not conf.exists():
-            # FIXME: ratbagd will need to run as root, so XDG_CONFIG_HOME is
-            # probably not what you'd expect
-            xdg = os.getenv("XDG_CONFIG_HOME")
-            if xdg is None:
-                xdg = Path.home() / ".config"
-            conf = Path(xdg) / "ratbag" / "config-logger.yml"
-    if Path(conf).exists():
-        with open(conf) as fd:
-            yml = yaml.safe_load(fd)
-        logging.config.dictConfig(yml)
-    else:
-        lvl = logging.DEBUG if verbose else logging.INFO
-        logging.basicConfig(format="%(levelname)s: %(name)s: %(message)s", level=lvl)
+    logfile = logdir / "ratbagd.log"
+
+    yml = yaml.safe_load(
+        log_config.format(
+            console_log_level=levels.console, log_level=levels.file, log_file=logfile
+        )
+    )
+    logging.config.dictConfig(yml)
 
 
 def make_name(name: str) -> str:
@@ -477,16 +512,30 @@ def main():
         help="Disable device recordings",
     )
     parser.add_argument(
-        "--recordings-dir",
+        "--logdir",
         type=Path,
         default=None,
-        help="Directory to store the recordings in",
+        help="Directory to store log files and recordings in",
     )
+    parser.add_argument(
+        "--console-log-level",
+        default="info",
+        choices=["disabled", "debug", "info", "warning", "error", "critical"],
+        help="Log level for stdout logging",
+    )
+    parser.add_argument(
+        "--log-level",
+        default="debug",
+        choices=["disabled", "debug", "info", "warning", "error", "critical"],
+        help="Log level for log file logging",
+    )
+
     ns = parser.parse_args()
-    _init_logger(verbose=True)
+    logdir = init_logdir(ns.logdir)
+    levels = LogLevels.from_args(ns.console_log_level, ns.log_level)
+    init_logger(levels, logdir)
     kwargs = {}
     if not ns.disable_recordings:
-        logdir = init_logdir(ns.recordings_dir)
         blackbox = ratbag.Blackbox(directory=logdir)
         kwargs["blackbox"] = blackbox
     rb = ratbag.Ratbag.create(**kwargs)

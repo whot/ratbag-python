@@ -456,67 +456,158 @@ class Led(object):
                 self, ratbag.Led.Mode.ON
             )  # unhandled mode is just ON
 
-    mode: Mode = attr.ib(default=Mode.OFF)
-    color: Tuple[int, int, int] = attr.ib(default=(0, 0, 0))
-    brightness: int = attr.ib(default=255)
-    period: int = attr.ib(default=0)
+        @staticmethod
+        def get_class(mode: "Led.Mode") -> Type["Led"]:
+            """
+            Map the :class:`Led.Mode` into the actual class expected to handle
+            that particular mode.
+            """
+            return {
+                Led.Mode.OFF: LedOff,
+                Led.Mode.ON: LedOn,
+                Led.Mode.CYCLE: LedCycle,
+                Led.Mode.COLOR_WAVE: LedColorWave,
+                Led.Mode.STARLIGHT: LedStarlight,
+                Led.Mode.BREATHING: LedBreathing,
+                Led.Mode.RIPPLE: LedRipple,
+                Led.Mode.CUSTOM: LedCustom,
+            }[mode]
 
-    @classmethod
-    def from_data(cls, data: bytes) -> "Led":
+        @staticmethod
+        def from_obj(obj: "Led") -> int:
+            """
+            Map the Led subclass into the :class:`Led.Mode` it corresponds to.
+            """
+            mapping = {
+                LedOff: Led.Mode.OFF,
+                LedOn: Led.Mode.ON,
+                LedCycle: Led.Mode.CYCLE,
+                LedColorWave: Led.Mode.COLOR_WAVE,
+                LedStarlight: Led.Mode.STARLIGHT,
+                LedBreathing: Led.Mode.BREATHING,
+                LedRipple: Led.Mode.RIPPLE,
+                LedCustom: Led.Mode.CUSTOM,
+            }
+            return next(iter({v for k, v in mapping.items() if isinstance(obj, k)}))
+
+    mode: Mode = attr.ib()
+
+    @staticmethod
+    def from_data(data: bytes) -> "Led":
         # input data are 11 bytes for this LED, first byte is the mode
+        # We have a mapping of mode to class type, then instantiate that with
+        # the class-specific parser spec
         mode = Led.Mode(data[0])
+        cls: Type = Led.Mode.get_class(mode)
+        result = Parser.to_object(bytes(data), cls.specs, result_class=cls)
+        return result.object
 
-        def intensity(x):
-            return x if x else 100  # 1-100 percent, 0 means 100
+    @mode.validator
+    def mode_validator(self, attribute, value):
+        if value != Led.Mode.from_obj(self):
+            raise ValueError(f"Invalid mode {value} for {type(self)}")
 
-        mapping: Dict["Led.Mode", List[Spec]] = {
-            Led.Mode.OFF: [],
-            Led.Mode.ON: [Spec("BBB", "colors")],
-            Led.Mode.CYCLE: [
-                Spec("BBBBB", "_"),
-                Spec("H", "period"),
-                Spec(
-                    "B",
-                    "intensity",
-                    convert_from_data=intensity,
-                ),  # 1-100 percent, 0 means 100
-            ],
-            Led.Mode.COLOR_WAVE: [],  # dunno
-            Led.Mode.STARLIGHT: [
-                Spec("BBB", "color_sky"),
-                Spec("BBB", "color_star"),
-            ],
-            Led.Mode.BREATHING: [
-                Spec("BBB", "color"),
-                Spec("H", "period"),
-                Spec("B", "waveform"),
-                Spec(
-                    "B",
-                    "intensity",
-                    convert_from_data=intensity,
-                ),  # 1-100 percent, 0 means 100
-            ],
-            Led.Mode.RIPPLE: [
-                Spec("BBB", "color"),
-                Spec("B", "_"),
-                Spec("H", "period"),
-            ],
-            Led.Mode.CUSTOM: [],  # dunno
-        }
 
-        specs = [
-            Spec(
-                "B",
-                "mode",
-                convert_from_data=lambda m: Led.Mode(m),
-            )
-        ] + mapping[mode]
+@attr.s
+class LedOn(Led):
+    specs = [
+        Spec("B", "mode", convert_from_data=lambda x: Led.Mode(x)),
+        Spec("BBB", "color", convert_from_data=lambda x: Color(*x)),
+    ]
+    mode: Led.Mode = attr.ib()
+    color: Color = attr.ib()
 
-        result = Parser.to_object(bytes(data), specs)
-        led = cls(mode=result.object.mode)
-        for name in [s.name for s in specs]:
-            setattr(led, name, getattr(result.object, name))
-        return led
+    @mode.validator
+    def mode_validator(self, attribute, value):
+        if value != Led.Mode.ON:
+            raise ValueError(f"Invalid mode {value} for LedOn")
+
+
+@attr.s
+class LedOff(Led):
+    specs = [
+        Spec("B", "mode", convert_from_data=lambda x: Led.Mode(x)),
+    ]
+    mode: Led.Mode = attr.ib()
+
+
+@attr.s
+class LedCustom(Led):
+    specs = [
+        Spec("B", "mode", convert_from_data=lambda x: Led.Mode(x)),
+    ]
+    mode: Led.Mode = attr.ib()
+
+
+@attr.s
+class LedCycle(Led):
+    specs = [
+        Spec("B", "mode", convert_from_data=lambda x: Led.Mode(x)),
+        Spec("BBBBB", "_"),
+        Spec("H", "period"),
+        Spec(
+            "B",
+            "intensity",
+            convert_from_data=lambda x: x if x else 100,  # 1-100 percent, 0 means 100
+        ),
+    ]
+    mode: Led.Mode = attr.ib()
+    period: int = attr.ib(default=0)
+    intensity: int = attr.ib(default=0)
+
+
+@attr.s
+class LedBreathing(Led):
+    specs = [
+        Spec("B", "mode", convert_from_data=lambda x: Led.Mode(x)),
+        Spec("BBB", "color", convert_from_data=lambda x: Color(*x)),
+        Spec("H", "period"),
+        Spec("B", "waveform"),
+        Spec(
+            "B",
+            "intensity",
+            convert_from_data=lambda x: x if x else 100,  # 1-100 percent, 0 means 100
+        ),
+    ]
+    mode: Led.Mode = attr.ib()
+    color: Color = attr.ib()
+    period: int = attr.ib()
+    waveform: int = attr.ib()
+    intensity: int = attr.ib()
+
+
+@attr.s
+class LedColorWave(Led):
+    specs = [
+        Spec("B", "mode", convert_from_data=lambda x: Led.Mode(x)),
+    ]
+    mode: Led.Mode = attr.ib()
+    # Unclear what other fields are
+
+
+@attr.s
+class LedStarlight(Led):
+    specs = [
+        Spec("B", "mode", convert_from_data=lambda x: Led.Mode(x)),
+        Spec("BBB", "color_sky", convert_from_data=lambda x: Color(*x)),
+        Spec("BBB", "color_star", convert_from_data=lambda x: Color(*x)),
+    ]
+    mode: Led.Mode = attr.ib()
+    color_sky: Color = attr.ib()
+    color_star: Color = attr.ib()
+
+
+@attr.s
+class LedRipple(Led):
+    specs = [
+        Spec("B", "mode", convert_from_data=lambda x: Led.Mode(x)),
+        Spec("BBB", "color", convert_from_data=lambda x: Color(*x)),
+        Spec("B", "_"),
+        Spec("H", "period"),
+    ]
+    mode: Led.Mode = attr.ib()
+    color: Color = attr.ib()
+    period: int = attr.ib()
 
 
 class Hidpp20Device(GObject.Object):
@@ -833,7 +924,7 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
                     "colordepth": ratbag.Led.Colordepth.RGB_888,  # FIXME
                 }
                 if led.mode == Led.Mode.ON:
-                    kwargs["color"] = led.color
+                    kwargs["color"] = tuple(led.color)
                     kwargs["brightness"] = 100
                 elif led.mode == Led.Mode.OFF:
                     pass
@@ -841,7 +932,7 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
                     kwargs["effect_duration"] = led.period
                     kwargs["brightness"] = led.intensity
                 elif led.mode == Led.Mode.BREATHING:
-                    kwargs["color"] = led.color
+                    kwargs["color"] = tuple(led.color)
                     kwargs["brightness"] = led.intensity
                     kwargs["effect_duration"] = led.period
                 else:

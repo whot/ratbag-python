@@ -157,7 +157,7 @@ class Ratbag(GObject.Object):
                 driver.connect("rodent-found", cb_rodent_found)
             except (AttributeError, TypeError) as e:
                 logger.warning(
-                    "Signal 'rodent-found' not available, cannot record: {e}"
+                    f"Signal 'rodent-found' not available, cannot record: {e}"
                 )
 
     def start(self) -> None:

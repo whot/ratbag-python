@@ -196,7 +196,7 @@ class Query:
         self.parse_reply(reply)
         return reply
 
-    def parse_reply(self, reply):
+    def parse_reply(self, reply: Reply) -> None:
         """
         Override this in the subclass if the autoparsing of the Spec fields
         is insufficient.
@@ -246,7 +246,7 @@ class SinowealthDevice:
     rodent: ratbag.driver.Rodent = attr.ib()
     ratbag_device: ratbag.Device = attr.ib()
 
-    def start(self):
+    def start(self) -> None:
         if ReportID.CMD not in self.rodent.report_ids["feature"]:
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
                 self.rodent, "CMD Report ID"
@@ -291,7 +291,7 @@ class SinowealthDevice:
 
     def cb_commit(
         self, ratbag_device: ratbag.Device, transaction: ratbag.CommitTransaction
-    ):
+    ) -> None:
         # FIXME: implement this
         transaction.complete(success=False)
 

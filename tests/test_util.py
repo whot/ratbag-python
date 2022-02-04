@@ -188,7 +188,10 @@ def test_parser():
 
     # Test the class name for the reply object
     data = bytes(range(64, 73))
-    spec = [Spec("B", "something")]
+    spec = [
+        Spec("B", "something"),
+        Spec("B", "__ignored"),  # double leading underscore is ignored
+    ]
     result = Parser.to_object(data, spec, result_class="Foo")
     assert type(result.object).__name__ == "Foo"
 
@@ -197,6 +200,13 @@ def test_parser():
         def __init__(self, something):
             pass
 
+    result = Parser.to_object(data, spec, result_class=TestResult)
+    assert isinstance(result.object, TestResult)
+
+    spec = [
+        Spec("B", "_something"),  # single leading underscore is dropped
+        Spec("B", "__ignored"),  # double leading underscore is ignored
+    ]
     result = Parser.to_object(data, spec, result_class=TestResult)
     assert isinstance(result.object, TestResult)
 

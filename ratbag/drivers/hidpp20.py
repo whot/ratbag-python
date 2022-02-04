@@ -242,7 +242,9 @@ class Profile(object):
 
         Parser.to_object(data, spec, profile)
         for leddata in profile._leds:  # type: ignore
-            profile.leds.append(Led.from_data(leddata))
+            led = Led.from_data(bytes(leddata))
+            logger.debug(led)
+            profile.leds.append(led)
 
         return profile
 

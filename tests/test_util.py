@@ -251,3 +251,17 @@ def test_data_files():
         driver="roccat",
     )
     assert xtd in datafiles
+
+
+def test_ffs():
+    from ratbag.util import ffs
+
+    assert ffs(0) == 0
+    assert ffs(1) == 1
+    assert ffs(2) == 2
+    assert ffs(4) == 3
+
+    assert ffs(3) == 1
+    assert ffs(6) == 2
+
+    assert ffs(1 << 32) == 33  # this isn't C with 4-byte integers

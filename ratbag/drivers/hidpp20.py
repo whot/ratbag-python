@@ -5,7 +5,7 @@
 # This file is formatted with Python Black
 #
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 import attr
 import enum
@@ -194,6 +194,7 @@ class Profile(object):
     report_rates: List[int] = attr.ib(default=attr.Factory(list))
     initial_data: bytes = attr.ib(default=bytes())
     leds: List["Led"] = attr.ib(default=attr.Factory(list))
+    buttons: List["Button"] = attr.ib(default=attr.Factory(list))
     """
     The initial data this profile was created from. This data is constant
     for the life of the profile and can be used to restore the profile to
@@ -232,8 +233,8 @@ class Profile(object):
             Spec("B" * 10, "_"),  # reserved
             Spec("H", "powersafe_timeout", endian="le"),
             Spec("H", "poweroff_timeout", endian="le"),
-            Spec("I", "_button_bindings", repeat=16),
-            Spec("I", "_alternate_button_bindings", repeat=16),
+            Spec("BBBB", "_button_bindings", repeat=16),
+            Spec("BBBB", "_alternate_button_bindings", repeat=16),
             Spec("B" * 16 * 3, "_name"),
             Spec("B" * 11, "_leds", repeat=2),
             Spec("B" * 11, "_alt_leds", repeat=2),
@@ -245,6 +246,11 @@ class Profile(object):
             led = Led.from_data(bytes(leddata))
             logger.debug(led)
             profile.leds.append(led)
+
+        for buttondata in profile._button_bindings:  # type: ignore
+            b = Button.from_data(bytes(buttondata))
+            logger.debug(b)
+            profile.buttons.append(b)
 
         return profile
 
@@ -281,6 +287,141 @@ class ProfileAddress(object):
         enabled = data[addr_offset + OnboardProfile.Sector.ENABLED_INDEX] != 0
 
         return cls(result.addr, enabled)
+
+
+@attr.s
+class Button(object):
+    class Type(enum.IntEnum):
+        MACRO = 0x00
+        HID = 0x80
+        SPECIAL = 0x90
+        DISABLED = 0xFF
+
+    class HidType(enum.IntEnum):
+        NOOP = 0x00
+        MOUSE = 0x01
+        KEYBOARD = 0x02
+        CONSUMER_CONTROL = 0x03
+
+    type: "Button.Type" = attr.ib(init=False, validator=attr.validators.in_(list(Type)))
+
+    @classmethod
+    def from_data(cls, data: bytes) -> "Button":
+        type = Button.Type(data[0])
+        if type == Button.Type.HID:
+            hidtype = Button.HidType(data[1])
+            if hidtype == Button.HidType.MOUSE:
+                clstype: Type = ButtonButton
+            elif hidtype == Button.HidType.KEYBOARD:
+                clstype = ButtonKeyboard
+            elif hidtype == Button.HidType.CONSUMER_CONTROL:
+                clstype = ButtonConsumerControl
+        elif type == Button.Type.SPECIAL:
+            clstype = ButtonSpecial
+        elif type == Button.Type.MACRO:
+            clstype = ButtonMacro
+        elif type == Button.Type.DISABLED:
+            clstype = ButtonDisabled
+        else:
+            logger.error("Unable to handle button type {data[0]}")
+            clstype = ButtonDisabled
+
+        return Parser.to_object(data, clstype.specs, result_class=clstype).object
+
+
+@attr.s
+class ButtonButton(Button):
+    specs = [
+        Spec("B", "__type"),  # because this is fixed in the class
+        Spec("B", "__hidtype"),  # because this is fixed in the class
+        Spec("H", "button", convert_from_data=lambda x: ratbag.util.ffs(x)),
+    ]
+    button: int = attr.ib()
+    type: Button.Type = attr.ib(init=False, default=Button.Type.HID)
+    hidtype: Button.HidType = attr.ib(init=False, default=Button.HidType.MOUSE)
+
+
+@attr.s
+class ButtonKeyboard(Button):
+    specs = [
+        Spec("B", "__type"),  # because this is fixed in the class
+        Spec("B", "__hidtype"),  # because this is fixed in the class
+        Spec("B", "modifier_flags"),
+        Spec("B", "key"),
+    ]
+    modifier_flags: int = attr.ib()
+    key: int = attr.ib()
+    type: Button.Type = attr.ib(init=False, default=Button.Type.HID)
+    hidtype: Button.HidType = attr.ib(init=False, default=Button.HidType.KEYBOARD)
+
+
+@attr.s
+class ButtonConsumerControl(Button):
+    specs = [
+        Spec("B", "__type"),  # because this is fixed in the class
+        Spec("B", "__hidtype"),  # because this is fixed in the class
+        Spec("H", "consumer_control"),
+    ]
+    consumer_control: int = attr.ib()
+    type: Button.Type = attr.ib(init=False, default=Button.Type.HID)
+    hidtype: Button.HidType = attr.ib(
+        init=False, default=Button.HidType.CONSUMER_CONTROL
+    )
+
+
+@attr.s
+class ButtonSpecial(Button):
+    specs = [
+        Spec("B", "__type"),  # because this is fixed in the class
+        Spec("B", "special"),
+        Spec("B", "__reserved"),  # ignored
+        Spec("B", "profile"),
+    ]
+    special: int = attr.ib()
+    profile: int = attr.ib()
+    type: Button.Type = attr.ib(init=False, default=Button.Type.SPECIAL)
+
+    @property
+    def ratbag_special(self) -> ratbag.ActionSpecial.Special:
+        mapping = {
+            0x01: ratbag.ActionSpecial.Special.WHEEL_LEFT,
+            0x02: ratbag.ActionSpecial.Special.WHEEL_RIGHT,
+            0x03: ratbag.ActionSpecial.Special.RESOLUTION_UP,
+            0x04: ratbag.ActionSpecial.Special.RESOLUTION_DOWN,
+            0x05: ratbag.ActionSpecial.Special.RESOLUTION_CYCLE_UP,
+            0x06: ratbag.ActionSpecial.Special.RESOLUTION_DEFAULT,
+            0x07: ratbag.ActionSpecial.Special.RESOLUTION_ALTERNATE,
+            0x08: ratbag.ActionSpecial.Special.PROFILE_UP,
+            0x09: ratbag.ActionSpecial.Special.PROFILE_DOWN,
+            0x0A: ratbag.ActionSpecial.Special.PROFILE_CYCLE_UP,
+            0x0B: ratbag.ActionSpecial.Special.SECOND_MODE,
+        }
+        try:
+            return mapping[self.special]
+        except KeyError:
+            return ratbag.ActionSpecial.Special.UNKNOWN
+
+
+@attr.s
+class ButtonMacro(Button):
+    specs = [
+        Spec("B", "__type"),  # because this is fixed in the class
+        Spec("B", "page"),
+        Spec("B", "zero"),
+        Spec("B", "offset"),
+    ]
+    page: int = attr.ib()
+    zero: int = attr.ib()
+    offset: int = attr.ib()
+    type: Button.Type = attr.ib(init=False, default=Button.Type.MACRO)
+
+
+@attr.s
+class ButtonDisabled(Button):
+    specs = [
+        Spec("B", "__type"),  # because this is fixed in the class
+    ]
+    type: Button.Type = attr.ib(init=False, default=Button.Type.DISABLED)
 
 
 @attr.s
@@ -701,6 +842,31 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
                     pass
 
                 ratbag.Led(p, led_idx, **kwargs)
+
+            for btn_idx, button in enumerate(profile.buttons):
+                actiontypes = (
+                    ratbag.Action.Type.NONE,
+                    ratbag.Action.Type.BUTTON,
+                    ratbag.Action.Type.SPECIAL,
+                    ratbag.Action.Type.MACRO,
+                )
+                b = ratbag.Button(p, btn_idx, types=actiontypes, action=None)
+                if button.type == Button.Type.DISABLED:
+                    action = ratbag.ActionNone()
+                elif button.type == Button.Type.HID:
+                    if button.hidtype == Button.HidType.MOUSE:
+                        action = ratbag.ActionButton(button.button)
+                    else:
+                        # FIXME: macro for keybaoard, special for consumer
+                        # control
+                        action = ratbag.ActionNone()
+                elif button.type == Button.Type.SPECIAL:
+                    action = ratbag.ActionSpecial(button.ratbag_special)
+                elif button.type == Button.Type.MACRO:
+                    # FIXME: needs parsing
+                    action = ratbag.ActionMacro()
+
+                b.set_action(action)
 
         self.emit("device-added", ratbag_device)
 

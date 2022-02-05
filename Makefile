@@ -4,7 +4,7 @@ SPHINXOPTS    ?=
 SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = doc/
 BUILDDIR      = build
-PYTHON_SOURCES	:= $(shell git ls-files | grep -e "\.py")
+PYTHON_SOURCES	:= $(shell git ls-files "*.py")
 
 
 all: data black pytest html data mypy doctest

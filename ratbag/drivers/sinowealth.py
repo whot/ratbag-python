@@ -243,6 +243,7 @@ class QueryRawConfig(Query):
 
 @attr.s
 class SinowealthDevice:
+    driver: ratbag.Device = attr.ib()
     rodent: ratbag.driver.Rodent = attr.ib()
 
     def start(self) -> ratbag.Device:
@@ -262,7 +263,7 @@ class SinowealthDevice:
         config = Config.from_bytes(creply.data)
 
         ratbag_device = ratbag.Device(
-            self,
+            self.driver,
             str(self.rodent.path),
             self.rodent.name,
             self.rodent.model,
@@ -313,7 +314,7 @@ class SinowealthDriver(ratbag.driver.HidrawDriver):
         config: ratbag.driver.DeviceConfig,
     ) -> None:
         # This is the driver-specific device that will handle everything for us
-        sinowealth_device = SinowealthDevice(rodent)
+        sinowealth_device = SinowealthDevice(self, rodent)
 
         # Calling start() will make the device talk to the physical device
         ratbag_device = sinowealth_device.start()

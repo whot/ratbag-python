@@ -243,10 +243,10 @@ class QueryRawConfig(Query):
 
 @attr.s
 class SinowealthDevice:
+    driver: ratbag.Device = attr.ib()
     rodent: ratbag.driver.Rodent = attr.ib()
-    ratbag_device: ratbag.Device = attr.ib()
 
-    def start(self) -> None:
+    def start(self) -> ratbag.Device:
         if ReportID.CMD not in self.rodent.report_ids["feature"]:
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
                 self.rodent, "CMD Report ID"
@@ -262,9 +262,16 @@ class SinowealthDevice:
         creply = cquery.run(self.rodent)
         config = Config.from_bytes(creply.data)
 
+        ratbag_device = ratbag.Device(
+            self.driver,
+            str(self.rodent.path),
+            self.rodent.name,
+            self.rodent.model,
+        )
+
         # now set up the ratbag device
         p = ratbag.Profile(
-            device=self.ratbag_device,
+            device=ratbag_device,
             index=0,
             name="Unnamed profile",
             capabilities=[],
@@ -287,7 +294,9 @@ class SinowealthDevice:
                 enabled=not (config.dpi_disabled_slots & 1 << ridx),
             )
 
-        self.ratbag_device.connect("commit", self.cb_commit)
+        ratbag_device.connect("commit", self.cb_commit)
+
+        return ratbag_device
 
     def cb_commit(
         self, ratbag_device: ratbag.Device, transaction: ratbag.CommitTransaction
@@ -303,15 +312,11 @@ class SinowealthDriver(ratbag.driver.HidrawDriver):
         rodent: ratbag.driver.Rodent,
         config: ratbag.driver.DeviceConfig,
     ) -> None:
-        # We can create a ratbag device here, it won't exist until we emit
-        # "device-added"
-        ratbag_device = ratbag.Device(self, str(rodent.path), rodent.name, rodent.model)
-
         # This is the driver-specific device that will handle everything for us
-        sinowealth_device = SinowealthDevice(rodent, ratbag_device)
+        sinowealth_device = SinowealthDevice(self, rodent)
 
         # Calling start() will make the device talk to the physical device
-        sinowealth_device.start()
+        ratbag_device = sinowealth_device.start()
 
         # If we didn't throw an exception, we can now pretend the device
         # exists

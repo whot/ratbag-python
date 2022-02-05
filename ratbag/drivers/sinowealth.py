@@ -267,6 +267,7 @@ class SinowealthDevice:
             str(self.rodent.path),
             self.rodent.name,
             self.rodent.model,
+            firmware_version=fw.version,
         )
 
         # now set up the ratbag device

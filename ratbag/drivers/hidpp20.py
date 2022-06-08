@@ -653,7 +653,7 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
         device = Hidpp20Device(rodent, index)
 
         device.start()
-        ratbag_device = ratbag.Device(
+        ratbag_device = ratbag.Device.create(
             self,
             path=device.path,
             name=device.name,

@@ -245,6 +245,7 @@ class Recorder(GObject.Object):
         pass
 
 
+@attr.s
 class CommitTransaction(GObject.Object):
     """
     A helper object for :meth:`Device.commit`. This object keeps track of a
@@ -254,7 +255,19 @@ class CommitTransaction(GObject.Object):
     A transaction object can only be used once.
     """
 
-    _seqno_gen = count()
+    _seqno: int = attr.ib(init=False, factory=lambda c=count(): next(c))  # type: ignore
+    """
+    Unique serial number for this transaction
+    """
+    _used: bool = attr.ib(init=False, default=False)
+    _done: bool = attr.ib(init=False, default=False)
+
+    def __attrs_pre_init__(self):
+        GObject.Object.__init__(self)
+
+    @classmethod
+    def create(cls) -> "CommitTransaction":
+        return cls()
 
     @GObject.Signal()
     def finished(self, *args):
@@ -262,12 +275,6 @@ class CommitTransaction(GObject.Object):
         GObject signal sent when the transaction is complete.
         """
         pass
-
-    def __init__(self):
-        GObject.Object.__init__(self)
-        self._seqno = next(self._seqno_gen)
-        self._used = False
-        self._done = False
 
     @property
     def seqno(self) -> int:
@@ -412,7 +419,7 @@ class Device(GObject.Object):
         operation (maybe in a separate thread). Once complete, the
         given transaction object will emit the ``finished`` signal.
 
-            >>> t = CommitTransaction()
+            >>> t = CommitTransaction.create()
             >>> def on_finished(transaction):
             ...     print(f"Device {transaction.device} is done")
             >>> signal_number = t.connect("finished", on_finished)
@@ -434,7 +441,7 @@ class Device(GObject.Object):
         :returns: a sequence number for this transaction
         """
         if transaction is None:
-            transaction = CommitTransaction()
+            transaction = CommitTransaction.create()
         elif transaction.used:
             raise ValueError("Transactions cannot be re-used")
 

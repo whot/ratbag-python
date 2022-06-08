@@ -103,17 +103,18 @@ class Ratbag(GObject.Object):
         datafiles = ratbag.util.load_data_files()
 
         # drivers want the list of all entries passed as one, so we need to
-        # extract them first, into a dict of "drivername" : [dev1, dev2, ...]
+        # extract them first, into a dict of
+        # "drivername" : [DeviceConfig(match1), DeviceConfig(match2), ...]
         drivers: Dict[str, List["ratbag.driver.DeviceConfig"]] = {}
         for f in datafiles:
-            for match in f.matches:
-                supported_devices = drivers.get(f.driver, [])
-                supported_devices.append(DeviceConfig(match, f.driver_options))
-                drivers[f.driver] = supported_devices
+            supported_devices = [
+                DeviceConfig(match, f.driver_options) for match in f.matches
+            ]
+            drivers[f.driver] = drivers.get(f.driver, []).extend(supported_devices)
 
-        for drivername, supported_devices in drivers.items():
+        for drivername, configs in drivers.items():
             try:
-                self.add_driver(drivername, supported_devices)
+                self.add_driver(drivername, configs)
             except ratbag.driver.DriverUnavailable as e:
                 logger.error(f"{e}")
 

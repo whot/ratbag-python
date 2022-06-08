@@ -55,7 +55,7 @@ class ExampleDriver(ratbag.driver.Driver):
         self.probe("my device", "/some/path")
 
     def probe(self, name, path):
-        device = ratbag.Device(self, path, name)
+        device = ratbag.Device.create(self, path, name)
         device.connect("commit", self._on_commit)
 
         for profile_idx in range(3):  # three profiles

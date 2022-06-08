@@ -318,6 +318,7 @@ class CommitTransaction(GObject.Object):
             self.emit("finished")
 
 
+@attr.s
 class Device(GObject.Object):
     """
     A device as exposed to Ratbag clients. A driver implementation must not
@@ -326,20 +327,6 @@ class Device(GObject.Object):
     :class:`ratbag.Driver`::``device-added`` signal until the device is
     finalized.
 
-    .. attribute:: name
-
-        The device name
-
-    .. attribute:: path
-
-        The path to the source device
-
-    .. attribute:: firmware_version
-
-        A device-specific string with the firmware version, or the empty
-        string. For devices with a major/minor or purely numeric firmware
-        version, the conversion into a string is implementation-defined.
-
     GObject Signals:
 
     - ``disconnected``: this device has been disconnected
@@ -347,6 +334,33 @@ class Device(GObject.Object):
       is used by drivers.
     - ``resync``: callers should re-sync the state of the device
     """
+
+    driver: "ratbag.driver.Driver" = attr.ib()
+    path: str = attr.ib()
+    name: str = attr.ib()
+    """The device name as advertised by the kernel"""
+    model: str = attr.ib(default="")
+    """The device model, a more precise identifier (where available)"""
+    firmware_version: str = attr.ib(default="")
+    """
+    A device-specific string with the firmware version, or the empty
+    string. For devices with a major/minor or purely numeric firmware
+    version, the conversion into a string is implementation-defined.
+    """
+
+    _profiles: Tuple["Profile", ...] = attr.ib(init=False, default=attr.Factory(tuple))
+    _dirty: bool = attr.ib(init=False, default=False)
+
+    @classmethod
+    def create(cls, driver: "ratbag.driver.Driver", path: str, name: str, **kwargs):
+
+        permitted = ["firmware_version", "model"]
+
+        filtered = {k: v for k, v in kwargs.items() if k in permitted}
+        if filtered.keys() != kwargs.keys():
+            logger.error(f"BUG: filtered kwargs down to {filtered}")
+
+        return cls(driver=driver, path=path, name=name, **filtered)
 
     @GObject.Signal()
     def disconnected(self, *args):
@@ -376,23 +390,8 @@ class Device(GObject.Object):
         """
         pass
 
-    def __init__(
-        self,
-        driver: "ratbag.driver.Driver",
-        path: str,
-        name: str,
-        model: str,
-        firmware_version: str = "",
-    ):
+    def __attrs_pre_init__(self):
         GObject.Object.__init__(self)
-        self.driver = driver
-        self.path = path
-        self.name = name
-        self.model = model
-        self.firmware_version = firmware_version
-        self._profiles: Tuple[Profile, ...] = tuple()
-        self._driver = driver
-        self._dirty = False
 
     @property
     def profiles(self) -> Tuple["ratbag.Profile", ...]:

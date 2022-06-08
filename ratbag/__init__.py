@@ -163,7 +163,7 @@ class Ratbag(GObject.Object):
     def start(self) -> None:
         """
         Start the context. Before invoking this function ensure the caller has
-        connected to all the signal.
+        connected to all the signals.
         """
         self.emit("start")
 

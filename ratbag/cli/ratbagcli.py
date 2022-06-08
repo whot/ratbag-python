@@ -443,7 +443,7 @@ def ratbagcli(ctx, verbose: int, log_config: Path, record: Path, replay: Path):
 
     ctx.obj = {}
     if record:
-        ctx.obj["blackbox"] = ratbag.Blackbox(directory=record)
+        ctx.obj["blackbox"] = ratbag.Blackbox.create(directory=record)
     if replay:
         ctx.obj["emulators"] = _init_emulators(replay)
 

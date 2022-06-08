@@ -216,6 +216,10 @@ class Blackbox:
         """
         return self.directory / filename
 
+    @classmethod
+    def create(cls, directory: Path) -> "Blackbox":
+        return cls(directory=directory)
+
 
 class Recorder(GObject.Object):
     """
@@ -353,7 +357,6 @@ class Device(GObject.Object):
 
     @classmethod
     def create(cls, driver: "ratbag.driver.Driver", path: str, name: str, **kwargs):
-
         permitted = ["firmware_version", "model"]
 
         filtered = {k: v for k, v in kwargs.items() if k in permitted}

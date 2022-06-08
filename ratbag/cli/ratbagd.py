@@ -543,7 +543,7 @@ def main():
     init_logger(levels, logdir)
     kwargs = {}
     if not ns.disable_recordings:
-        blackbox = ratbag.Blackbox(directory=logdir)
+        blackbox = ratbag.Blackbox.create(directory=logdir)
         kwargs["blackbox"] = blackbox
     rb = ratbag.Ratbag.create(**kwargs)
     ratbagd = Ratbagd(rb)

@@ -269,7 +269,7 @@ class Config(object):
                 else:
                     logger.debug("done")
 
-            transaction = ratbag.CommitTransaction()
+            transaction = ratbag.CommitTransaction.create()
             transaction.connect("finished", cb_commit_finished)
 
             device.commit(transaction)

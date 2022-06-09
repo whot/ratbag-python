@@ -196,7 +196,7 @@ class Parser(object):
         data: bytes,
         specs: List[Spec],
         obj: object = None,
-        result_class: Union[str, Type] = "_ResultObject",
+        result_class: Union[str, Type] = "Result",
     ) -> Any:
         """
         Convert the given data into an object according to the specs. If

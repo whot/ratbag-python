@@ -19,6 +19,7 @@ import ratbag.util
 logger = logging.getLogger(__name__)
 
 
+@attr.s
 class ConfigError(Exception):
     """
     Error indicating that the caller has tried to set the device's
@@ -26,14 +27,10 @@ class ConfigError(Exception):
 
     This error is recoverable by re-reading the device's current state and
     attempting a different configuration.
-
-    .. attribute:: message
-
-        The error message
     """
 
-    def __init__(self, message: str):
-        self.message = message
+    message: str = attr.ib()
+    """The error message to display"""
 
 
 @attr.s
@@ -555,28 +552,33 @@ class Device(GObject.Object):
         }
 
 
+@attr.s
 class Feature(GObject.Object):
     """
     Base class for all device features, including profiles. This is a
     convenience class only to avoid re-implementation of common properties.
-
-    :param device: the device this feature belongs to
-    :param index: the 0-based feature index
-
-    .. attribute:: device
-
-        The device associated with this feature
     """
 
-    def __init__(self, device: ratbag.Device, index: int):
-        assert index >= 0
+    _device: "ratbag.Device" = attr.ib()
+    _index: int = attr.ib()
+    _dirty: bool = attr.ib(init=False, default=False)
+
+    @_index.validator
+    def index_validator(self, attribute, value):
+        if not isinstance(value, int) or value < 0:
+            raise ValueError("index must be >= 0")
+
+    def __attrs_pre_init__(self):
         GObject.Object.__init__(self)
-        self.device = device
-        self._index = index
-        self._dirty = False
+
+    def __attrs_post_init__(self):
         logger.debug(
             f"{self.device.name}: creating {type(self).__name__} with index {self.index}"
         )
+
+    @property
+    def device(self) -> ratbag.Device:
+        return self._device
 
     @property
     def index(self) -> int:
@@ -603,6 +605,7 @@ class Feature(GObject.Object):
             self.notify("dirty")
 
 
+@attr.s
 class Profile(Feature):
     """
     A profile on the device. A device must have at least one profile, the
@@ -612,10 +615,6 @@ class Profile(Feature):
     changes, the ``active`` signal is emitted for the previously
     active profile with a boolean false value, then the ``active`` signal is
     emitted on the newly active profile.
-
-    .. attribute:: name
-
-        The profile name (may be software-assigned)
 
     """
 
@@ -666,28 +665,27 @@ class Profile(Feature):
         all other profiles.
         """
 
-    def __init__(
-        self,
-        device,
-        index,
-        name=None,
-        capabilities=(),
-        report_rate=None,
-        report_rates=(),
-        active=False,
-    ):
-        super().__init__(device, index)
-        self.name = f"Unnamed {index}" if name is None else name
-        self._buttons = ()
-        self._resolutions = ()
-        self._leds = ()
-        self._default = False
-        self._active = active
-        self._enabled = True
-        self._report_rate = report_rate
-        self._report_rates = tuple(sorted(set(report_rates)))
-        self._capabilities = tuple(sorted(set(capabilities)))
+    name: str = attr.ib()
+    _report_rate: int = attr.ib(default=None)
+    _active: bool = attr.ib(default=False)
+    _enabled: bool = attr.ib(default=True)
+    _default: bool = attr.ib(default=False)
+    _capabilities: Tuple = attr.ib(default=attr.Factory(tuple))
+    _buttons: Tuple = attr.ib(default=attr.Factory(tuple))
+    _resolutions: Tuple = attr.ib(default=attr.Factory(tuple))
+    _leds: Tuple = attr.ib(default=attr.Factory(tuple))
+    _report_rates: Tuple = attr.ib(default=attr.Factory(tuple))
+
+    @name.default
+    def _name_default(self):
+        return f"Unnamed {self.index}"
+
+    def __attrs_post_init__(self):
         self.device._add_profile(self)
+
+    @classmethod
+    def create(cls, device: ratbag.Device, index: int, **kwargs):
+        return cls(device=device, index=index, **kwargs)
 
     @property
     def buttons(self) -> Tuple["ratbag.Button", ...]:
@@ -840,6 +838,7 @@ class Profile(Feature):
         }
 
 
+@attr.s
 class Resolution(Feature):
     """
     A resolution within a profile. A device must have at least one profile, the
@@ -864,37 +863,58 @@ class Resolution(Feature):
         be a tuple of identical values.
         """
 
-    def __init__(
-        self,
-        profile: Profile,
-        index: int,
-        dpi: Tuple[int, int],
-        *,
-        enabled: bool = True,
-        capabilities: Tuple[Capability, ...] = (),
-        dpi_list: Tuple[int, ...] = (),
-    ):
-        try:
-            assert index >= 0
-            assert len(dpi) == 2, "dpi must be a tuple"
-            assert all([int(v) >= 0 for v in dpi]), "dpi must be positive"
-            assert all(
-                [int(v) > 0 for v in dpi_list]
-            ), "all in dpi_list must be positive"
-            assert all([x in Resolution.Capability for x in capabilities])
-            assert index not in profile.resolutions, "duplicate resolution index"
-        except (TypeError, ValueError) as e:
-            assert e is None
+    _profile: ratbag.Profile = attr.ib()
+    _dpi: Tuple[int, int] = attr.ib()
+    _active: bool = attr.ib(kw_only=True, default=False)
+    _enabled: bool = attr.ib(kw_only=True, default=True)
+    _default: bool = attr.ib(kw_only=True, default=False)
+    _capabilities: Tuple[Capability, ...] = attr.ib(
+        kw_only=True, default=attr.Factory(tuple)
+    )
+    _dpi_list: Tuple[int, ...] = attr.ib(kw_only=True, default=attr.Factory(tuple))
 
-        super().__init__(profile.device, index)
-        self.profile = profile
-        self._dpi = dpi
-        self._dpi_list = tuple(sorted(set(dpi_list)))
-        self._capabilities = tuple(set(capabilities))
-        self._active = False
-        self._default = False
-        self._enabled = enabled
-        self.profile._add_resolution(self)
+    def __attrs_post_init__(self):
+        self._profile._add_resolution(self)
+
+    @_dpi.validator
+    def _validate_dpi(self, attribute, value):
+        if not isinstance(value, tuple) or len(value) != 2:
+            raise ValueError("dpi must be a 2-sized tuple")
+
+        if not all([int(v) >= 0 for v in value]):
+            raise ValueError("dpi must be positive")
+
+    @_dpi_list.validator
+    def _validate_dpi_list(self, attribute, value):
+        try:
+            if not all([int(v) >= 0 for v in value]):
+                raise ValueError("dpi_list must be positive")
+        except Exception as e:
+            raise ValueError(f"Invalid dpi_list: {e}")
+
+    @_capabilities.validator
+    def _validate_capabilities(self, attribute, value):
+        try:
+            if not all([c in Resolution.Capability for c in value]):
+                raise ValueError("Unknown capability")
+        except Exception as e:
+            raise ValueError(f"Invalid capability: {e}")
+
+    @classmethod
+    def create(
+        cls, profile: ratbag.Profile, index: int, dpi: Tuple[int, int], **kwargs
+    ):
+        capabilities = kwargs.get("capabilities")
+        if capabilities:
+            kwargs["capabilities"] = ratbag.util.to_tuple(capabilities)
+        dpi_list = kwargs.get("dpi_list")
+        if dpi_list:
+            kwargs["dpi_list"] = ratbag.util.to_sorted_tuple(dpi_list)
+        return cls(profile.device, index, profile, dpi, **kwargs)
+
+    @property
+    def profile(self) -> ratbag.Profile:
+        return self._profile
 
     @property
     def capabilities(self) -> Tuple[Capability, ...]:
@@ -1014,7 +1034,12 @@ class Resolution(Feature):
         }
 
 
+@attr.s
 class Action(GObject.Object):
+    """
+    An "abstract" base class for all actions
+    """
+
     class Type(enum.IntEnum):
         NONE = 0
         BUTTON = 1
@@ -1023,41 +1048,50 @@ class Action(GObject.Object):
         MACRO = 4
         UNKNOWN = 1000
 
-    def __init__(self):
+    _type: Type = attr.ib()
+
+    def __attrs_pre_init__(self):
         GObject.Object.__init__(self)
-        self._type = Action.Type.UNKNOWN
 
     @property
     def type(self) -> Type:
         return self._type
 
-    def __str__(self) -> str:
-        return "Unknown"
-
     def as_dict(self) -> Dict[str, Any]:
         return {"type": self.type.name}
 
-    def __eq__(self, other):
-        return type(self) == type(other)
 
-    def __ne__(self, other):
-        return not self == other
+@attr.s
+class ActionUnknown(Action):
+    """
+    A "none" action to signal the button is disabled and does not send an
+    event when physically presed down.
+    """
+
+    @classmethod
+    def create(cls) -> "ActionUnknown":
+        return cls(type=Action.Type.UNKNOWN)
+
+    def __str__(self) -> str:
+        return "Unknown"
 
 
+@attr.s
 class ActionNone(Action):
     """
     A "none" action to signal the button is disabled and does not send an
     event when physically presed down.
     """
 
-    def __init__(self):
-        super().__init__()
-        self._type: Action.Type = Action.Type.NONE
+    @classmethod
+    def create(cls) -> "ActionNone":
+        return cls(type=Action.Type.NONE)
 
     def __str__(self) -> str:
         return "None"
 
 
+@attr.s
 class ActionButton(Action):
     """
     A button action triggered by a button. This is the simplest case of an
@@ -1066,10 +1100,11 @@ class ActionButton(Action):
     at button 1 (left mouse button).
     """
 
-    def __init__(self, button: int):
-        super().__init__()
-        self._button = button
-        self._type = Action.Type.BUTTON
+    _button: int = attr.ib()
+
+    @classmethod
+    def create(cls, button: int) -> "ActionButton":
+        return cls(type=Action.Type.BUTTON, button=button)
 
     @property
     def button(self) -> int:
@@ -1091,6 +1126,7 @@ class ActionButton(Action):
         return type(self) == type(other) and self.button == other.button
 
 
+@attr.s
 class ActionSpecial(Action):
     """
     A special action triggered by a button. These actions are fixed
@@ -1126,10 +1162,11 @@ class ActionSpecial(Action):
         SECOND_MODE = 0x40000011
         BATTERY_LEVEL = 0x40000012
 
-    def __init__(self, special: Special):
-        super().__init__()
-        self._type = Action.Type.SPECIAL
-        self._special = special
+    _special: Special = attr.ib()
+
+    @classmethod
+    def create(cls, special: Special):
+        return cls(type=Action.Type.SPECIAL, special=special)
 
     @property
     def special(self) -> Special:
@@ -1150,6 +1187,7 @@ class ActionSpecial(Action):
         return type(self) == type(other) and self.special == other.special
 
 
+@attr.s
 class ActionMacro(Action):
     """
     A macro assigned to a button. The macro may consist of key presses,
@@ -1164,15 +1202,17 @@ class ActionMacro(Action):
         KEY_RELEASE = 2
         WAIT_MS = 3
 
-    def __init__(
-        self,
-        name: str = "Unnamed macro",
-        events: List[Tuple[Event, int]] = [(Event.INVALID, 0)],
-    ):
-        super().__init__()
-        self._type = Action.Type.MACRO
-        self._name = name
-        self._events = events
+    _name: str = attr.ib(default="Unnamed macro", eq=False)
+    _events: List[Tuple[Event, int]] = attr.ib()
+
+    @_events.default
+    def _events_default(self):
+        return [(ActionMacro.Event.INVALID, 0)]
+
+    @classmethod
+    def create(cls, events, name="Unamed macro"):
+        # FIXME: some validation would be good
+        return cls(type=Action.Type.MACRO, events=events, name=name)
 
     @property
     def name(self) -> str:
@@ -1224,6 +1264,7 @@ class ActionMacro(Action):
         )
 
 
+@attr.s
 class Button(Feature):
     """
     A physical button on the device as represented in a profile. A button has
@@ -1239,19 +1280,18 @@ class Button(Feature):
 
     """
 
-    def __init__(
-        self,
-        profile: ratbag.Profile,
-        index: int,
-        *,
-        types: Tuple[Action.Type] = (Action.Type.BUTTON,),
-        action: Optional[Action] = None,
-    ):
-        super().__init__(profile.device, index)
-        self.profile = profile
-        self._types = tuple(set(types))
-        self._action = action or Action()
-        self.profile._add_button(self)
+    _profile: ratbag.Profile = attr.ib()
+    _types: Tuple[Action.Type] = attr.ib(default=(Action.Type.BUTTON,))
+    _action: Action = attr.ib(default=ActionNone.create())
+
+    def __attrs_post_init__(self):
+        self._profile._add_button(self)
+
+    @classmethod
+    def create(cls, profile: ratbag.Profile, index: int, **kwargs):
+        if "types" in kwargs:
+            kwargs["types"] = ratbag.util.to_tuple(kwargs["types"])
+        return cls(profile.device, index, profile, **kwargs)
 
     @property
     def types(self) -> Tuple[Action.Type, ...]:
@@ -1293,6 +1333,7 @@ class Button(Feature):
         }
 
 
+@attr.s
 class Led(Feature):
     class Colordepth(enum.IntEnum):
         MONOCHROME = 0
@@ -1305,27 +1346,20 @@ class Led(Feature):
         CYCLE = 2
         BREATHING = 3
 
-    def __init__(
-        self,
-        profile: ratbag.Profile,
-        index: int,
-        *,
-        color: Tuple[int, int, int] = (0, 0, 0),
-        brightness: int = 0,
-        colordepth: Colordepth = Colordepth.RGB_888,
-        mode: Mode = Mode.OFF,
-        modes: Tuple[Mode, ...] = (Mode.OFF,),
-        effect_duration: int = 0,
-    ):
-        super().__init__(profile.device, index)
-        self.profile = profile
-        self._color = color
-        self._colordepth = colordepth
-        self._brightness = brightness
-        self._effect_duration = effect_duration
-        self._mode = mode
-        self._modes = tuple(modes)
-        self.profile._add_led(self)
+    _profile: ratbag.Profile = attr.ib()
+    _color: Tuple[int, int, int] = attr.ib(default=(0, 0, 0))
+    _brightness: int = attr.ib(default=0)
+    _colordepth: Colordepth = attr.ib(default=Colordepth.RGB_888)
+    _mode: Mode = attr.ib(default=Mode.OFF)
+    _modes: Tuple[Mode, ...] = attr.ib(default=(Mode.OFF,))
+    _effect_duration: int = attr.ib(default=0)
+
+    def __attrs_post_init__(self):
+        self._profile._add_led(self)
+
+    @classmethod
+    def create(cls, profile: ratbag.Profile, index: int, **kwargs):
+        return cls(profile.device, index, profile, **kwargs)
 
     @GObject.Property(flags=GObject.ParamFlags.READABLE)
     def color(self) -> Tuple[int, int, int]:

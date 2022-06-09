@@ -144,3 +144,17 @@ def load_data_files() -> List[DataFile]:
         raise FileNotFoundError("Unable to find data files")
 
     return files
+
+
+def to_tuple(x) -> Tuple:
+    try:
+        return tuple(set(x))
+    except TypeError as e:
+        raise ValueError("Invalid value: {e}")
+
+
+def to_sorted_tuple(x) -> Tuple:
+    try:
+        return tuple(sorted(set(x)))
+    except TypeError as e:
+        raise ValueError("Invalid value: {e}")

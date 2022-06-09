@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -85,9 +86,9 @@
            <div itemprop="articleBody">
              
   <section id="ratbag-package">
-<h1>ratbag package<a class="headerlink" href="#ratbag-package" title="Permalink to this headline"></a></h1>
+<h1>ratbag package<a class="headerlink" href="#ratbag-package" title="Permalink to this heading"></a></h1>
 <section id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline"></a></h2>
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="ratbag.drivers.html">ratbag.drivers package</a><ul>
@@ -104,19 +105,19 @@
 </div>
 </section>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
 </section>
 <section id="ratbag-driver-module">
-<h2>ratbag.driver module<a class="headerlink" href="#ratbag-driver-module" title="Permalink to this headline"></a></h2>
+<h2>ratbag.driver module<a class="headerlink" href="#ratbag-driver-module" title="Permalink to this heading"></a></h2>
 </section>
 <section id="ratbag-emulator-module">
-<h2>ratbag.emulator module<a class="headerlink" href="#ratbag-emulator-module" title="Permalink to this headline"></a></h2>
+<h2>ratbag.emulator module<a class="headerlink" href="#ratbag-emulator-module" title="Permalink to this heading"></a></h2>
 </section>
 <section id="ratbag-hid-module">
-<h2>ratbag.hid module<a class="headerlink" href="#ratbag-hid-module" title="Permalink to this headline"></a></h2>
+<h2>ratbag.hid module<a class="headerlink" href="#ratbag-hid-module" title="Permalink to this heading"></a></h2>
 </section>
 <section id="module-ratbag.parser">
-<span id="ratbag-parser-module"></span><h2>ratbag.parser module<a class="headerlink" href="#module-ratbag.parser" title="Permalink to this headline"></a></h2>
+<span id="ratbag-parser-module"></span><h2>ratbag.parser module<a class="headerlink" href="#module-ratbag.parser" title="Permalink to this heading"></a></h2>
 <p>A Parser helper function to convert a byte array to a Python object and the
 other way around. The conversion is specified in a list of <a class="reference internal" href="#ratbag.parser.Spec" title="ratbag.parser.Spec"><code class="xref py py-class docutils literal notranslate"><span class="pre">Spec</span></code></a>
 instances, for example:</p>
@@ -250,7 +251,7 @@ i.e. the input value for <code class="docutils literal notranslate"><span class=
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.parser.Spec.convert_to_data">
-<span class="sig-name descname"><span class="pre">convert_to_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.parser.Spec.ConverterArg" title="ratbag.parser.Spec.ConverterArg"><span class="pre">ratbag.parser.Spec.ConverterArg</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.parser.Spec.convert_to_data" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">convert_to_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.parser.Spec.ConverterArg" title="ratbag.parser.Spec.ConverterArg"><span class="pre">ConverterArg</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.parser.Spec.convert_to_data" title="Permalink to this definition"></a></dt>
 <dd><p>Conversion function of this attribute to data. This function takes the
 data bytes produced so far by <a class="reference internal" href="#ratbag.parser.Parser.from_object" title="ratbag.parser.Parser.from_object"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Parser.from_object()</span></code></a> and the current
 value and index (if applicable). It must return a value compatible to the
@@ -319,10 +320,15 @@ instantiate, or the name of the created class for this object.</p>
 </pre></div>
 </div>
 <p>Where an existing type is used, that type must take all Spec fields as
-keyword arguments in the constructor.</p>
+keyword arguments in the constructor, except:</p>
+<ul class="simple">
+<li><p>Spec names with a single leading underscore are expected to drop that
+underscore in the constructor.</p></li>
+<li><p>Spec names with a double leading underscore are ignored</p></li>
+</ul>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#ratbag.parser.Result" title="ratbag.parser.Result"><code class="xref py py-class docutils literal notranslate"><span class="pre">Result</span></code></a></p>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -351,11 +357,11 @@ tuples with a 16-bit integer and byte each</p></li>
 
 </section>
 <section id="module-ratbag.recorder">
-<span id="ratbag-recorder-module"></span><h2>ratbag.recorder module<a class="headerlink" href="#module-ratbag.recorder" title="Permalink to this headline"></a></h2>
+<span id="ratbag-recorder-module"></span><h2>ratbag.recorder module<a class="headerlink" href="#module-ratbag.recorder" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.recorder.YamlDeviceRecorder">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.recorder.</span></span><span class="sig-name descname"><span class="pre">YamlDeviceRecorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.recorder.YamlDeviceRecorder" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ratbag.Recorder" title="ratbag.Recorder"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Recorder</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.Recorder" title="ratbag.Recorder"><code class="xref py py-class docutils literal notranslate"><span class="pre">Recorder</span></code></a></p>
 <p>A simple recorder that logs the data to/from the device as a series of
 YAML objects. All elements in <cite>config</cite> are logged as attributes.</p>
 <p>The output of this logger can be consumed by
@@ -444,7 +450,7 @@ YAML objects. All elements in <cite>config</cite> are logged as attributes.</p>
 
 </section>
 <section id="module-ratbag.util">
-<span id="ratbag-util-module"></span><h2>ratbag.util module<a class="headerlink" href="#module-ratbag.util" title="Permalink to this headline"></a></h2>
+<span id="ratbag-util-module"></span><h2>ratbag.util module<a class="headerlink" href="#module-ratbag.util" title="Permalink to this heading"></a></h2>
 <span class="target" id="module-util"></span><dl class="py function">
 <dt class="sig sig-object py" id="ratbag.util.as_hex">
 <span class="sig-prename descclassname"><span class="pre">ratbag.util.</span></span><span class="sig-name descname"><span class="pre">as_hex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.util.as_hex" title="Permalink to this definition"></a></dt>
@@ -456,6 +462,16 @@ YAML objects. All elements in <cite>config</cite> are logged as attributes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ratbag.util.ffs">
+<span class="sig-prename descclassname"><span class="pre">ratbag.util.</span></span><span class="sig-name descname"><span class="pre">ffs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.util.ffs" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -547,7 +563,7 @@ required or the value is replaced.</p>
 
 </section>
 <section id="module-ratbag">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ratbag" title="Permalink to this headline"></a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ratbag" title="Permalink to this heading"></a></h2>
 <dl class="py exception">
 <dt class="sig sig-object py" id="ratbag.ConfigError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">ConfigError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.ConfigError" title="Permalink to this definition"></a></dt>
@@ -567,7 +583,7 @@ attempting a different configuration.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.Ratbag">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">Ratbag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">load_data_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blackbox</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Ratbag" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gi.overrides.GObject.Object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Object</span></code></p>
 <p>An instance managing one or more ratbag devices. This is the entry point
 for all ratbag clients. This context loads the data files and instantiates
 the drivers accordingly.</p>
@@ -663,7 +679,7 @@ This signal is for internal use.</p>
 <code class="docutils literal notranslate"><span class="pre">$XDG_STATE_HOME/ratbag/recordings/$timestamp</span></code>.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.Blackbox.directory">
-<span class="sig-name descname"><span class="pre">directory</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></em><a class="headerlink" href="#ratbag.Blackbox.directory" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">directory</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#ratbag.Blackbox.directory" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -688,7 +704,7 @@ recordings directory.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.Recorder">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">Recorder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Recorder" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gi.overrides.GObject.Object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Object</span></code></p>
 <p>Recorder can be added to a <code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Driver</span></code> to log data between the
 host and the device, see <code class="xref py py-func docutils literal notranslate"><span class="pre">ratbag.Driver.add_recorder()</span></code></p>
 <dl class="field-list simple">
@@ -723,7 +739,7 @@ host and the device, see <code class="xref py py-func docutils literal notransla
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.CommitTransaction">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">CommitTransaction</span></span><a class="headerlink" href="#ratbag.CommitTransaction" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gi.overrides.GObject.Object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Object</span></code></p>
 <p>A helper object for <a class="reference internal" href="#ratbag.Device.commit" title="ratbag.Device.commit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Device.commit()</span></code></a>. This object keeps track of a
 current commit transaction and emits the <code class="docutils literal notranslate"><span class="pre">finished</span></code> signal once the
 driver has completed the transaction.</p>
@@ -760,7 +776,7 @@ if the transaction is not yet complete).</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.CommitTransaction.device">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.Device" title="ratbag.Device"><span class="pre">ratbag.Device</span></a></em><a class="headerlink" href="#ratbag.CommitTransaction.device" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.Device" title="ratbag.Device"><span class="pre">Device</span></a></em><a class="headerlink" href="#ratbag.CommitTransaction.device" title="Permalink to this definition"></a></dt>
 <dd><p>The device assigned to this transaction. This property is not
 available until the transaction is used.</p>
 <dl class="field-list simple">
@@ -809,7 +825,7 @@ transaction is complete.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.Device">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">Device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">firmware_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Device" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gi.overrides.GObject.Object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Object</span></code></p>
 <p>A device as exposed to Ratbag clients. A driver implementation must not
 expose a <a class="reference internal" href="#ratbag.Device" title="ratbag.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Device</span></code></a> until it is fully setup and ready to be
 accessed by the client. Usually this means not sending the
@@ -859,7 +875,7 @@ caller should update its internal state from the device.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.Device.profiles">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">profiles</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Profile" title="ratbag.Profile"><span class="pre">ratbag.Profile</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Device.profiles" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">profiles</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Profile" title="ratbag.Profile"><span class="pre">Profile</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Device.profiles" title="Permalink to this definition"></a></dt>
 <dd><p>The tuple of device profiles, in-order sorted by profile index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -954,7 +970,7 @@ caller should update its internal state from the device.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.Feature">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">Feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Feature" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gi.overrides.GObject.Object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Object</span></code></p>
 <p>Base class for all device features, including profiles. This is a
 convenience class only to avoid re-implementation of common properties.</p>
 <dl class="field-list simple">
@@ -1006,7 +1022,7 @@ resolution 0, the first resolution of profile 2 also has an index of
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.Profile">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">Profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capabilities</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_rates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Profile" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ratbag.Feature" title="ratbag.Feature"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Feature</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.Feature" title="ratbag.Feature"><code class="xref py py-class docutils literal notranslate"><span class="pre">Feature</span></code></a></p>
 <p>A profile on the device. A device must have at least one profile, the
 number of available proviles is device-specific.</p>
 <p>Only one profile may be active at any time. When the active profile
@@ -1022,7 +1038,7 @@ emitted on the newly active profile.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.Profile.Capability">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Capability</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Profile.Capability" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IntEnum</span></code></p>
 <p>Capabilities specific to profiles.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.Profile.Capability.SET_DEFAULT">
@@ -1075,7 +1091,7 @@ all other profiles.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.Profile.buttons">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">buttons</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Button" title="ratbag.Button"><span class="pre">ratbag.Button</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Profile.buttons" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">buttons</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Button" title="ratbag.Button"><span class="pre">Button</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Profile.buttons" title="Permalink to this definition"></a></dt>
 <dd><p>The tuple of <a class="reference internal" href="#ratbag.Button" title="ratbag.Button"><code class="xref py py-class docutils literal notranslate"><span class="pre">Button</span></code></a> that are available in this profile</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -1086,7 +1102,7 @@ all other profiles.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.Profile.resolutions">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resolutions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Resolution" title="ratbag.Resolution"><span class="pre">ratbag.Resolution</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Profile.resolutions" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resolutions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Resolution" title="ratbag.Resolution"><span class="pre">Resolution</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Profile.resolutions" title="Permalink to this definition"></a></dt>
 <dd><p>The tuple of <a class="reference internal" href="#ratbag.Resolution" title="ratbag.Resolution"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resolution</span></code></a> that are available in this profile</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -1097,7 +1113,7 @@ all other profiles.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.Profile.leds">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">leds</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Led" title="ratbag.Led"><span class="pre">ratbag.Led</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Profile.leds" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">leds</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Led" title="ratbag.Led"><span class="pre">Led</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Profile.leds" title="Permalink to this definition"></a></dt>
 <dd><p>The tuple of <a class="reference internal" href="#ratbag.Led" title="ratbag.Led"><code class="xref py py-class docutils literal notranslate"><span class="pre">Led</span></code></a> that are available in this profile</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -1141,7 +1157,7 @@ support configurable report rates, the tuple is the empty tuple</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.Profile.capabilities">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">capabilities</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Profile.Capability" title="ratbag.Profile.Capability"><span class="pre">ratbag.Profile.Capability</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Profile.capabilities" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">capabilities</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Profile.Capability" title="ratbag.Profile.Capability"><span class="pre">Capability</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Profile.capabilities" title="Permalink to this definition"></a></dt>
 <dd><p>Return the tuple of supported <a class="reference internal" href="#ratbag.Profile.Capability" title="ratbag.Profile.Capability"><code class="xref py py-class docutils literal notranslate"><span class="pre">Profile.Capability</span></code></a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -1233,7 +1249,7 @@ or JSON.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.Resolution">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">Resolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">capabilities</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Resolution" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ratbag.Feature" title="ratbag.Feature"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Feature</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.Feature" title="ratbag.Feature"><code class="xref py py-class docutils literal notranslate"><span class="pre">Feature</span></code></a></p>
 <p>A resolution within a profile. A device must have at least one profile, the
 number of available proviles is device-specific.</p>
 <p>Only one resolution may be active at any time. When the active resolution
@@ -1243,7 +1259,7 @@ signal is emitted on the newly active resolution.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.Resolution.Capability">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Capability</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Resolution.Capability" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IntEnum</span></code></p>
 <p>Capabilities specific to resolutions.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION">
@@ -1257,7 +1273,7 @@ be a tuple of identical values.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.Resolution.capabilities">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">capabilities</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Resolution.Capability" title="ratbag.Resolution.Capability"><span class="pre">ratbag.Resolution.Capability</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Resolution.capabilities" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">capabilities</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Resolution.Capability" title="ratbag.Resolution.Capability"><span class="pre">Capability</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Resolution.capabilities" title="Permalink to this definition"></a></dt>
 <dd><p>Return the tuple of supported <a class="reference internal" href="#ratbag.Resolution.Capability" title="ratbag.Resolution.Capability"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resolution.Capability</span></code></a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -1381,12 +1397,12 @@ or JSON.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.Action">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">Action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Action" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gi.overrides.GObject.Object</span></code></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">Action</span></span><a class="headerlink" href="#ratbag.Action" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Object</span></code></p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.Action.Type">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Action.Type" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IntEnum</span></code></p>
 <p>An enumeration.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.Action.Type.NONE">
@@ -1417,7 +1433,7 @@ or JSON.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.Action.type">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.Action.Type" title="ratbag.Action.Type"><span class="pre">ratbag.Action.Type</span></a></em><a class="headerlink" href="#ratbag.Action.type" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.Action.Type" title="ratbag.Action.Type"><span class="pre">Type</span></a></em><a class="headerlink" href="#ratbag.Action.type" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference internal" href="#ratbag.Action.Type" title="ratbag.Action.Type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a></p>
@@ -1439,16 +1455,16 @@ or JSON.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.ActionNone">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">ActionNone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.ActionNone" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ratbag.Action" title="ratbag.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Action</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">ActionNone</span></span><a class="headerlink" href="#ratbag.ActionNone" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.Action" title="ratbag.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action</span></code></a></p>
 <p>A “none” action to signal the button is disabled and does not send an
 event when physically presed down.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.ActionButton">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">ActionButton</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.ActionButton" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ratbag.Action" title="ratbag.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Action</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">ActionButton</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">button</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.ActionButton" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.Action" title="ratbag.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action</span></code></a></p>
 <p>A button action triggered by a button. This is the simplest case of an
 action where a button triggers… a button event! Note that while
 <a class="reference internal" href="#ratbag.Button" title="ratbag.Button"><code class="xref py py-class docutils literal notranslate"><span class="pre">Button</span></code></a> uses indices starting at zero, button actions start
@@ -1478,8 +1494,8 @@ at button 1 (left mouse button).</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.ActionSpecial">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">ActionSpecial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">special</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.ActionSpecial" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ratbag.Action" title="ratbag.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Action</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">ActionSpecial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">special</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.ActionSpecial" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.Action" title="ratbag.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action</span></code></a></p>
 <p>A special action triggered by a button. These actions are fixed
 events supported by devices, see <a class="reference internal" href="#ratbag.ActionSpecial.Special" title="ratbag.ActionSpecial.Special"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionSpecial.Special</span></code></a> for the
 list of known actions.</p>
@@ -1488,7 +1504,7 @@ given device may not support all special events.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.ActionSpecial.Special">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Special</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.ActionSpecial.Special" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IntEnum</span></code></p>
 <p>An enumeration.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.ActionSpecial.Special.UNKNOWN">
@@ -1589,7 +1605,7 @@ given device may not support all special events.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.ActionSpecial.special">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">special</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.ActionSpecial.Special" title="ratbag.ActionSpecial.Special"><span class="pre">ratbag.ActionSpecial.Special</span></a></em><a class="headerlink" href="#ratbag.ActionSpecial.special" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">special</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.ActionSpecial.Special" title="ratbag.ActionSpecial.Special"><span class="pre">Special</span></a></em><a class="headerlink" href="#ratbag.ActionSpecial.special" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference internal" href="#ratbag.ActionSpecial.Special" title="ratbag.ActionSpecial.Special"><code class="xref py py-class docutils literal notranslate"><span class="pre">Special</span></code></a></p>
@@ -1611,15 +1627,15 @@ given device may not support all special events.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.ActionMacro">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">ActionMacro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">parent,</span> <span class="pre">name='Unnamed</span> <span class="pre">macro',</span> <span class="pre">events=[(&lt;Event.INVALID:</span> <span class="pre">-1&gt;,</span> <span class="pre">0)]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.ActionMacro" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ratbag.Action" title="ratbag.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Action</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">ActionMacro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name='Unnamed</span> <span class="pre">macro',</span> <span class="pre">events=[(&lt;Event.INVALID:</span> <span class="pre">-1&gt;,</span> <span class="pre">0)]</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.ActionMacro" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.Action" title="ratbag.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action</span></code></a></p>
 <p>A macro assigned to a button. The macro may consist of key presses,
 releases and timeouts (see <a class="reference internal" href="#ratbag.ActionMacro.Event" title="ratbag.ActionMacro.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionMacro.Event</span></code></a>), the length of the
 macro and limitations on what keys can be used are device-specific.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.ActionMacro.Event">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.ActionMacro.Event" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IntEnum</span></code></p>
 <p>An enumeration.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.ActionMacro.Event.INVALID">
@@ -1660,7 +1676,7 @@ macro and limitations on what keys can be used are device-specific.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.ActionMacro.events">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">events</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.ActionMacro.Event" title="ratbag.ActionMacro.Event"><span class="pre">ratbag.ActionMacro.Event</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.ActionMacro.events" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">events</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.ActionMacro.Event" title="ratbag.ActionMacro.Event"><span class="pre">Event</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.ActionMacro.events" title="Permalink to this definition"></a></dt>
 <dd><p>A list of tuples that describe the sequence of this macro. Each tuple
 is of type <code class="docutils literal notranslate"><span class="pre">(Macro.Event.KEY_PRESS,</span> <span class="pre">34)</span></code> or <code class="docutils literal notranslate"><span class="pre">(Macro.Event.WAIT_MS,</span> <span class="pre">500)</span></code>,
 i.e. the first entry is a <code class="xref py py-class docutils literal notranslate"><span class="pre">Macro.Event</span></code> enum and the remaining
@@ -1691,7 +1707,7 @@ the desired event sequence and assign it to the button.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.Button">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">Button</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">types=(&lt;Type.BUTTON:</span> <span class="pre">1&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Button" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ratbag.Feature" title="ratbag.Feature"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Feature</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.Feature" title="ratbag.Feature"><code class="xref py py-class docutils literal notranslate"><span class="pre">Feature</span></code></a></p>
 <p>A physical button on the device as represented in a profile. A button has
 an <a class="reference internal" href="#ratbag.Action" title="ratbag.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action</span></code></a> assigned to it, be that to generate a button click, a
 special event or even a full sequence of key strokes (<code class="xref py py-class docutils literal notranslate"><span class="pre">Macro</span></code>).</p>
@@ -1705,7 +1721,7 @@ physical button will have multiple <a class="reference internal" href="#ratbag.B
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.Button.types">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">types</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Action.Type" title="ratbag.Action.Type"><span class="pre">ratbag.Action.Type</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Button.types" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">types</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Action.Type" title="ratbag.Action.Type"><span class="pre">Type</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Button.types" title="Permalink to this definition"></a></dt>
 <dd><p>The list of supported <a class="reference internal" href="#ratbag.Action.Type" title="ratbag.Action.Type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action.Type</span></code></a> for this button</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -1762,11 +1778,11 @@ or JSON.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.Led">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ratbag.</span></span><span class="sig-name descname"><span class="pre">Led</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color=(0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">brightness=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colordepth=Colordepth.RGB_888</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode=Mode.OFF</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modes=(&lt;Mode.OFF:</span> <span class="pre">0&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">effect_duration=0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Led" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ratbag.Feature" title="ratbag.Feature"><code class="xref py py-class docutils literal notranslate"><span class="pre">ratbag.Feature</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#ratbag.Feature" title="ratbag.Feature"><code class="xref py py-class docutils literal notranslate"><span class="pre">Feature</span></code></a></p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.Led.Colordepth">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Colordepth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Led.Colordepth" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IntEnum</span></code></p>
 <p>An enumeration.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.Led.Colordepth.MONOCHROME">
@@ -1788,7 +1804,7 @@ or JSON.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ratbag.Led.Mode">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ratbag.Led.Mode" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IntEnum</span></code></p>
 <p>An enumeration.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ratbag.Led.Mode.OFF">
@@ -1840,7 +1856,7 @@ caller’s responsibility to set the colors in a non-ambiguous way.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.Led.colordepth">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">colordepth</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.Led.Colordepth" title="ratbag.Led.Colordepth"><span class="pre">ratbag.Led.Colordepth</span></a></em><a class="headerlink" href="#ratbag.Led.colordepth" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">colordepth</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ratbag.Led.Colordepth" title="ratbag.Led.Colordepth"><span class="pre">Colordepth</span></a></em><a class="headerlink" href="#ratbag.Led.colordepth" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference internal" href="#ratbag.Led.Colordepth" title="ratbag.Led.Colordepth"><code class="xref py py-class docutils literal notranslate"><span class="pre">Colordepth</span></code></a></p>
@@ -1907,7 +1923,7 @@ caller’s responsibility to set the colors in a non-ambiguous way.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="ratbag.Led.modes">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">modes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Led.Mode" title="ratbag.Led.Mode"><span class="pre">ratbag.Led.Mode</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Led.modes" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">modes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ratbag.Led.Mode" title="ratbag.Led.Mode"><span class="pre">Mode</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ratbag.Led.modes" title="Permalink to this definition"></a></dt>
 <dd><p>Return a tuple of the available <a class="reference internal" href="#ratbag.Led.Mode" title="ratbag.Led.Mode"><code class="xref py py-class docutils literal notranslate"><span class="pre">Led.Mode</span></code></a> for this LED</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>

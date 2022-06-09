@@ -255,12 +255,17 @@ class CommitTransaction(GObject.Object):
     A transaction object can only be used once.
     """
 
+    class State(enum.IntEnum):
+        NEW = enum.auto()
+        IN_USE = enum.auto()
+        FAILED = enum.auto()
+        SUCCESS = enum.auto()
+
     _seqno: int = attr.ib(init=False, factory=lambda c=count(): next(c))  # type: ignore
     """
     Unique serial number for this transaction
     """
-    _used: bool = attr.ib(init=False, default=False)
-    _done: bool = attr.ib(init=False, default=False)
+    _state: State = attr.ib(init=False, default=State.NEW)
 
     def __attrs_pre_init__(self):
         GObject.Object.__init__(self)
@@ -290,7 +295,7 @@ class CommitTransaction(GObject.Object):
         True if the transaction has been used in :meth:`Device.commit` (even
         if the transaction is not yet complete).
         """
-        return self._used
+        return self._state != CommitTransaction.State.NEW
 
     @property
     def device(self) -> "ratbag.Device":
@@ -306,26 +311,36 @@ class CommitTransaction(GObject.Object):
         Returns ``True`` on success. This property is not available unless the
         transaction is complete.
         """
-        return self._success
+        return self._state == CommitTransaction.State.SUCCESS
 
     @property
     def is_finished(self) -> bool:
-        return self._done
+        return self._state in [
+            CommitTransaction.State.SUCCESS,
+            CommitTransaction.State.FAILED,
+        ]
 
     def mark_as_in_use(self, device: "ratbag.Device"):
         """
         :meta private:
         """
-        self._used = True
+        assert self._state in [CommitTransaction.State.NEW]
+        self._state == CommitTransaction.State.IN_USE
         self._device = device
 
     def complete(self, success: bool):
         """
         Complete this transaction with the given success status.
         """
-        if not self._done:
-            self._success = success
-            self._done = True
+        if self._state not in [
+            CommitTransaction.State.SUCCESS,
+            CommitTransaction.State.FAILED,
+        ]:
+            self._state = (
+                CommitTransaction.State.SUCCESS
+                if success
+                else CommitTransaction.State.FAILED
+            )
             self.emit("finished")
 
 

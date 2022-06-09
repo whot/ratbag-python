@@ -17,38 +17,38 @@ def device():
 
 
 def test_resolution(device):
-    profile = ratbag.Profile(device, 0)
+    profile = ratbag.Profile.create(device, 0)
 
     # invalid index
-    with pytest.raises(AssertionError):
-        ratbag.Resolution(profile, -1, (0, 0))
+    with pytest.raises(ValueError):
+        ratbag.Resolution.create(profile, -1, (0, 0))
 
     # negative dp
-    with pytest.raises(AssertionError):
-        ratbag.Resolution(profile, 0, (-1, -1))
+    with pytest.raises(ValueError):
+        ratbag.Resolution.create(profile, 0, (-1, -1))
 
     # dpi not an int
-    with pytest.raises(AssertionError):
-        ratbag.Resolution(profile, 0, ("asbc", 1))
+    with pytest.raises(ValueError):
+        ratbag.Resolution.create(profile, 0, ("asbc", 1))
 
     # dpi not a 2-value tuple
-    with pytest.raises(AssertionError):
-        ratbag.Resolution(profile, 0, (1, 2, 3))
+    with pytest.raises(ValueError):
+        ratbag.Resolution.create(profile, 0, (1, 2, 3))
 
     # dpi list negative
-    with pytest.raises(AssertionError):
-        ratbag.Resolution(profile, 0, (1, 2), dpi_list=[-1])
+    with pytest.raises(ValueError):
+        ratbag.Resolution.create(profile, 0, (1, 2), dpi_list=[-1])
 
     # dpi list not a list
-    with pytest.raises(AssertionError):
-        ratbag.Resolution(profile, 0, (1, 2), dpi_list=-1)
+    with pytest.raises(ValueError):
+        ratbag.Resolution.create(profile, 0, (1, 2), dpi_list=-1)
 
     # capability not in the enum
-    with pytest.raises(AssertionError):
-        ratbag.Resolution(profile, 0, (1, 2, 3), capabilities=[1])
+    with pytest.raises(ValueError):
+        ratbag.Resolution.create(profile, 0, (1, 2), capabilities=[1])
 
     # default values
-    r = ratbag.Resolution(profile, 0, (200, 200))
+    r = ratbag.Resolution.create(profile, 0, (200, 200))
     assert r.capabilities == ()
     assert not r.active
     assert not r.default
@@ -63,10 +63,10 @@ def test_resolution(device):
 
     # duplicate index
     with pytest.raises(AssertionError):
-        ratbag.Resolution(profile, 0, (200, 200))
+        ratbag.Resolution.create(profile, 0, (200, 200))
 
     # caps assigned properly?
-    r = ratbag.Resolution(
+    r = ratbag.Resolution.create(
         profile,
         1,
         (200, 200),
@@ -83,7 +83,7 @@ def test_resolution_set_default(device):
     for i in range(5):
         profile = ratbag.Profile(device, i)
         for j in range(5):
-            ratbag.Resolution(profile, j, (j * 100, j * 100))
+            ratbag.Resolution.create(profile, j, (j * 100, j * 100))
 
     r11 = device.profiles[1].resolutions[1]
     r13 = device.profiles[1].resolutions[3]
@@ -135,7 +135,7 @@ def test_resolution_set_active(device):
     for i in range(5):
         profile = ratbag.Profile(device, i)
         for j in range(5):
-            ratbag.Resolution(profile, j, (j * 100, j * 100))
+            ratbag.Resolution.create(profile, j, (j * 100, j * 100))
 
     r11 = device.profiles[1].resolutions[1]
     r13 = device.profiles[1].resolutions[3]
@@ -185,7 +185,7 @@ def test_resolution_set_active(device):
 
 def test_led(device):
     profile = ratbag.Profile(device, 0)
-    led = ratbag.Led(profile, 0)
+    led = ratbag.Led.create(profile, 0)
 
     # color checks
     invalid_colors = [
@@ -242,7 +242,9 @@ def test_led(device):
 
     # LED modes
     assert led.modes == (ratbag.Led.Mode.OFF,)
-    led = ratbag.Led(profile, 1, modes=tuple(ratbag.Led.Mode), mode=ratbag.Led.Mode.ON)
+    led = ratbag.Led.create(
+        profile, 1, modes=tuple(ratbag.Led.Mode), mode=ratbag.Led.Mode.ON
+    )
     assert led.modes == tuple(ratbag.Led.Mode)
     for m in led.modes:
         led.set_mode(m)
@@ -340,37 +342,37 @@ def test_profile_out_of_order(device):
 
 
 def test_action_equals():
-    assert ratbag.Action() == ratbag.Action()
-    assert ratbag.Action() != ratbag.ActionButton(1)
-    assert ratbag.Action() != ratbag.ActionSpecial(
+    assert ratbag.ActionUnknown.create() == ratbag.ActionUnknown.create()
+    assert ratbag.ActionUnknown.create() != ratbag.ActionButton.create(1)
+    assert ratbag.ActionUnknown.create() != ratbag.ActionSpecial.create(
         ratbag.ActionSpecial.Special.DOUBLECLICK
     )
 
-    assert ratbag.ActionButton(1) == ratbag.ActionButton(1)
-    assert ratbag.ActionButton(2) != ratbag.ActionButton(1)
-    assert ratbag.ActionButton(1) != ratbag.ActionSpecial(
+    assert ratbag.ActionButton.create(1) == ratbag.ActionButton.create(1)
+    assert ratbag.ActionButton.create(2) != ratbag.ActionButton.create(1)
+    assert ratbag.ActionButton.create(1) != ratbag.ActionSpecial.create(
         ratbag.ActionSpecial.Special.DOUBLECLICK
     )
 
-    assert ratbag.ActionSpecial(
+    assert ratbag.ActionSpecial.create(
         ratbag.ActionSpecial.Special.DOUBLECLICK
-    ) == ratbag.ActionSpecial(ratbag.ActionSpecial.Special.DOUBLECLICK)
-    assert ratbag.ActionSpecial(
+    ) == ratbag.ActionSpecial.create(ratbag.ActionSpecial.Special.DOUBLECLICK)
+    assert ratbag.ActionSpecial.create(
         ratbag.ActionSpecial.Special.WHEEL_DOWN
-    ) != ratbag.ActionSpecial(ratbag.ActionSpecial.Special.DOUBLECLICK)
+    ) != ratbag.ActionSpecial.create(ratbag.ActionSpecial.Special.DOUBLECLICK)
 
     # name is not checked for equality
-    assert ratbag.ActionMacro(
+    assert ratbag.ActionMacro.create(
         name="foo", events=[(ratbag.ActionMacro.Event.KEY_PRESS, 1)]
-    ) == ratbag.ActionMacro(
+    ) == ratbag.ActionMacro.create(
         name="bar", events=[(ratbag.ActionMacro.Event.KEY_PRESS, 1)]
     )
-    assert ratbag.ActionMacro(
+    assert ratbag.ActionMacro.create(
         name="foo",
         events=[
             (ratbag.ActionMacro.Event.KEY_PRESS, 1),
             (ratbag.ActionMacro.Event.KEY_PRESS, 2),
         ],
-    ) != ratbag.ActionMacro(
+    ) != ratbag.ActionMacro.create(
         name="bar", events=[(ratbag.ActionMacro.Event.KEY_PRESS, 1)]
     )

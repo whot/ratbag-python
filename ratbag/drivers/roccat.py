@@ -161,7 +161,7 @@ class RoccatProfile(object):
         for (dpi_idx, dpi) in enumerate(self.dpi):
             dpi_list = tuple(range(200, 8200 + 1, 50))
             caps = [ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION]
-            ratbag.Resolution(
+            ratbag.Resolution.create(
                 p,
                 dpi_idx,
                 dpi,
@@ -177,7 +177,7 @@ class RoccatProfile(object):
                 ratbag.Action.Type.MACRO,
             ]
             action = self.key_mapping.button_to_ratbag(btn_idx)
-            ratbag.Button(p, btn_idx, types=caps, action=action)
+            ratbag.Button.create(p, btn_idx, types=caps, action=action)
 
         self.ratbag_profile = p
         return p
@@ -480,20 +480,22 @@ class RoccatKeyMapping(object):
         action = self.actions[idx][0]
         macro = self.macros.get(idx, None)
         if action == 0:
-            ratbag_action = ratbag.ActionNone()
+            ratbag_action = ratbag.ActionNone.create()
         elif action in [1, 2, 3]:
-            ratbag_action = ratbag.ActionButton(action)
+            ratbag_action = ratbag.ActionButton.create(action)
         # 5 is shortcut (modifier + key)
         elif action == 6:
-            ratbag_action = ratbag.ActionNone()
+            ratbag_action = ratbag.ActionNone.create()
         elif action in [7, 8]:
-            ratbag_action = ratbag.ActionButton(action - 3)
+            ratbag_action = ratbag.ActionButton.create(action - 3)
         elif action in RoccatKeyMapping.specials:
-            ratbag_action = ratbag.ActionSpecial(RoccatKeyMapping.specials[action])
+            ratbag_action = ratbag.ActionSpecial.create(
+                RoccatKeyMapping.specials[action]
+            )
         elif action == 48:
             assert macro is not None
             name, events = macro.to_ratbag()
-            ratbag_action = ratbag.ActionMacro(name, events)
+            ratbag_action = ratbag.ActionMacro.create(name=name, events=events)
         else:
             # For keycodes we pretend it's a macro
             assert macro is None
@@ -507,10 +509,10 @@ class RoccatKeyMapping(object):
                 ]
                 macro.length = 2
                 name, events = macro.to_ratbag()
-                ratbag_action = ratbag.ActionMacro(name, events)
+                ratbag_action = ratbag.ActionMacro.create(name=name, events=events)
             except KeyError:
                 logger.info(f"Unsupported action type {action}")
-                ratbag_action = ratbag.Action()
+                ratbag_action = ratbag.ActionUnknown.create()
         return ratbag_action
 
     def button_update_from_ratbag(self, idx, ratbag_action):

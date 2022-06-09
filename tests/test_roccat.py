@@ -38,9 +38,8 @@ ff 7f 95 02 75 10 81 06 09 38 15 81 25 7f 75 08 95 01 81 06 05 0c 0a 38 02 81
 )
 
 
-@pytest.fixture
-def transaction():
-    transaction = ratbag.CommitTransaction()
+def new_transaction(device):
+    transaction = ratbag.CommitTransaction.create(device)
 
     def cb_finished(ta):
         assert ta.is_finished
@@ -314,7 +313,7 @@ class TestRoccatDriver(object):
                     continue
                 assert b.action != ratbag.Action.Type.MACRO
 
-    def test_button_change_action(self, driver, transaction):
+    def test_button_change_action(self, driver):
         dev = RoccatTestDevice()
         driver.connect("device-added", self.cb_device_added)
         # Note: we bypass the hidraw monitor because we don't need it
@@ -324,13 +323,15 @@ class TestRoccatDriver(object):
         device = self.ratbag_device
         button = device.profiles[3].buttons[2]
         button.set_action(ratbag.ActionButton(1))  # change to left button
-        device.commit(transaction)
+
+        transaction = new_transaction(device)
+        transaction.commit()
         self.mainloop()
 
         assert transaction.success is True
         assert dev.profiles[3].buttons[2] == 1
 
-    def test_dpi_change(self, driver, transaction):
+    def test_dpi_change(self, driver):
         dev = RoccatTestDevice()
         driver.connect("device-added", self.cb_device_added)
         # Note: we bypass the hidraw monitor because we don't need it
@@ -342,7 +343,8 @@ class TestRoccatDriver(object):
         res.set_dpi((1300, 1300))
         res = device.profiles[1].resolutions[1]
         res.set_dpi((1400, 1400))
-        device.commit(transaction)
+        transaction = new_transaction(device)
+        transaction.commit()
         self.mainloop()
 
         assert transaction.success is True

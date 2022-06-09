@@ -266,6 +266,13 @@ class CommitTransaction(GObject.Object):
     current commit transaction and emits the ``finished`` signal once the
     driver has completed the transaction.
 
+        >>> device = None  # should be a device though...
+        >>> t = CommitTransaction.create(device)
+        >>> def on_finished(transaction):
+        ...     print(f"Device {transaction.device} is done")
+        >>> signal_number = t.connect("finished", on_finished)
+        >>> t.commit()  # doctest: +SKIP
+
     A transaction object can only be used once.
     """
 
@@ -275,7 +282,9 @@ class CommitTransaction(GObject.Object):
         FAILED = enum.auto()
         SUCCESS = enum.auto()
 
+    _device: "ratbag.Device" = attr.ib()
     _seqno: int = attr.ib(init=False, factory=lambda c=count(): next(c))  # type: ignore
+
     """
     Unique serial number for this transaction
     """
@@ -285,8 +294,8 @@ class CommitTransaction(GObject.Object):
         GObject.Object.__init__(self)
 
     @classmethod
-    def create(cls) -> "CommitTransaction":
-        return cls()
+    def create(cls, device: "Device") -> "CommitTransaction":
+        return cls(device=device)
 
     @GObject.Signal()
     def finished(self, *args):
@@ -314,15 +323,14 @@ class CommitTransaction(GObject.Object):
     @property
     def device(self) -> "ratbag.Device":
         """
-        The device assigned to this transaction. This property is not
-        available until the transaction is used.
+        The device assigned to this transaction.
         """
         return self._device
 
     @property
     def success(self) -> bool:
         """
-        Returns ``True`` on success. This property is not available unless the
+        Returns ``True`` on success. This property is ``False`` until the
         transaction is complete.
         """
         return self._state == CommitTransaction.State.SUCCESS
@@ -334,13 +342,10 @@ class CommitTransaction(GObject.Object):
             CommitTransaction.State.FAILED,
         ]
 
-    def mark_as_in_use(self, device: "ratbag.Device"):
-        """
-        :meta private:
-        """
+    def commit(self):
         assert self._state in [CommitTransaction.State.NEW]
         self._state == CommitTransaction.State.IN_USE
-        self._device = device
+        self.device.commit(self)
 
     def complete(self, success: bool):
         """
@@ -442,17 +447,21 @@ class Device(GObject.Object):
         # modify it.
         return self._profiles
 
-    def commit(self, transaction: Optional[CommitTransaction] = None):
+    def commit(self, transaction: CommitTransaction):
         """
         Write the current changes to the driver. This is an asynchronous
         operation (maybe in a separate thread). Once complete, the
         given transaction object will emit the ``finished`` signal.
 
-            >>> t = CommitTransaction.create()
+        You should not call this function directly, use
+        :meth:`CommitTransaction.commit` instead:
+
+            >>> device = None  # should be a device though...
+            >>> t = CommitTransaction.create(device)
             >>> def on_finished(transaction):
             ...     print(f"Device {transaction.device} is done")
             >>> signal_number = t.connect("finished", on_finished)
-            >>> device.commit(t)  # doctest: +SKIP
+            >>> t.commit()  # doctest: +SKIP
 
         The :attr:`dirty` status of the device's features is reset to
         ``False`` immediately before the callback is invoked but not before
@@ -469,12 +478,10 @@ class Device(GObject.Object):
 
         :returns: a sequence number for this transaction
         """
-        if transaction is None:
-            transaction = CommitTransaction.create()
-        elif transaction.used:
+        assert transaction is not None
+        assert transaction.device == self
+        if transaction.is_finished:
             raise ValueError("Transactions cannot be re-used")
-
-        transaction.mark_as_in_use(self)
 
         GLib.idle_add(self._cb_idle_commit, transaction)
 

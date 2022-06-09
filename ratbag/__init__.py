@@ -36,6 +36,7 @@ class ConfigError(Exception):
         self.message = message
 
 
+@attr.s
 class Ratbag(GObject.Object):
     """
     An instance managing one or more ratbag devices. This is the entry point
@@ -63,6 +64,33 @@ class Ratbag(GObject.Object):
 
     """
 
+    _devices: List["Device"] = attr.ib(init=False, default=attr.Factory(list))
+    _blackbox: Optional["Blackbox"] = attr.ib(default=None)
+
+    def __attrs_pre_init__(self):
+        GObject.Object.__init__(self)
+
+    @classmethod
+    def create_empty(cls, /, blackbox: Optional["Blackbox"]) -> "Ratbag":
+        """
+        Create an "empty" instance of ratbag that does not load any drivers
+        and thus will not detect devices. The caller is responsible for
+        adding drivers.
+
+        This is used for testing only, use :meth:`Ratbag.create` instead.
+        """
+        r = cls(blackbox=blackbox)
+        return r
+
+    @classmethod
+    def create(cls, /, blackbox: Optional["Blackbox"] = None) -> "Ratbag":
+        """
+        Create a new Ratbag instance.
+        """
+        r = cls(blackbox=blackbox)
+        r._load_data_files()
+        return r
+
     @GObject.Signal(name="start")
     def _start(self, *args):
         """
@@ -77,13 +105,6 @@ class Ratbag(GObject.Object):
         GObject signal emitted when a new :class:`ratbag.Device` was added
         """
         pass
-
-    def __init__(self, /, load_data_files=True, blackbox: Optional["Blackbox"] = None):
-        super().__init__()
-        self._devices: List[Device] = []
-        self._blackbox = blackbox
-        if load_data_files:
-            self._load_data_files()
 
     def _load_data_files(self):
         """
@@ -167,13 +188,6 @@ class Ratbag(GObject.Object):
         connected to all the signals.
         """
         self.emit("start")
-
-    @classmethod
-    def create(cls, /, load_data_files=True, blackbox: Optional["Blackbox"] = None):
-        """
-        Create a new Ratbagd instance.
-        """
-        return cls(load_data_files=load_data_files, blackbox=blackbox)
 
 
 @attr.s

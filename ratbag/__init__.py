@@ -128,7 +128,7 @@ class Ratbag(GObject.Object):
             supported_devices = [
                 DeviceConfig(match, f.driver_options) for match in f.matches
             ]
-            drivers[f.driver] = drivers.get(f.driver, []).extend(supported_devices)
+            drivers[f.driver] = drivers.setdefault(f.driver, []) + supported_devices
 
         for drivername, configs in drivers.items():
             try:

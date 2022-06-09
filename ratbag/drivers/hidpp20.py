@@ -306,7 +306,7 @@ class Led(object):
                 Led.Mode.CUSTOM: ratbag.Led.Mode.BREATHING,
             }[self]
 
-    mode: "Led.Mode" = attr.ib(default=Mode.OFF)
+    mode: Mode = attr.ib(default=Mode.OFF)
     color: Tuple[int, int, int] = attr.ib(default=(0, 0, 0))
     brightness: int = attr.ib(default=255)
     period: int = attr.ib(default=0)

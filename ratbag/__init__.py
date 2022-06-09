@@ -235,6 +235,7 @@ class Blackbox:
         return cls(directory=directory)
 
 
+@attr.s
 class Recorder(GObject.Object):
     """
     Recorder can be added to a :class:`ratbag.Driver` to log data between the
@@ -243,7 +244,7 @@ class Recorder(GObject.Object):
     :param config: A dictionary with logger-specific data to initialize
     """
 
-    def __init__(self, config: Dict[str, Any] = {}):
+    def __attrs_pre_init__(self):
         GObject.Object.__init__(self)
 
     def log_rx(self, data: bytes) -> None:

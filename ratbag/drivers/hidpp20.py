@@ -905,9 +905,9 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
         # Device start was successful if no exception occurs. Now fill in the
         # ratbag device.
         for idx, profile in enumerate(device.profiles):
-            p = ratbag.Profile(
-                ratbag_device,
-                idx,
+            p = ratbag.Profile.create(
+                device=ratbag_device,
+                index=idx,
                 name=profile.name,
                 report_rate=profile.report_rate,
                 report_rates=profile.report_rates,
@@ -915,7 +915,9 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
             )
 
             for dpi_idx, dpi in enumerate(profile.dpi):
-                ratbag.Resolution(p, dpi_idx, (dpi, dpi), dpi_list=profile.dpi_list)
+                ratbag.Resolution.create(
+                    profile=p, index=dpi_idx, dpi=(dpi, dpi), dpi_list=profile.dpi_list
+                )
 
             for led_idx, led in enumerate(profile.leds):
                 kwargs = {
@@ -939,7 +941,7 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
                     # should never happen anyway, see to_ratbag_mode
                     pass
 
-                ratbag.Led(p, led_idx, **kwargs)
+                ratbag.Led.create(profile=p, index=led_idx, **kwargs)
 
             for btn_idx, button in enumerate(profile.buttons):
                 actiontypes = (
@@ -948,21 +950,23 @@ class Hidpp20Driver(ratbag.driver.HidrawDriver):
                     ratbag.Action.Type.SPECIAL,
                     ratbag.Action.Type.MACRO,
                 )
-                b = ratbag.Button(p, btn_idx, types=actiontypes, action=None)
+                b = ratbag.Button.create(
+                    profile=p, index=btn_idx, types=actiontypes, action=None
+                )
                 if button.type == Button.Type.DISABLED:
-                    action = ratbag.ActionNone()
+                    action = ratbag.ActionNone.create()
                 elif button.type == Button.Type.HID:
                     if button.hidtype == Button.HidType.MOUSE:
-                        action = ratbag.ActionButton(button.button)
+                        action = ratbag.ActionButton.create(button=button.button)
                     else:
                         # FIXME: macro for keybaoard, special for consumer
                         # control
-                        action = ratbag.ActionNone()
+                        action = ratbag.ActionNone.create()
                 elif button.type == Button.Type.SPECIAL:
-                    action = ratbag.ActionSpecial(button.ratbag_special)
+                    action = ratbag.ActionSpecial.create(special=button.ratbag_special)
                 elif button.type == Button.Type.MACRO:
                     # FIXME: needs parsing
-                    action = ratbag.ActionMacro()
+                    action = ratbag.ActionMacro.create()
 
                 b.set_action(action)
 

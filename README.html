@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to libratbag’s documentation! &mdash; libratbag  documentation</title>
+  <title>ratbag-python &mdash; libratbag  documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -18,8 +18,7 @@
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="ratbag" href="modules.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -27,7 +26,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="#" class="icon icon-home"> libratbag
+            <a href="index.html" class="icon icon-home"> libratbag
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -48,17 +47,17 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">libratbag</a>
+          <a href="index.html">libratbag</a>
       </nav>
 
       <div class="wy-nav-content">
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
-      <li>Welcome to libratbag’s documentation!</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>ratbag-python</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/README.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -66,38 +65,19 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="welcome-to-libratbag-s-documentation">
-<h1>Welcome to libratbag’s documentation!<a class="headerlink" href="#welcome-to-libratbag-s-documentation" title="Permalink to this heading"></a></h1>
-<div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">ratbag</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="ratbag.html">ratbag package</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading"></a></h1>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
-<section id="ratbag-python">
-<h2>ratbag-python<a class="headerlink" href="#ratbag-python" title="Permalink to this heading"></a></h2>
+  <section id="ratbag-python">
+<h1>ratbag-python<a class="headerlink" href="#ratbag-python" title="Permalink to this heading"></a></h1>
 <p>A Python implementation of libratbag, intended to replace libratbag
 eventually. Some of the motivation is discussed in
 https://github.com/libratbag/libratbag/issues/1247</p>
 <section id="tools">
-<h3>Tools<a class="headerlink" href="#tools" title="Permalink to this heading"></a></h3>
+<h2>Tools<a class="headerlink" href="#tools" title="Permalink to this heading"></a></h2>
 <p>Note that read/write permissions are required on the <code class="docutils literal notranslate"><span class="pre">/dev/hidraw</span></code>
 devices. This means you need to run any tool as root or, alternatively and
 even less secure: <code class="docutils literal notranslate"><span class="pre">chmod</span> <span class="pre">o+rw</span> <span class="pre">/dev/hidrawN</span></code> where <code class="docutils literal notranslate"><span class="pre">N</span></code> is the number of your
 device.</p>
 <section id="ratbagcli">
-<h4>ratbagcli<a class="headerlink" href="#ratbagcli" title="Permalink to this heading"></a></h4>
+<h3>ratbagcli<a class="headerlink" href="#ratbagcli" title="Permalink to this heading"></a></h3>
 <p>This package provides the <code class="docutils literal notranslate"><span class="pre">ratbagcli</span></code> commandline tool to interact with a
 device. To list all devices and show information about a specific device, use
 the <code class="docutils literal notranslate"><span class="pre">list</span></code> and <code class="docutils literal notranslate"><span class="pre">show</span></code> subcommands:</p>
@@ -121,7 +101,7 @@ $ ratbagcli verify-config config/defaults.yml G303
 </div>
 </section>
 <section id="ratbagd">
-<h4>ratbagd<a class="headerlink" href="#ratbagd" title="Permalink to this heading"></a></h4>
+<h3>ratbagd<a class="headerlink" href="#ratbagd" title="Permalink to this heading"></a></h3>
 <p>This package ships with a (mostly) drop-in replacement for libratbag’s
 ratbagd.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># Install the policy file
@@ -133,7 +113,7 @@ $ ratbagd
 </section>
 </section>
 <section id="debugging">
-<h3>Debugging<a class="headerlink" href="#debugging" title="Permalink to this heading"></a></h3>
+<h2>Debugging<a class="headerlink" href="#debugging" title="Permalink to this heading"></a></h2>
 <p>ratbag comes with a fair bit of debugging output that can be enabled through
 the <code class="docutils literal notranslate"><span class="pre">--verbose</span></code> commandline in <code class="docutils literal notranslate"><span class="pre">ratbagcli</span></code> or, more fine-grained, through a
 logging config file.</p>
@@ -146,7 +126,7 @@ $ ratbagcli show G303
 <p>By default log data is printed to stderr.</p>
 </section>
 <section id="architecture">
-<h3>Architecture<a class="headerlink" href="#architecture" title="Permalink to this heading"></a></h3>
+<h2>Architecture<a class="headerlink" href="#architecture" title="Permalink to this heading"></a></h2>
 <p>The public API, i.e. the bits to be consumed by various tools is in the
 <code class="docutils literal notranslate"><span class="pre">ratbag</span></code> module (<code class="docutils literal notranslate"><span class="pre">ratbag/__init__.py</span></code>). This provides the various high-level
 entities like <code class="docutils literal notranslate"><span class="pre">Device</span></code>, <code class="docutils literal notranslate"><span class="pre">Profile</span></code> and <code class="docutils literal notranslate"><span class="pre">Resolution</span></code> and the <code class="docutils literal notranslate"><span class="pre">Ratbag</span></code> context to
@@ -167,7 +147,7 @@ the status back to the frontend API.</p>
 <p>Start at the <code class="docutils literal notranslate"><span class="pre">ratbag.Ratbag</span></code> documentation here:
 https://whot.github.io/ratbag-python/ratbag.html#ratbag.Ratbag</p>
 <section id="control-flow">
-<h4>Control Flow<a class="headerlink" href="#control-flow" title="Permalink to this heading"></a></h4>
+<h3>Control Flow<a class="headerlink" href="#control-flow" title="Permalink to this heading"></a></h3>
 <p>The overview of the control flow:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">caller</span>       <span class="o">|</span>   <span class="n">Ratbag</span>                 <span class="o">|</span>    <span class="n">driver</span>
 <span class="o">----------------------------------------|---------------</span>
@@ -196,7 +176,7 @@ implementation. It has little logic beyond what is necessary to load the data
 files and instantiate all available drivers.</p>
 </section>
 <section id="usage-of-gobject">
-<h4>Usage of GObject<a class="headerlink" href="#usage-of-gobject" title="Permalink to this heading"></a></h4>
+<h3>Usage of GObject<a class="headerlink" href="#usage-of-gobject" title="Permalink to this heading"></a></h3>
 <p>We’re using GObject/GLib for convenience, however this has some notable
 effects on the implementation:</p>
 <ul class="simple">
@@ -213,14 +193,11 @@ idea.</p>
 </section>
 </section>
 </section>
-</section>
 
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="modules.html" class="btn btn-neutral float-right" title="ratbag" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

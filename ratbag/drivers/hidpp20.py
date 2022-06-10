@@ -272,6 +272,10 @@ class ProfileAddress(object):
 
     @classmethod
     def from_sector(cls, data: bytes, index: int):
+        """
+        Given data is a sector read from the device, return the profile
+        address for the profile with the given index.
+        """
         addr_offset = 4 * index
         spec = [Spec("H", "addr", endian="BE")]
         result = Parser.to_object(data[addr_offset:], spec).object
@@ -719,6 +723,7 @@ class Hidpp20Device(GObject.Object):
         return self.hidraw_device.path
 
     def start(self) -> None:
+        # We require both the Long and Short report IDs for this driver
         supported = [
             id for id in self.hidraw_device.report_ids["input"] if id in tuple(ReportID)
         ]
@@ -731,7 +736,12 @@ class Hidpp20Device(GObject.Object):
 
         self.supported_requests = supported
 
+        # Detect protocol version - merely for logging, we don't do anything
+        # with it but it's a good first check to fail at.
         self._detect_protocol_version()
+        # Find the features supported by this device (and this driver). The
+        # only one we *really* require is the onboard profiles, we don't
+        # bother with devices that don't have profiles
         features = self._find_features()
         required_features = (FeatureName.ONBOARD_PROFILES,)
         missing_features = [f for f in required_features if f not in features]
@@ -740,13 +750,19 @@ class Hidpp20Device(GObject.Object):
                 self.hidraw_device, f"HID++2.0 feature {missing_features}"
             )
 
+        # Firmware version is exported to the ratbag device
         self.firmware_version = self._detect_firmware_version(features)
+
+        # if we get here, our device *should* be supported. Let's parse the
+        # profiles on the device!
         self._init_profiles(features)
 
     def _detect_protocol_version(self) -> Tuple[int, int]:
         # Get the protocol version and our feature set
         version = QueryProtocolVersion.instance().run(self)
         logger.debug(f"protocol version {version.reply.major}.{version.reply.minor}")
+        # If this happens that's a driver misconfiguration, should be using
+        # the hidpp10 driver instead
         if version.reply.major < 2:
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
                 self.hidraw_device, "Protocol version 2.x"
@@ -785,28 +801,30 @@ class Hidpp20Device(GObject.Object):
         return {f.name: f for f in features}
 
     def _init_profiles(self, features: Dict[FeatureName, Feature]) -> None:
+        # Query for the various memory formats first so we know what we're
+        # parsing here
         desc_query = QueryOnboardProfilesDesc.instance(features).run(self)
         logger.debug(desc_query)
+
         if desc_query.reply.memory_model_id != OnboardProfile.MemoryType.G402:
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
                 self.hidraw_device,
-                f"Unsupported memory model {desc_query.memory_model_id}",
+                f"Unsupported memory model {desc_query.reply.memory_model_id}",
             )
         if desc_query.reply.macro_format_id != OnboardProfile.MacroType.G402:
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
                 self.hidraw_device,
-                f"Unsupported macro format {desc_query.macro_format_id}",
+                f"Unsupported macro format {desc_query.reply.macro_format_id}",
             )
         try:
             OnboardProfile.ProfileType(desc_query.reply.profile_format_id)
         except ValueError:
             raise ratbag.driver.SomethingIsMissingError.from_rodent(
                 self.hidraw_device,
-                f"Unsupported profile format {desc_query.profile_format_id}",
+                f"Unsupported profile format {desc_query.reply.profile_format_id}",
             )
 
-        sector_size = desc_query.reply.sector_size
-
+        # Check if the device uses onboard memory or software memories
         mode_query = QueryOnboardProfilesGetMode.instance(features).run(self)
         logger.debug(mode_query)
         if mode_query.reply.mode != OnboardProfile.Mode.ONBOARD:
@@ -817,10 +835,12 @@ class Hidpp20Device(GObject.Object):
             # FIXME: set the device to onboard mode here instead of throwing
             # an exception
 
+        # Read the first sector, that has the addresses for the actual
+        # profiles.
         mem_query = QueryOnboardProfilesMemReadSector.instance(
             features,
             OnboardProfile.Sector.USER_PROFILES_G402,
-            sector_size=sector_size,
+            sector_size=desc_query.reply.sector_size,
         ).run(self)
         logger.debug(mem_query)
         if mem_query.checksum != crc(mem_query.data):
@@ -828,6 +848,7 @@ class Hidpp20Device(GObject.Object):
                 self.hidraw_device, "Invalid checksum for onboard profiles"
             )
 
+        # Do we have multiple report rates that we can select?
         # Enough to run this once per device, doesn't need to be per profile
         if FeatureName.ADJUSTIBLE_REPORT_RATE in features:
             rates_query = QueryAdjustibleReportRateGetList.instance(features).run(self)
@@ -835,6 +856,7 @@ class Hidpp20Device(GObject.Object):
         else:
             report_rates = []
 
+        # Do we have the special keys feature?
         # Enough to run this once per device, doesn't need to be per profile
         if FeatureName.SPECIAL_KEYS_BUTTONS in features:
             count_query = QuerySpecialKeyButtonsGetCount.instance(features).run(self)
@@ -857,8 +879,12 @@ class Hidpp20Device(GObject.Object):
             if not profile_address:
                 continue
 
+            # First sector on the device told us the address of the profile we
+            # want, w can read that sector now.
             profile_query = QueryOnboardProfilesMemReadSector.instance(
-                features, profile_address.address, sector_size=sector_size
+                features,
+                profile_address.address,
+                sector_size=desc_query.reply.sector_size,
             ).run(self)
             logger.debug(profile_query)
             if profile_query.checksum != crc(profile_query.data):
@@ -866,6 +892,9 @@ class Hidpp20Device(GObject.Object):
                 logger.error(f"CRC validation failed for profile {idx}")
                 continue
 
+            # If we have adjustible DPI, get the list of DPIs. That can be
+            # either a fixed list or a min/max value with steps for us to
+            # generate the list ourselves.
             if FeatureName.ADJUSTIBLE_DPI in features:
                 scount_query = QueryAdjustibleDpiGetCount.instance(features).run(self)
                 # FIXME: there's a G602 quirk for the two queries in

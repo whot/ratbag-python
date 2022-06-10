@@ -34,6 +34,7 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.doctest",
     "sphinx_autodoc_typehints",
+    "myst_parser",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

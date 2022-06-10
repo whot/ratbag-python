@@ -207,10 +207,6 @@ class Profile(object):
     """
 
     @property
-    def report_rate(self) -> int:
-        return 1000 // max(1, self._report_rate)  # type: ignore
-
-    @property
     def name(self) -> str:
         try:
             self._name.index(b"\xff")  # type: ignore
@@ -228,7 +224,7 @@ class Profile(object):
     def from_data(cls, address: int, enabled: bool, data: bytes):
         profile = cls(address, enabled, initial_data=data)
         spec = [
-            Spec("B", "_report_rate"),
+            Spec("B", "report_rate", convert_from_data=lambda x: 1000 // max(1, x)),
             Spec("B", "default_dpi"),
             Spec("B", "switched_dpi"),
             Spec("HHHHH", "dpi", endian="le"),

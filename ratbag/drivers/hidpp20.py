@@ -292,11 +292,37 @@ class ProfileAddress(object):
 
 @attr.s
 class Button(object):
+    """
+    Parent class for all buttons. Buttons have a type which is used to
+    instantiate the actual object parsed, see :meth:`Button.from_data`.
+
+    Those subclasses have the specific parsing instructions then.
+    """
+
     class Type(enum.IntEnum):
         MACRO = 0x00
         HID = 0x80
         SPECIAL = 0x90
         DISABLED = 0xFF
+
+        @staticmethod
+        def get_class(type: "Button.Type") -> Type["Button"]:
+            return {
+                Button.Type.MACRO: ButtonMacro,
+                Button.Type.HID: ButtonHid,  # Should never be instantiated directly
+                Button.Type.SPECIAL: ButtonMacro,
+                Button.Type.DISABLED: ButtonDisabled,
+            }[type]
+
+        @staticmethod
+        def from_class(obj: "Button") -> "Button.Type":
+            mapping = {
+                ButtonMacro: Button.Type.MACRO,
+                ButtonHid: Button.Type.HID,
+                ButtonSpecial: Button.Type.SPECIAL,
+                ButtonDisabled: Button.Type.DISABLED,
+            }
+            return next(iter(v for k, v in mapping.items() if isinstance(obj, k)))
 
     class HidType(enum.IntEnum):
         NOOP = 0x00
@@ -304,7 +330,31 @@ class Button(object):
         KEYBOARD = 0x02
         CONSUMER_CONTROL = 0x03
 
-    type: "Button.Type" = attr.ib(init=False, validator=attr.validators.in_(list(Type)))
+        @staticmethod
+        def get_class(type: "Button.HidType") -> Type["ButtonHid"]:
+            return {
+                Button.HidType.NOOP: ButtonNoop,
+                Button.HidType.MOUSE: ButtonButton,
+                Button.HidType.KEYBOARD: ButtonKeyboard,
+                Button.HidType.CONSUMER_CONTROL: ButtonConsumerControl,
+            }[type]
+
+        @staticmethod
+        def from_class(obj: "ButtonHid") -> "Button.HidType":
+            mapping = {
+                ButtonNoop: Button.HidType.NOOP,
+                ButtonButton: Button.HidType.MOUSE,
+                ButtonKeyboard: Button.HidType.KEYBOARD,
+                ButtonConsumerControl: Button.HidType.CONSUMER_CONTROL,
+            }
+            return next(iter(v for k, v in mapping.items() if isinstance(obj, k)))
+
+    type: "Type" = attr.ib()
+
+    @type.validator
+    def type_validator(self, attribute, value):
+        if value != Button.Type.from_class(self):
+            raise ValueError(f"Invalid type {value} for {type(self)}")
 
     @classmethod
     def from_data(cls, data: bytes) -> "Button":
@@ -331,40 +381,61 @@ class Button(object):
 
 
 @attr.s
-class ButtonButton(Button):
+class ButtonHid(Button):
+    type: Button.Type = attr.ib()
+    hidtype: Button.HidType = attr.ib()
+
+    @hidtype.validator
+    def hidtype_validator(self, attribute, value):
+        if value != Button.HidType.from_class(self):
+            raise ValueError(f"Invalid type {value} for {type(self)}")
+
+
+@attr.s
+class ButtonNoop(ButtonHid):
     specs = [
-        Spec("B", "__type"),  # because this is fixed in the class
-        Spec("B", "__hidtype"),  # because this is fixed in the class
+        Spec("B", "type", convert_from_data=lambda x: Button.Type(x)),
+        Spec("B", "hidtype", convert_from_data=lambda x: Button.HidType(x)),
+    ]
+    type: Button.Type = attr.ib()
+    hidtype: Button.HidType = attr.ib()
+
+
+@attr.s
+class ButtonButton(ButtonHid):
+    specs = [
+        Spec("B", "type", convert_from_data=lambda x: Button.Type(x)),
+        Spec("B", "hidtype", convert_from_data=lambda x: Button.HidType(x)),
         Spec("H", "button", convert_from_data=lambda x: ratbag.util.ffs(x)),
     ]
+    type: Button.Type = attr.ib()
+    hidtype: Button.HidType = attr.ib()
     button: int = attr.ib()
-    type: Button.Type = attr.ib(init=False, default=Button.Type.HID)
-    hidtype: Button.HidType = attr.ib(init=False, default=Button.HidType.MOUSE)
 
 
 @attr.s
 class ButtonKeyboard(Button):
     specs = [
-        Spec("B", "__type"),  # because this is fixed in the class
-        Spec("B", "__hidtype"),  # because this is fixed in the class
+        Spec("B", "type", convert_from_data=lambda x: Button.Type(x)),
+        Spec("B", "hidtype", convert_from_data=lambda x: Button.HidType(x)),
         Spec("B", "modifier_flags"),
         Spec("B", "key"),
     ]
+    type: Button.Type = attr.ib()
+    hidtype: Button.HidType = attr.ib()
     modifier_flags: int = attr.ib()
     key: int = attr.ib()
-    type: Button.Type = attr.ib(init=False, default=Button.Type.HID)
-    hidtype: Button.HidType = attr.ib(init=False, default=Button.HidType.KEYBOARD)
 
 
 @attr.s
 class ButtonConsumerControl(Button):
     specs = [
-        Spec("B", "__type"),  # because this is fixed in the class
-        Spec("B", "__hidtype"),  # because this is fixed in the class
+        Spec("B", "type", convert_from_data=lambda x: Button.Type(x)),
+        Spec("B", "hidtype", convert_from_data=lambda x: Button.HidType(x)),
         Spec("H", "consumer_control"),
     ]
+    type: Button.Type = attr.ib()
     consumer_control: int = attr.ib()
-    type: Button.Type = attr.ib(init=False, default=Button.Type.HID)
     hidtype: Button.HidType = attr.ib(
         init=False, default=Button.HidType.CONSUMER_CONTROL
     )
@@ -373,14 +444,14 @@ class ButtonConsumerControl(Button):
 @attr.s
 class ButtonSpecial(Button):
     specs = [
-        Spec("B", "__type"),  # because this is fixed in the class
+        Spec("B", "type", convert_from_data=lambda x: Button.Type(x)),
         Spec("B", "special"),
         Spec("B", "__reserved"),  # ignored
         Spec("B", "profile"),
     ]
+    type: Button.Type = attr.ib()
     special: int = attr.ib()
     profile: int = attr.ib()
-    type: Button.Type = attr.ib(init=False, default=Button.Type.SPECIAL)
 
     @property
     def ratbag_special(self) -> ratbag.ActionSpecial.Special:
@@ -406,7 +477,7 @@ class ButtonSpecial(Button):
 @attr.s
 class ButtonMacro(Button):
     specs = [
-        Spec("B", "__type"),  # because this is fixed in the class
+        Spec("B", "type", convert_from_data=lambda x: Button.Type(x)),
         Spec("B", "page"),
         Spec("B", "zero"),
         Spec("B", "offset"),
@@ -420,9 +491,8 @@ class ButtonMacro(Button):
 @attr.s
 class ButtonDisabled(Button):
     specs = [
-        Spec("B", "__type"),  # because this is fixed in the class
+        Spec("B", "type", convert_from_data=lambda x: Button.Type(x)),
     ]
-    type: Button.Type = attr.ib(init=False, default=Button.Type.DISABLED)
 
 
 @attr.s

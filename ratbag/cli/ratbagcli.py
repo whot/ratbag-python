@@ -518,7 +518,7 @@ def ratbagcli_verify_config(ctx, config: Path, name: Optional[str]):
     "Logitech G303" device.
     """
     try:
-        user_config = Config(config, False)
+        user_config = Config(config, True)
     except Config.Error as e:
         click.secho(f"Config error in {config}: {str(e)}. Aborting", fg="red")
         sys.exit(1)

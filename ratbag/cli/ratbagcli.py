@@ -49,16 +49,12 @@ class Config(object):
     class Error(Exception):
         pass
 
-    nocommit: bool = attr.ib(default=False)
-    """
-    True if we should not commit the configuration to the device
-    """
     matches: List[str] = attr.ib(init=False, default=attr.Factory(list))
     profiles: List[Dict[str, Any]] = attr.ib(init=False, default=attr.Factory(list))
 
     @classmethod
-    def create_from_file(cls, filename: Path, nocommit: bool = False):
-        obj = cls(nocommit=nocommit)
+    def create_from_file(cls, filename: Path):
+        obj = cls()
         with open(filename) as fd:
             yml = yaml.safe_load(fd)
             obj.parse(yml)
@@ -171,7 +167,13 @@ class Config(object):
 
         return False
 
-    def apply(self, device):
+    def apply(self, device: ratbag.Device, nocommit: bool = False):
+        """
+        Apply this configuration to the given device.
+
+        If nocommit is True, the config is applied to the virtual device but
+        not "committed" to the device itself.
+        """
         if not self._matches(device):
             return
 
@@ -278,7 +280,7 @@ class Config(object):
                     button.set_action(ratbag.ActionMacro(button, name, events))
                     continue
 
-        if not self.nocommit:
+        if not nocommit:
 
             def cb_commit_finished(transaction):
                 if not transaction.success:
@@ -492,7 +494,7 @@ def ratbagcli_apply_config(ctx, nocommit: bool, config: Path, name: Optional[str
     "Logitech G303" device.
     """
     try:
-        user_config = Config.create_from_file(filename=config, nocommit=nocommit)
+        user_config = Config.create_from_file(filename=config)
     except Config.Error as e:
         click.secho(f"Config error in {config}: {str(e)}. Aborting", fg="red")
         sys.exit(1)
@@ -505,7 +507,7 @@ def ratbagcli_apply_config(ctx, nocommit: bool, config: Path, name: Optional[str
 
         def cb_device_added(ratbagcli, device):
             if name is None or name in device.name:
-                user_config.apply(device)
+                user_config.apply(device, nocommit)
                 GLib.idle_add(lambda: mainloop.quit())
 
         ratbagd.connect("device-added", cb_device_added)
@@ -531,7 +533,7 @@ def ratbagcli_verify_config(ctx, config: Path, name: Optional[str]):
     "Logitech G303" device.
     """
     try:
-        user_config = Config.create_from_file(filename=config, nocommit=True)
+        user_config = Config.create_from_file(filename=config)
     except Config.Error as e:
         click.secho(f"Config error in {config}: {str(e)}. Aborting", fg="red")
         sys.exit(1)

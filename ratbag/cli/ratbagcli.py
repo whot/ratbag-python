@@ -35,6 +35,14 @@ logger = None
 
 
 class Config(object):
+    """
+    Abstraction of a device configuration file. Note that this is specific to
+    the ratbagcli tool only, device configuration is not handled by ratbag
+    itself.
+
+    So all the parsing, etc. is done here and then applied to the various
+    ratbag objects.
+    """
     class Error(Exception):
         pass
 
@@ -396,7 +404,11 @@ class Config(object):
                         continue
 
 
-def _init_logger(conf=None, verbose=False):
+def _init_logger(conf=None, verbose=False) -> None:
+    """
+    Initialize the logging configuration, either with a boolean verbose or a
+    Python logging-compatible YAML configuration file.
+    """
     if conf is None:
         conf = Path("config-logger.yml")
         if not conf.exists():
@@ -459,8 +471,11 @@ def ratbagcli_apply_config(ctx, nocommit: bool, config: Path, name: Optional[str
     """
     Apply the given config to the device.
 
+    If the --nocommit option is given, the configuration is applied to the
+    virtual device but not actually sent to the physical device.
+
     If a device name is given, only devices with that name are
-    configured. The name may be a part of the name, e.g. G303 matches the
+    configured. The name may be a part of the name, e.g. "G303" matches the
     "Logitech G303" device.
     """
     try:
@@ -499,7 +514,7 @@ def ratbagcli_verify_config(ctx, config: Path, name: Optional[str]):
     stored on the device.
 
     If a device name is given, only devices with that name are
-    verified. The name may be a part of the name, e.g. G303 matches the
+    verified. The name may be a part of the name, e.g. "G303" matches the
     "Logitech G303" device.
     """
     try:
@@ -536,7 +551,7 @@ def ratbagcli_show(ctx, name: str):
     Show current configuration of a device
 
     If a device name is given, only devices with that name are
-    shown. The name may be a part of the name, e.g. G303 matches the
+    shown. The name may be a part of the name, e.g. "G303" matches the
     "Logitech G303" device.
     """
     try:
@@ -563,11 +578,17 @@ def ratbagcli_show(ctx, name: str):
 @click.pass_context
 def ratbagcli_list(ctx):
     """
-    List all connected devices
+    List all connected supported devices
 
     If a device name is given, only devices with that name are
-    listed. The name may be a part of the name, e.g. G303 matches the
+    listed. The name may be a part of the name, e.g. "G303" matches the
     "Logitech G303" device.
+
+    The device must be accessible to the user running this command, in many
+    cases this requires the command to be run as root.
+
+    If a device is currently connected but not listed, it is not (yet)
+    supported by ratbag.
     """
     try:
         mainloop = GLib.MainLoop()
@@ -590,7 +611,7 @@ def ratbagcli_list(ctx):
         mainloop.run()
 
         if not devices:
-            click.echo("# No devices available")
+            click.echo("# No supported devices available")
     except KeyboardInterrupt:
         pass
 
@@ -599,7 +620,8 @@ def ratbagcli_list(ctx):
 @click.pass_context
 def ratbagcli_list_supported(ctx):
     """
-    List all known devices
+    List all known devices. The output of this command is YAML-compatible and
+    can be processed with the appropriate tools.
     """
     from ratbag.util import load_data_files
 
@@ -626,6 +648,15 @@ def ratbagcli_list_supported(ctx):
 
     if not devices:
         click.echo("# No supported devices found. This is an installation issue")
+
+
+@ratbagcli.command(name="help")
+@click.pass_context
+def ratbagcli_help(ctx):
+    """
+    Print this help output.
+    """
+    click.echo(ratbagcli.get_help(ctx))
 
 
 if __name__ == "__main__":

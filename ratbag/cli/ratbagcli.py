@@ -290,10 +290,10 @@ class Config(object):
                 else:
                     logger.debug("done")
 
-            transaction = ratbag.CommitTransaction.create()
+            transaction = ratbag.CommitTransaction.create(device)
             transaction.connect("finished", cb_commit_finished)
 
-            device.commit(transaction)
+            transaction.commit()
             logger.debug("Waiting for device to commit")
 
     def verify(self, device):

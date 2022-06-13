@@ -32,7 +32,8 @@ import ratbag
 import ratbag.emulator
 import ratbag.recorder
 
-logger = None
+# mypy doesn't like late initializations
+logger: logging.Logger = None  # type: ignore
 
 
 @attr.s

@@ -207,9 +207,9 @@ class Blackbox:
     @directory.default
     def _directory_default(self):
         import os
-        from datetime.datetime import now
+        import datetime
 
-        ts = now.strftime("%Y-%m-%d-%H:%M:%S")
+        ts = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
         fallback = Path.home() / ".state"
         statedir = os.environ.get("XDG_STATE_HOME", fallback)
         return statedir / "ratbag" / "recordings" / ts

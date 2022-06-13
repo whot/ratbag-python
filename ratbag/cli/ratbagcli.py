@@ -4,6 +4,7 @@
 #
 # This file is formatted with Python Black
 
+import attr
 import click
 import logging
 import logging.config
@@ -12,7 +13,7 @@ import re
 import sys
 import yaml
 
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 try:
     from gi.repository import GLib
@@ -34,6 +35,7 @@ import ratbag.recorder
 logger = None
 
 
+@attr.s
 class Config(object):
     """
     Abstraction of a device configuration file. Note that this is specific to
@@ -43,17 +45,26 @@ class Config(object):
     So all the parsing, etc. is done here and then applied to the various
     ratbag objects.
     """
+
     class Error(Exception):
         pass
 
-    def __init__(self, filename, nocommit=False):
-        self.nocommit = nocommit
+    nocommit: bool = attr.ib(default=False)
+    """
+    True if we should not commit the configuration to the device
+    """
+    matches: List[str] = attr.ib(init=False, default=attr.Factory(list))
+    profiles: List[Dict[str, Any]] = attr.ib(init=False, default=attr.Factory(list))
 
+    @classmethod
+    def create_from_file(cls, filename: Path, nocommit: bool = False):
+        obj = cls(nocommit=nocommit)
         with open(filename) as fd:
             yml = yaml.safe_load(fd)
-        self._parse(yml)
+            obj.parse(yml)
+        return obj
 
-    def _parse(self, yml):
+    def parse(self, yml):
         self.matches = yml.get("matches", [])
         self.profiles = yml.get("profiles", [])
         if not self.profiles:
@@ -479,7 +490,7 @@ def ratbagcli_apply_config(ctx, nocommit: bool, config: Path, name: Optional[str
     "Logitech G303" device.
     """
     try:
-        user_config = Config(config, nocommit)
+        user_config = Config.create_from_file(filename=config, nocommit=nocommit)
     except Config.Error as e:
         click.secho(f"Config error in {config}: {str(e)}. Aborting", fg="red")
         sys.exit(1)
@@ -518,7 +529,7 @@ def ratbagcli_verify_config(ctx, config: Path, name: Optional[str]):
     "Logitech G303" device.
     """
     try:
-        user_config = Config(config, True)
+        user_config = Config.create_from_file(filename=config, nocommit=True)
     except Config.Error as e:
         click.secho(f"Config error in {config}: {str(e)}. Aborting", fg="red")
         sys.exit(1)

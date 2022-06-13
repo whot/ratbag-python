@@ -4,13 +4,16 @@
 #
 # This file is formatted with Python Black
 
+import attr
 import datetime
 
+from pathlib import Path
 from typing import Any, Dict
 
 import ratbag
 
 
+@attr.s
 class YamlDeviceRecorder(ratbag.Recorder):
     """
     A simple recorder that logs the data to/from the device as a series of
@@ -36,6 +39,14 @@ class YamlDeviceRecorder(ratbag.Recorder):
 
     """
 
+    _filename: Path = attr.ib()
+    info: Dict = attr.ib()
+    last_timestamp: datetime.datetime = attr.ib(init=False)
+
+    @last_timestamp.default
+    def last_ts_default(self):
+        return datetime.datetime.now()
+
     @classmethod
     def create_in_blackbox(
         cls, blackbox: ratbag.Blackbox, filename: str, info=dict()
@@ -45,12 +56,6 @@ class YamlDeviceRecorder(ratbag.Recorder):
             info=info,
         )
         return recorder
-
-    def __init__(self, filename, info):
-        super().__init__(self)
-        self._filename = filename
-        self.info = info
-        self.last_timestamp = datetime.datetime.now()
 
     def start(self) -> None:
         self.logfile = open(self._filename, "w")

@@ -418,27 +418,28 @@ class Config(object):
                         continue
 
 
-def _init_logger(conf=None, verbose=False) -> None:
+def _init_logger_config(conf: Optional[Path]) -> None:
     """
-    Initialize the logging configuration, either with a boolean verbose or a
-    Python logging-compatible YAML configuration file.
+    Initialize the logging configuration based on a logger config file
     """
-    if conf is None:
-        conf = Path("config-logger.yml")
-        if not conf.exists():
-            env = os.getenv("XDG_CONFIG_HOME")
-            if env:
-                xdg = Path(env)
-            else:
-                xdg = Path.home() / ".config"
-            conf = xdg / "ratbag" / "config-logger.yml"
+    conf = conf or Path("config-logger.yml")
+    if not conf.exists():
+        xdg = Path(os.getenv("XDG_CONFIG_HOME", Path.home() / ".config"))
+        conf = xdg / "ratbag" / "config-logger.yml"
     if Path(conf).exists():
         with open(conf) as fd:
             yml = yaml.safe_load(fd)
         logging.config.dictConfig(yml)
     else:
-        lvl = logging.DEBUG if verbose else logging.INFO
-        logging.basicConfig(format="%(levelname)s: %(name)s: %(message)s", level=lvl)
+        _init_logger(verbose=False)
+
+
+def _init_logger(verbose: bool) -> None:
+    """
+    Initialize the logging configuration based on a verbosity level
+    """
+    lvl = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(format="%(levelname)s: %(name)s: %(message)s", level=lvl)
 
 
 def _init_emulators(infile):
@@ -447,6 +448,7 @@ def _init_emulators(infile):
 
 @click.group()
 @click.option("--verbose", count=True, help="Enable debug logging")
+@click.option("--quiet", is_flag=True, help="Disable debug logging")
 @click.option(
     "--log-config",
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
@@ -463,10 +465,18 @@ def _init_emulators(infile):
     type=click.Path(dir_okay=False, path_type=Path),
 )
 @click.pass_context
-def ratbagcli(ctx, verbose: int, log_config: Path, record: Path, replay: Path):
+def ratbagcli(
+    ctx, verbose: int, quiet: bool, log_config: Path, record: Path, replay: Path
+):
     global logger
 
-    _init_logger(log_config, verbose >= 1)
+    if quiet:
+        _init_logger(verbose=False)
+    elif verbose >= 1:
+        _init_logger(verbose=True)
+    else:
+        _init_logger_config(log_config)
+
     logger = logging.getLogger("ratbagcli")
 
     ctx.obj = {}

@@ -206,13 +206,7 @@ class Blackbox:
 
     @directory.default
     def _directory_default(self):
-        import os
-        import datetime
-
-        ts = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-        fallback = Path.home() / ".state"
-        statedir = os.environ.get("XDG_STATE_HOME", fallback)
-        return statedir / "ratbag" / "recordings" / ts
+        return Blackbox.default_recordings_directory()
 
     def add_recorder(self, recorder: "Recorder"):
         if not self._recorders and not self.directory.exists():
@@ -228,8 +222,21 @@ class Blackbox:
         return self.directory / filename
 
     @classmethod
-    def create(cls, directory: Path) -> "Blackbox":
-        return cls(directory=directory)
+    def create(cls, directory: Optional[Path]) -> "Blackbox":
+        kwargs = {}
+        if directory:
+            kwargs["directory"] = directory
+        return cls(**kwargs)
+
+    @staticmethod
+    def default_recordings_directory():
+        import os
+        import datetime
+
+        ts = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+        fallback = Path.home() / ".state"
+        statedir = os.environ.get("XDG_STATE_HOME", fallback)
+        return statedir / "ratbag" / "recordings" / ts
 
 
 @attr.s

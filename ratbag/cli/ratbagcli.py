@@ -480,8 +480,9 @@ def ratbagcli(
     logger = logging.getLogger("ratbagcli")
 
     ctx.obj = {}
-    if record:
-        ctx.obj["blackbox"] = ratbag.Blackbox.create(directory=record)
+    ctx.obj["blackbox"] = ratbag.Blackbox.create(
+        directory=record or ratbag.Blackbox.default_recordings_directory()
+    )
     if replay:
         ctx.obj["emulators"] = _init_emulators(replay)
 

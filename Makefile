@@ -5,6 +5,7 @@ SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = doc/
 BUILDDIR      = build
 PYTHON_SOURCES	:= $(shell git ls-files "*.py")
+MAKEFLAGS     = -j1
 
 
 all: data black pytest html data mypy doctest

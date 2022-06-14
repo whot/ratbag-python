@@ -1304,7 +1304,7 @@ class QueryFeatureSetCount(Query):
     def parse_reply(self, reply):
         # feature set count does not include the root feature as documented
         # here:
-        # https://6xq.net/git/lars/lshidpp.git/plain/doc/logitech_hidpp_2.0_specificati
+        # https://6xq.net/git/lars/lshidpp.git/plain/doc/logitech_hidpp_2.0_specification_draft_2012-06-04.pdf
         if self.feature == FeatureName.FEATURE_SET:
             reply.count += 1
 

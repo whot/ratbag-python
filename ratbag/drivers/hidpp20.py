@@ -857,8 +857,8 @@ class Hidpp20Device(GObject.Object):
             )
 
         profile_addresses = [
-                ProfileAddress.from_sector(mem_query.data, idx) for idx in
-                range(profile_count)
+            ProfileAddress.from_sector(mem_query.data, idx)
+            for idx in range(profile_count)
         ]
 
         # Do we have multiple report rates that we can select?
@@ -888,58 +888,63 @@ class Hidpp20Device(GObject.Object):
         # Profiles are stored in the various sectors, we need to read out each
         # sector and then parse it from the bytes we have.
         for profile_address in profile_addresses:
-            if not profile_address:
-                continue
+            if profile_address:
+                profile = self._init_profile(
+                    features, profile_address, sector_size=sector_size
+                )
+                profile.report_rates = report_rates
+                logger.debug(profile)
+                self.profiles.append(profile)
 
-            # First sector on the device told us the address of the profile we
-            # want, w can read that sector now.
-            profile_query = QueryOnboardProfilesMemReadSector.instance(
-                features,
-                profile_address.address,
-                sector_size=sector_size,
-            ).run(self)
-            logger.debug(profile_query)
-            if profile_query.checksum != crc(profile_query.data):
-                # FIXME: libratbag reads the ROM instead in this case
-                logger.error(f"CRC validation failed for profile {profile_address.index}")
-                continue
+    def _init_profile(
+        self, features, profile_address: ProfileAddress, sector_size: int
+    ):
+        # First sector on the device told us the address of the profile we
+        # want, w can read that sector now.
+        profile_query = QueryOnboardProfilesMemReadSector.instance(
+            features,
+            profile_address.address,
+            sector_size=sector_size,
+        ).run(self)
+        logger.debug(profile_query)
+        if profile_query.checksum != crc(profile_query.data):
+            # FIXME: libratbag reads the ROM instead in this case
+            logger.error(f"CRC validation failed for profile {profile_address.index}")
+            return
 
-            # If we have adjustible DPI, get the list of DPIs. That can be
-            # either a fixed list or a min/max value with steps for us to
-            # generate the list ourselves.
-            if FeatureName.ADJUSTIBLE_DPI in features:
-                scount_query = QueryAdjustibleDpiGetCount.instance(features).run(self)
-                # FIXME: there's a G602 quirk for the two queries in
-                # libratbag
-                for idx in range(scount_query.reply.sensor_count):
-                    dpi_list_query = QueryAdjustibleDpiGetDpiList.instance(
-                        features, idx
-                    ).run(self)
-                    logger.debug(dpi_list_query)
-                    if dpi_list_query.reply.dpi_steps:
-                        steps = dpi_list_query.reply.dpi_steps
-                        dpi_min = min(dpi_list_query.reply.dpis)
-                        dpi_max = max(dpi_list_query.reply.dpis)
-                        dpi_list = list(range(dpi_min, dpi_max + 1, steps))
-                    else:
-                        dpi_list = dpi_list_query.reply.dpis
+        # If we have adjustible DPI, get the list of DPIs. That can be
+        # either a fixed list or a min/max value with steps for us to
+        # generate the list ourselves.
+        if FeatureName.ADJUSTIBLE_DPI in features:
+            scount_query = QueryAdjustibleDpiGetCount.instance(features).run(self)
+            # FIXME: there's a G602 quirk for the two queries in
+            # libratbag
+            for idx in range(scount_query.reply.sensor_count):
+                dpi_list_query = QueryAdjustibleDpiGetDpiList.instance(
+                    features, idx
+                ).run(self)
+                logger.debug(dpi_list_query)
+                if dpi_list_query.reply.dpi_steps:
+                    steps = dpi_list_query.reply.dpi_steps
+                    dpi_min = min(dpi_list_query.reply.dpis)
+                    dpi_max = max(dpi_list_query.reply.dpis)
+                    dpi_list = list(range(dpi_min, dpi_max + 1, steps))
+                else:
+                    dpi_list = dpi_list_query.reply.dpis
 
-                    dpi_query = QueryAdjustibleDpiGetDpi.instance(features, idx).run(
-                        self
-                    )
-                    logger.debug(dpi_query)
-            else:
-                dpi_list = []
+                dpi_query = QueryAdjustibleDpiGetDpi.instance(features, idx).run(self)
+                logger.debug(dpi_query)
+        else:
+            dpi_list = []
 
-            profile = Profile.from_data(
-                address=profile_address.address,
-                enabled=profile_address.enabled,
-                data=profile_query.data,
-            )
-            profile.dpi_list = dpi_list
-            profile.report_rates = report_rates
-            logger.debug(profile)
-            self.profiles.append(profile)
+        profile = Profile.from_data(
+            address=profile_address.address,
+            enabled=profile_address.enabled,
+            data=profile_query.data,
+        )
+        profile.dpi_list = dpi_list
+        # report_rate is set in the caller
+        return profile
 
     def send(self, bytes: bytes) -> None:
         """

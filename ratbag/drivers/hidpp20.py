@@ -754,9 +754,47 @@ class Hidpp20Device(GObject.Object):
         # Firmware version is exported to the ratbag device
         self.firmware_version = self._detect_firmware_version(features)
 
+        # If we get here, we have profiles. Query for the various memory
+        # formats first so we know what we're parsing here
+        desc_query = QueryOnboardProfilesDesc.instance(features).run(self)
+        logger.debug(desc_query)
+
+        if desc_query.reply.memory_model_id != OnboardProfile.MemoryType.G402:
+            raise ratbag.driver.SomethingIsMissingError.from_rodent(
+                self.hidraw_device,
+                f"Unsupported memory model {desc_query.reply.memory_model_id}",
+            )
+        if desc_query.reply.macro_format_id != OnboardProfile.MacroType.G402:
+            raise ratbag.driver.SomethingIsMissingError.from_rodent(
+                self.hidraw_device,
+                f"Unsupported macro format {desc_query.reply.macro_format_id}",
+            )
+        try:
+            OnboardProfile.ProfileType(desc_query.reply.profile_format_id)
+        except ValueError:
+            raise ratbag.driver.SomethingIsMissingError.from_rodent(
+                self.hidraw_device,
+                f"Unsupported profile format {desc_query.reply.profile_format_id}",
+            )
+
+        # Check if the device uses onboard memory or software memories
+        mode_query = QueryOnboardProfilesGetMode.instance(features).run(self)
+        logger.debug(mode_query)
+        if mode_query.reply.mode != OnboardProfile.Mode.ONBOARD:
+            raise ratbag.driver.SomethingIsMissingError.from_rodent(
+                self.hidraw_device,
+                f"Device not in Onboard mode ({mode_query.reply.mode})",
+            )
+            # FIXME: set the device to onboard mode here instead of throwing
+            # an exception
+
         # if we get here, our device *should* be supported. Let's parse the
         # profiles on the device!
-        self._init_profiles(features)
+        self._init_profiles(
+            features,
+            sector_size=desc_query.reply.sector_size,
+            profile_count=desc_query.reply.profile_count,
+        )
 
     def _detect_protocol_version(self) -> Tuple[int, int]:
         # Get the protocol version and our feature set
@@ -801,47 +839,15 @@ class Hidpp20Device(GObject.Object):
                 pass
         return {f.name: f for f in features}
 
-    def _init_profiles(self, features: Dict[FeatureName, Feature]) -> None:
-        # Query for the various memory formats first so we know what we're
-        # parsing here
-        desc_query = QueryOnboardProfilesDesc.instance(features).run(self)
-        logger.debug(desc_query)
-
-        if desc_query.reply.memory_model_id != OnboardProfile.MemoryType.G402:
-            raise ratbag.driver.SomethingIsMissingError.from_rodent(
-                self.hidraw_device,
-                f"Unsupported memory model {desc_query.reply.memory_model_id}",
-            )
-        if desc_query.reply.macro_format_id != OnboardProfile.MacroType.G402:
-            raise ratbag.driver.SomethingIsMissingError.from_rodent(
-                self.hidraw_device,
-                f"Unsupported macro format {desc_query.reply.macro_format_id}",
-            )
-        try:
-            OnboardProfile.ProfileType(desc_query.reply.profile_format_id)
-        except ValueError:
-            raise ratbag.driver.SomethingIsMissingError.from_rodent(
-                self.hidraw_device,
-                f"Unsupported profile format {desc_query.reply.profile_format_id}",
-            )
-
-        # Check if the device uses onboard memory or software memories
-        mode_query = QueryOnboardProfilesGetMode.instance(features).run(self)
-        logger.debug(mode_query)
-        if mode_query.reply.mode != OnboardProfile.Mode.ONBOARD:
-            raise ratbag.driver.SomethingIsMissingError.from_rodent(
-                self.hidraw_device,
-                f"Device not in Onboard mode ({mode_query.reply.mode})",
-            )
-            # FIXME: set the device to onboard mode here instead of throwing
-            # an exception
-
+    def _init_profiles(
+        self, features: Dict[FeatureName, Feature], sector_size: int, profile_count: int
+    ) -> None:
         # Read the first sector, that has the addresses for the actual
         # profiles.
         mem_query = QueryOnboardProfilesMemReadSector.instance(
             features,
             OnboardProfile.Sector.USER_PROFILES_G402,
-            sector_size=desc_query.reply.sector_size,
+            sector_size=sector_size,
         ).run(self)
         logger.debug(mem_query)
         if mem_query.checksum != crc(mem_query.data):
@@ -875,7 +881,7 @@ class Hidpp20Device(GObject.Object):
 
         # Profiles are stored in the various sectors, we need to read out each
         # sector and then parse it from the bytes we have.
-        for idx in range(desc_query.reply.profile_count):
+        for idx in range(profile_count):
             profile_address = ProfileAddress.from_sector(mem_query.data, idx)
             if not profile_address:
                 continue
@@ -885,7 +891,7 @@ class Hidpp20Device(GObject.Object):
             profile_query = QueryOnboardProfilesMemReadSector.instance(
                 features,
                 profile_address.address,
-                sector_size=desc_query.reply.sector_size,
+                sector_size=sector_size,
             ).run(self)
             logger.debug(profile_query)
             if profile_query.checksum != crc(profile_query.data):

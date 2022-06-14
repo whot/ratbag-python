@@ -171,6 +171,7 @@ class Feature(object):
     name: FeatureName = attr.ib()
     index: int = attr.ib()
     type: int = attr.ib()
+    version: int = attr.ib()
 
 
 @attr.s
@@ -1264,6 +1265,7 @@ class QueryGetFeature(Query):
                 name=self.feature_name,
                 index=reply.feature_index,
                 type=reply.feature_type,
+                version=reply.feature_version,
             )
 
     def __str__(self):

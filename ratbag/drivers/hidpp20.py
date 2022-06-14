@@ -270,6 +270,7 @@ class Profile(object):
 class ProfileAddress(object):
     address: int = attr.ib()
     enabled: bool = attr.ib()
+    index: int = attr.ib()
 
     @classmethod
     def from_sector(cls, data: bytes, index: int):
@@ -292,7 +293,7 @@ class ProfileAddress(object):
 
         enabled = data[addr_offset + OnboardProfile.Sector.ENABLED_INDEX] != 0
 
-        return cls(result.addr, enabled)
+        return cls(address=result.addr, enabled=enabled, index=index)
 
 
 @attr.s
@@ -855,6 +856,11 @@ class Hidpp20Device(GObject.Object):
                 self.hidraw_device, "Invalid checksum for onboard profiles"
             )
 
+        profile_addresses = [
+                ProfileAddress.from_sector(mem_query.data, idx) for idx in
+                range(profile_count)
+        ]
+
         # Do we have multiple report rates that we can select?
         # Enough to run this once per device, doesn't need to be per profile
         if FeatureName.ADJUSTIBLE_REPORT_RATE in features:
@@ -881,8 +887,7 @@ class Hidpp20Device(GObject.Object):
 
         # Profiles are stored in the various sectors, we need to read out each
         # sector and then parse it from the bytes we have.
-        for idx in range(profile_count):
-            profile_address = ProfileAddress.from_sector(mem_query.data, idx)
+        for profile_address in profile_addresses:
             if not profile_address:
                 continue
 
@@ -896,7 +901,7 @@ class Hidpp20Device(GObject.Object):
             logger.debug(profile_query)
             if profile_query.checksum != crc(profile_query.data):
                 # FIXME: libratbag reads the ROM instead in this case
-                logger.error(f"CRC validation failed for profile {idx}")
+                logger.error(f"CRC validation failed for profile {profile_address.index}")
                 continue
 
             # If we have adjustible DPI, get the list of DPIs. That can be

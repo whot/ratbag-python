@@ -743,7 +743,7 @@ class Hidpp20Device(GObject.Object):
         # Find the features supported by this device (and this driver). The
         # only one we *really* require is the onboard profiles, we don't
         # bother with devices that don't have profiles
-        features = self._find_features()
+        features: Dict[FeatureName, Feature] = self._find_features()
         required_features = (FeatureName.ONBOARD_PROFILES,)
         missing_features = [f for f in required_features if f not in features]
         if missing_features:
@@ -1235,9 +1235,11 @@ class QueryProtocolVersion(Query):
 @attr.s
 class QueryGetFeature(Query):
     """
-    Query the device for the available feature set. The reply contains the
-    ``feature`` which can be used to query more information about this
-    feature.
+    Query the device for the given feature by name, see :class:`FeatureName`.
+    If successful, the reply ``feature`` attribute (:class:`Feature`) which
+    contains the index and feature type. The index is to be used to query
+    more information about this feature, see :class:`QueryFeatureSetCount`
+    and :class:`QueryFeatureSetId`.
     """
 
     feature_name: FeatureName = attr.ib()

@@ -4,10 +4,10 @@ on: [ push, pull_request ]
 
 env:
   UBUNTU_PACKAGES: pkg-config python3-pip python3-gi libgirepository1.0-dev libevdev2
-  PIP_PACKAGES: attrs mypy black pytest pyudev pygobject libevdev dbus-next
+  PIP_PACKAGES: attrs mypy black pytest pyudev pygobject libevdev dbus-next tox
 
 jobs:
-  python-black:
+  tox:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -16,45 +16,5 @@ jobs:
         with:
           apt: $UBUNTU_PACKAGES
           pip: $PIP_PACKAGES
-      - name: run Python black
-        run: git ls-files "*.py" | xargs black
-      - name: diff for changes
-        run: git diff --exit-code
-
-  pytest:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: install dependencies
-        uses: libratbag/libratbag/.github/actions/pkginstall@master
-        with:
-          apt: $UBUNTU_PACKAGES
-          pip: $PIP_PACKAGES
-      - name: run test suite
-        run: pytest -v
-
-  mypy:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: install dependencies
-        uses: libratbag/libratbag/.github/actions/pkginstall@master
-        with:
-          apt: $UBUNTU_PACKAGES
-          pip: $PIP_PACKAGES
-      - name: install mypy types
-        run: mypy --non-interactive --install-types ratbag tests
-      - name: run test suite
-        run: mypy ratbag tests
-
-  doctest:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: install dependencies
-        uses: libratbag/libratbag/.github/actions/pkginstall@master
-        with:
-          apt: $UBUNTU_PACKAGES
-          pip: $PIP_PACKAGES
-      - name: run doctest
-        run: python -m doctest $(git ls-files)
+      - name: run tox
+        run: tox

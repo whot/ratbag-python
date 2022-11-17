@@ -178,12 +178,20 @@ def ratbag():
         profile = MagicMock(spec=ratbag_mod.Profile)
         profile.index = i
         profile.device = device
+        profile.name = f"profile {i}"
+        profile.enabled = i == 0
+        profile.default = i == 0
+        profile.active = True
+        profile.report_rate = 500
 
         profile.resolutions = []
         for j in range(3):
             res = MagicMock(spec=ratbag_mod.Resolution)
             res.profile = profile
             res.index = j
+            res.dpi = (100, 200)
+            res.active = j == 0
+            res.default = j == 0
             profile.resolutions.append(res)
 
         profile.buttons = []
@@ -191,6 +199,10 @@ def ratbag():
             button = MagicMock(spec=ratbag_mod.Button)
             button.profile = profile
             button.index = j
+            button.types = [0]
+            button.action.type = ratbag_mod.Action.Type.BUTTON
+            button.action.value = j + 1
+            button.types = [ratbag_mod.Action.Type.BUTTON]
             profile.buttons.append(button)
 
         profile.leds = []
@@ -198,6 +210,12 @@ def ratbag():
             led = MagicMock(spec=ratbag_mod.Led)
             led.profile = profile
             led.index = j
+            led.mode = ratbag_mod.Led.Mode.OFF
+            led.modes = [ratbag_mod.Led.Mode.OFF]
+            led.brightness = 0
+            led.color = (0, 0, 0)
+            led.colordepth = ratbag_mod.Led.Colordepth.MONOCHROME
+            led.effect_duration = 0
             profile.leds.append(led)
 
         device.profiles.append(profile)

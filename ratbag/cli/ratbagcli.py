@@ -658,11 +658,13 @@ def ratbagcli_list_supported(ctx):
     devices = []
 
     files = load_data_files()
-    for f in sorted(files, key=lambda x: x.name):
-        if not devices:
-            click.echo("devices:")
-            devices.append(f)
+    if not files:
+        click.echo("# No supported devices found. This is an installation issue")
+        return
 
+    click.echo("devices:")
+
+    for f in sorted(files, key=lambda x: x.name):
         for match in f.matches:
 
             def q(s):
@@ -671,10 +673,6 @@ def ratbagcli_list_supported(ctx):
             click.echo(
                 f" - {{ match: {q(match):>22s}, driver: {q(f.driver):>20s}, name: '{f.name}' }}"
             )
-
-    if not devices:
-        click.echo("# No supported devices found. This is an installation issue")
-
 
 @ratbagcli.command(name="help")
 @click.pass_context

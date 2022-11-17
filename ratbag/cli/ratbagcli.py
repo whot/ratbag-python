@@ -30,7 +30,6 @@ from pathlib import Path
 import ratbag
 
 import ratbag.emulator
-import ratbag.recorder
 
 # mypy doesn't like late initializations
 logger: logging.Logger = None  # type: ignore

@@ -229,26 +229,6 @@ def loop():
     return loop
 
 
-def test_to_stop_segfaults():
-    # Some weird bug triggers with this test suite but I've been unable to
-    # reproduce it.
-    #
-    # tests/test_ratbagd.py Fatal Python error: Segmentation fault
-    # Current thread 0x00007fab2f1f2740 (most recent call first):
-    # File "/usr/lib/python3.10/site-packages/gi/overrides/GLib.py", line 497 in run
-    # File "/usr/lib/python3.10/site-packages/dbus_next/glib/message_bus.py", line 239 in connect_sync
-    # File "/home/whot/code/ratbag/ratbag-python/tests/test_ratbagd.py", line 36 in bus
-    #
-    # Weirdly enough, it only triggers on a full pytest run, not when the test
-    # case is selected with pytest -k or just this file is tested with
-    # pytest $filename
-    #
-    # Touching the file lets the next test run succeed, subsequent ones fail
-    #
-    # Adding this test case prevents it from happening. Why I don't know
-    pass
-
-
 def test_manager_introspection(bus, loop, ratbag):
     """
     Check the DBus interface for the right signatures. If this test fails,

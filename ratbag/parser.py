@@ -49,13 +49,13 @@ logger = logging.getLogger(__name__)
 @attr.s
 class Spec(object):
     """
-    The format specification for a single **logical** in a data set. This is
+    The format specification for a single **logical** item in a data set. This is
     used in :meth:`Parser.to_object` or :meth:`Parser.from_object` to convert
     from or to a byte stream. For example:
 
     - ``Spec("B", "myattr")`` is a single byte from/to an object's ``myattr``
       property
-    - ``Spec("BB", "point")`` is a tuple of two bytes from/to an object's ``myattr``
+    - ``Spec("BB", "point")`` is a tuple of two bytes from/to an object's ``point``
       property
 
     See :meth:`Parser.to_object` and :meth:`Parser.from_object` for details.
@@ -121,7 +121,8 @@ class Spec(object):
     Conversion function for the data. An example for converting a sequence of
     bytes to a string:
 
-        >>> spec = Spec("B", "foo", repeat=3, convert_from_data=lambda s: bytes(s).decode("utf-8"))
+        >>> spec = Spec("B", "foo", repeat=3,
+        ...             convert_from_data=lambda s: bytes(s).decode("utf-8"))
         # Or alternatively use the string length format:
         >>> spec = Spec("3s", "foo", convert_from_data=lambda s: s.decode("utf-8"))
         >>> data = Parser.to_object("bar".encode("utf-8"), spec)
@@ -222,7 +223,8 @@ class Parser(object):
         keyword arguments in the constructor, except:
 
         - Spec names with a single leading underscore are expected to drop that
-          underscore in the constructor.
+          underscore in the constructor, i.e. a ``Spec("_foo")`` becomes keyword
+          ``foo`` in the constructor.
         - Spec names with a double leading underscore are ignored
         """
         # Only the last element can be greedy

@@ -674,6 +674,7 @@ def ratbagcli_list_supported(ctx):
                 f" - {{ match: {q(match):>22s}, driver: {q(f.driver):>20s}, name: '{f.name}' }}"
             )
 
+
 @ratbagcli.command(name="help")
 @click.pass_context
 def ratbagcli_help(ctx):

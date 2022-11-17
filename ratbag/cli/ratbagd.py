@@ -438,7 +438,7 @@ class RatbagdDevice(ServiceInterface):
 
 
 class RatbagdManager(ServiceInterface):
-    def __init__(self, bus, ratbag):
+    def __init__(self, bus, ratbag: ratbag.Ratbag):
         super().__init__(make_name("Manager"))
         self._devices: List[RatbagdDevice] = []
         self._ratbag = ratbag
@@ -454,7 +454,7 @@ class RatbagdManager(ServiceInterface):
     def Devices(self) -> "ao":  # type: ignore
         return [d.objpath for d in self._devices]
 
-    def cb_device_added(self, ratbagd, device):
+    def cb_device_added(self, ratbag: ratbag.Ratbag, device: ratbag.Device):
         logger.info(f"exporting device {device.name}")
         self._devices.append(RatbagdDevice(self._bus, device))
 

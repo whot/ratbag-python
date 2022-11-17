@@ -238,214 +238,234 @@ def test_manager_introspection(bus, loop, ratbag):
     ratbagd = Ratbagd(ratbag)
     ratbagd.init_dbus(bus.busname, use_system_bus=False)
     ratbagd.start()
+
+    failed = True
+    error = Exception("Never started")
+
+    def verify_introspection():
+        nonlocal error, failed
+
+        try:
+            # The manager interface
+            objpath = "/org/freedesktop/ratbag1"
+            introspection = introspect(bus, objpath)
+            xml = ET.fromstring(introspection)
+
+            check_introspection(
+                xml,
+                "org.freedesktop.ratbag1.Manager",
+                props=[
+                    Prop("APIVersion", "i", "read"),
+                    Prop("Devices", "ao", "read"),
+                ],
+                methods=[],
+                signals=[],
+            )
+
+            # Now query the Manager for the Devices property
+            first_device = bus.bus.call_sync(
+                Message(
+                    destination=bus.busname,
+                    path=objpath,
+                    interface="org.freedesktop.DBus.Properties",
+                    member="Get",
+                    signature="ss",
+                    body=["org.freedesktop.ratbag1.Manager", "Devices"],
+                )
+            )
+
+            # Devices is an 'ao' Variant
+            ao = first_device.body[0]
+            assert len(ao.value) > 0, "Expected at least one device"
+            objpath = ao.value[0]
+
+            introspection = introspect(bus, objpath)
+            xml = ET.fromstring(introspection)
+
+            check_introspection(
+                xml,
+                "org.freedesktop.ratbag1.Device",
+                props=[
+                    Prop("Model", "s", "read"),
+                    Prop("Name", "s", "read"),
+                    Prop("Profiles", "ao", "read"),
+                ],
+                methods=[
+                    Method("Commit"),
+                ],
+                signals=[
+                    Signal("Resync"),
+                ],
+            )
+
+            # Now query the device for the first Profile
+            first_profile = bus.bus.call_sync(
+                Message(
+                    destination=bus.busname,
+                    path=objpath,
+                    interface="org.freedesktop.DBus.Properties",
+                    member="Get",
+                    signature="ss",
+                    body=["org.freedesktop.ratbag1.Device", "Profiles"],
+                )
+            )
+
+            # Profiles is an 'ao' Variant
+            ao = first_profile.body[0]
+            assert len(ao.value) > 0, "Expected at least one Profile"
+            objpath = ao.value[0]
+
+            introspection = introspect(bus, objpath)
+            xml = ET.fromstring(introspection)
+
+            check_introspection(
+                xml,
+                "org.freedesktop.ratbag1.Profile",
+                props=[
+                    Prop("Index", "u", "read"),
+                    Prop("Name", "s", "read"),
+                    Prop("Capabilities", "au", "read"),
+                    Prop("Enabled", "b", "readwrite"),
+                    Prop("IsActive", "b", "read"),
+                    Prop("IsDefault", "b", "read"),
+                    Prop("ReportRate", "u", "readwrite"),
+                    Prop("ReportRates", "au", "read"),
+                    Prop("Buttons", "ao", "read"),
+                    Prop("Leds", "ao", "read"),
+                    Prop("Resolutions", "ao", "read"),
+                ],
+                methods=[
+                    Method("SetActive"),
+                    Method("SetDefault"),
+                ],
+                signals=[],
+            )
+
+            profile_objpath = objpath
+
+            # Now query the profile for the first Resolution
+            first_resolution = bus.bus.call_sync(
+                Message(
+                    destination=bus.busname,
+                    path=profile_objpath,
+                    interface="org.freedesktop.DBus.Properties",
+                    member="Get",
+                    signature="ss",
+                    body=["org.freedesktop.ratbag1.Profile", "Resolutions"],
+                )
+            )
+
+            # Resolutions is an 'ao' Variant
+            ao = first_resolution.body[0]
+            assert len(ao.value) > 0, "Expected at least one Resolution"
+            objpath = ao.value[0]
+
+            introspection = introspect(bus, objpath)
+            xml = ET.fromstring(introspection)
+
+            check_introspection(
+                xml,
+                "org.freedesktop.ratbag1.Resolution",
+                props=[
+                    Prop("Index", "u", "read"),
+                    Prop("IsActive", "b", "read"),
+                    Prop("IsDefault", "b", "read"),
+                    Prop("Resolution", "v", "readwrite"),
+                    Prop("Resolutions", "au", "read"),
+                ],
+                methods=[
+                    Method("SetActive"),
+                    Method("SetDefault"),
+                ],
+                signals=[],
+            )
+
+            # Now query the profile for the first Led
+            first_led = bus.bus.call_sync(
+                Message(
+                    destination=bus.busname,
+                    path=profile_objpath,
+                    interface="org.freedesktop.DBus.Properties",
+                    member="Get",
+                    signature="ss",
+                    body=["org.freedesktop.ratbag1.Profile", "Leds"],
+                )
+            )
+
+            # Leds is an 'ao' Variant
+            ao = first_led.body[0]
+            assert len(ao.value) > 0, "Expected at least one Led"
+            objpath = ao.value[0]
+
+            introspection = introspect(bus, objpath)
+            xml = ET.fromstring(introspection)
+
+            check_introspection(
+                xml,
+                "org.freedesktop.ratbag1.Led",
+                props=[
+                    Prop("Index", "u", "read"),
+                    Prop("Brightness", "u", "readwrite"),
+                    Prop("Color", "(uuu)", "readwrite"),
+                    Prop("ColorDepth", "u", "read"),
+                    Prop("EffectDuration", "u", "readwrite"),
+                    Prop("Mode", "u", "readwrite"),
+                    Prop("Modes", "au", "read"),
+                ],
+                methods=[],
+                signals=[],
+            )
+
+            # Now query the profile for the first Button
+            first_button = bus.bus.call_sync(
+                Message(
+                    destination=bus.busname,
+                    path=profile_objpath,
+                    interface="org.freedesktop.DBus.Properties",
+                    member="Get",
+                    signature="ss",
+                    body=["org.freedesktop.ratbag1.Profile", "Buttons"],
+                )
+            )
+
+            # Buttons is an 'ao' Variant
+            ao = first_button.body[0]
+            assert len(ao.value) > 0, "Expected at least one Led"
+            objpath = ao.value[0]
+
+            introspection = introspect(bus, objpath)
+            xml = ET.fromstring(introspection)
+
+            check_introspection(
+                xml,
+                "org.freedesktop.ratbag1.Button",
+                props=[
+                    Prop("Index", "u", "read"),
+                    Prop("ActionTypes", "au", "read"),
+                    Prop("Mapping", "(uv)", "readwrite"),
+                ],
+                methods=[
+                    Method("Disable"),
+                ],
+                signals=[],
+            )
+        except Exception as e:
+            error = e
+        else:
+            failed = False
+
+    def add_devices():
+        for d in ratbag._devices:
+            # This should be done through ratbag.emit("device-added") but I don't know
+            # how to make that work
+            # ratbag.emit("device-added", d)
+            ratbagd.manager.cb_device_added(ratbagd, d)
+
+        GLib.idle_add(verify_introspection)
+
+    GLib.idle_add(add_devices)
+
     loop.run()
 
-    for d in ratbag._devices:
-        # This should be done through ratbag.emit("device-added") but I don't know
-        # how to make that work
-        # ratbag.emit("device-added", d)
-        ratbagd.manager.cb_device_added(ratbagd, d)
-
-    # The manager interface
-    objpath = "/org/freedesktop/ratbag1"
-    introspection = introspect(bus, objpath)
-    xml = ET.fromstring(introspection)
-
-    check_introspection(
-        xml,
-        "org.freedesktop.ratbag1.Manager",
-        props=[
-            Prop("APIVersion", "i", "read"),
-            Prop("Devices", "ao", "read"),
-        ],
-        methods=[],
-        signals=[],
-    )
-
-    # Now query the Manager for the Devices property
-    first_device = bus.bus.call_sync(
-        Message(
-            destination=bus.busname,
-            path=objpath,
-            interface="org.freedesktop.DBus.Properties",
-            member="Get",
-            signature="ss",
-            body=["org.freedesktop.ratbag1.Manager", "Devices"],
-        )
-    )
-
-    # Devices is an 'ao' Variant
-    ao = first_device.body[0]
-    assert len(ao.value) > 0, "Expected at least one device"
-    objpath = ao.value[0]
-
-    introspection = introspect(bus, objpath)
-    xml = ET.fromstring(introspection)
-
-    check_introspection(
-        xml,
-        "org.freedesktop.ratbag1.Device",
-        props=[
-            Prop("Model", "s", "read"),
-            Prop("Name", "s", "read"),
-            Prop("Profiles", "ao", "read"),
-        ],
-        methods=[
-            Method("Commit"),
-        ],
-        signals=[
-            Signal("Resync"),
-        ],
-    )
-
-    # Now query the device for the first Profile
-    first_profile = bus.bus.call_sync(
-        Message(
-            destination=bus.busname,
-            path=objpath,
-            interface="org.freedesktop.DBus.Properties",
-            member="Get",
-            signature="ss",
-            body=["org.freedesktop.ratbag1.Device", "Profiles"],
-        )
-    )
-
-    # Profiles is an 'ao' Variant
-    ao = first_profile.body[0]
-    assert len(ao.value) > 0, "Expected at least one Profile"
-    objpath = ao.value[0]
-
-    introspection = introspect(bus, objpath)
-    xml = ET.fromstring(introspection)
-
-    check_introspection(
-        xml,
-        "org.freedesktop.ratbag1.Profile",
-        props=[
-            Prop("Index", "u", "read"),
-            Prop("Name", "s", "read"),
-            Prop("Capabilities", "au", "read"),
-            Prop("Enabled", "b", "readwrite"),
-            Prop("IsActive", "b", "read"),
-            Prop("IsDefault", "b", "read"),
-            Prop("ReportRate", "u", "readwrite"),
-            Prop("ReportRates", "au", "read"),
-            Prop("Buttons", "ao", "read"),
-            Prop("Leds", "ao", "read"),
-            Prop("Resolutions", "ao", "read"),
-        ],
-        methods=[
-            Method("SetActive"),
-            Method("SetDefault"),
-        ],
-        signals=[],
-    )
-
-    profile_objpath = objpath
-
-    # Now query the profile for the first Resolution
-    first_resolution = bus.bus.call_sync(
-        Message(
-            destination=bus.busname,
-            path=profile_objpath,
-            interface="org.freedesktop.DBus.Properties",
-            member="Get",
-            signature="ss",
-            body=["org.freedesktop.ratbag1.Profile", "Resolutions"],
-        )
-    )
-
-    # Resolutions is an 'ao' Variant
-    ao = first_resolution.body[0]
-    assert len(ao.value) > 0, "Expected at least one Resolution"
-    objpath = ao.value[0]
-
-    introspection = introspect(bus, objpath)
-    xml = ET.fromstring(introspection)
-
-    check_introspection(
-        xml,
-        "org.freedesktop.ratbag1.Resolution",
-        props=[
-            Prop("Index", "u", "read"),
-            Prop("IsActive", "b", "read"),
-            Prop("IsDefault", "b", "read"),
-            Prop("Resolution", "v", "readwrite"),
-            Prop("Resolutions", "au", "read"),
-        ],
-        methods=[
-            Method("SetActive"),
-            Method("SetDefault"),
-        ],
-        signals=[],
-    )
-
-    # Now query the profile for the first Led
-    first_led = bus.bus.call_sync(
-        Message(
-            destination=bus.busname,
-            path=profile_objpath,
-            interface="org.freedesktop.DBus.Properties",
-            member="Get",
-            signature="ss",
-            body=["org.freedesktop.ratbag1.Profile", "Leds"],
-        )
-    )
-
-    # Leds is an 'ao' Variant
-    ao = first_led.body[0]
-    assert len(ao.value) > 0, "Expected at least one Led"
-    objpath = ao.value[0]
-
-    introspection = introspect(bus, objpath)
-    xml = ET.fromstring(introspection)
-
-    check_introspection(
-        xml,
-        "org.freedesktop.ratbag1.Led",
-        props=[
-            Prop("Index", "u", "read"),
-            Prop("Brightness", "u", "readwrite"),
-            Prop("Color", "(uuu)", "readwrite"),
-            Prop("ColorDepth", "u", "read"),
-            Prop("EffectDuration", "u", "readwrite"),
-            Prop("Mode", "u", "readwrite"),
-            Prop("Modes", "au", "read"),
-        ],
-        methods=[],
-        signals=[],
-    )
-
-    # Now query the profile for the first Button
-    first_button = bus.bus.call_sync(
-        Message(
-            destination=bus.busname,
-            path=profile_objpath,
-            interface="org.freedesktop.DBus.Properties",
-            member="Get",
-            signature="ss",
-            body=["org.freedesktop.ratbag1.Profile", "Buttons"],
-        )
-    )
-
-    # Buttons is an 'ao' Variant
-    ao = first_button.body[0]
-    assert len(ao.value) > 0, "Expected at least one Led"
-    objpath = ao.value[0]
-
-    introspection = introspect(bus, objpath)
-    xml = ET.fromstring(introspection)
-
-    check_introspection(
-        xml,
-        "org.freedesktop.ratbag1.Button",
-        props=[
-            Prop("Index", "u", "read"),
-            Prop("ActionTypes", "au", "read"),
-            Prop("Mapping", "(uv)", "readwrite"),
-        ],
-        methods=[
-            Method("Disable"),
-        ],
-        signals=[],
-    )
+    if failed:
+        raise error

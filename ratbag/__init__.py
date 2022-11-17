@@ -89,6 +89,8 @@ class Ratbag(GObject.Object):
     @GObject.Signal(name="start")
     def _start(self, *args):
         """
+        :meta private:
+
         GObject signal emitted in response to :meth:`start`.
         This signal is for internal use.
         """
@@ -97,6 +99,8 @@ class Ratbag(GObject.Object):
     @GObject.Signal(name="device-added", arg_types=(object,))
     def device_added(self, *args):
         """
+        :meta private:
+
         GObject signal emitted when a new :class:`ratbag.Device` was added
         """
         pass
@@ -277,6 +281,9 @@ class CommitTransaction(GObject.Object):
         >>> t.commit()  # doctest: +SKIP
 
     A transaction object can only be used once.
+
+    GObject Signals:
+    - ``finished``: the transaction has completed
     """
 
     class State(enum.IntEnum):
@@ -303,6 +310,8 @@ class CommitTransaction(GObject.Object):
     @GObject.Signal()
     def finished(self, *args):
         """
+        :meta private:
+
         GObject signal sent when the transaction is complete.
         """
         pass

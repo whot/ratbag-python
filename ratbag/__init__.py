@@ -57,8 +57,6 @@ class Ratbag(GObject.Object):
     GObject Signals:
 
     - ``device-added`` Notification that a new :class:`ratbag.Device` was added
-    - ``device-removed`` Notification that the :class:`ratbag.Device` was removed
-
     """
 
     _devices: List["Device"] = attr.ib(init=False, default=attr.Factory(list))

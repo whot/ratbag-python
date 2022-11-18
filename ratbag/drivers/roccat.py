@@ -689,55 +689,56 @@ class RoccatDevice(GObject.Object):
 
         return bs[1] == 0x1
 
-    def cb_commit(
-        self, ratbag_device: ratbag.Device, transaction: ratbag.CommitTransaction
-    ):
+    def _commit_profile(self, ratbag_profile: ratbag.Profile):
         def is_dirty(feature):
             return feature.dirty
 
+        profile = self.profiles[ratbag_profile.index]
+        logger.debug(f"Profile {profile.idx} has changes")
+        profile.update_report_rate(ratbag_profile.report_rate)
+
+        for ratbag_resolution in filter(is_dirty, ratbag_profile.resolutions):
+            logger.debug(
+                f"Resolution {profile.idx}.{ratbag_resolution.index} has changed to {ratbag_resolution.dpi}"
+            )
+            profile.update_dpi(
+                ratbag_resolution.index,
+                ratbag_resolution.dpi,
+                ratbag_resolution.enabled,
+            )
+
+        for ratbag_button in filter(is_dirty, ratbag_profile.buttons):
+            logger.debug(
+                f"Button {profile.idx}.{ratbag_button.index} has changed to {ratbag_button.action}"
+            )
+            try:
+                profile.key_mapping.button_update_from_ratbag(
+                    ratbag_button.index, ratbag_button.action
+                )
+                if profile.key_mapping.button_is_macro(ratbag_button.index):
+                    macro_bytes = bytes(profile.key_mapping.macros[ratbag_button.index])
+                    logger.debug(f"Updating macro with {as_hex(macro_bytes)}")
+                    self.write(ReportID.MACRO, macro_bytes)
+            except ratbag.ConfigError as e:
+                logger.error(f"{e}")
+                success = False
+
+        keymap_bytes = bytes(profile.key_mapping)
+        logger.debug(f"Updating keymapping with {as_hex(keymap_bytes)}")
+        self.write(ReportID.KEY_MAPPING, keymap_bytes)
+        profile_bytes = bytes(profile)
+        logger.debug(f"Updating profile with {as_hex(profile_bytes)}")
+        self.write(ReportID.PROFILE_SETTINGS, profile_bytes)
+
+    def cb_commit(
+        self, ratbag_device: ratbag.Device, transaction: ratbag.CommitTransaction
+    ):
         success = True
         try:
             assert self.ratbag_device == ratbag_device
             logger.debug(f"Commiting to device {self.name}")
-            for ratbag_profile in filter(is_dirty, ratbag_device.profiles):
-                profile = self.profiles[ratbag_profile.index]
-                logger.debug(f"Profile {profile.idx} has changes")
-                profile.update_report_rate(ratbag_profile.report_rate)
-
-                for ratbag_resolution in filter(is_dirty, ratbag_profile.resolutions):
-                    logger.debug(
-                        f"Resolution {profile.idx}.{ratbag_resolution.index} has changed to {ratbag_resolution.dpi}"
-                    )
-                    profile.update_dpi(
-                        ratbag_resolution.index,
-                        ratbag_resolution.dpi,
-                        ratbag_resolution.enabled,
-                    )
-
-                for ratbag_button in filter(is_dirty, ratbag_profile.buttons):
-                    logger.debug(
-                        f"Button {profile.idx}.{ratbag_button.index} has changed to {ratbag_button.action}"
-                    )
-                    try:
-                        profile.key_mapping.button_update_from_ratbag(
-                            ratbag_button.index, ratbag_button.action
-                        )
-                        if profile.key_mapping.button_is_macro(ratbag_button.index):
-                            macro_bytes = bytes(
-                                profile.key_mapping.macros[ratbag_button.index]
-                            )
-                            logger.debug(f"Updating macro with {as_hex(macro_bytes)}")
-                            self.write(ReportID.MACRO, macro_bytes)
-                    except ratbag.ConfigError as e:
-                        logger.error(f"{e}")
-                        success = False
-
-                keymap_bytes = bytes(profile.key_mapping)
-                logger.debug(f"Updating keymapping with {as_hex(keymap_bytes)}")
-                self.write(ReportID.KEY_MAPPING, keymap_bytes)
-                profile_bytes = bytes(profile)
-                logger.debug(f"Updating profile with {as_hex(profile_bytes)}")
-                self.write(ReportID.PROFILE_SETTINGS, profile_bytes)
+            for ratbag_profile in filter(lambda p: p.dirty, ratbag_device.profiles):
+                self._commit_profile(ratbag_profile)
         except Exception as e:
             logger.critical(f"::::::: ERROR: Exception during commit: {e}")
             traceback.print_exc()

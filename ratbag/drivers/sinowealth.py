@@ -20,6 +20,7 @@ from ratbag.parser import Spec, Parser
 logger = logging.getLogger(__name__)
 
 
+CONFIG_FLAGS_ACTIVE_DPI_SLOT_MASK = 0xF0
 CONFIG_FLAGS_XY_RESOLUTION = 0x80
 CONFIG_FLAGS_REPORT_RATE_MASK = 0x0F
 
@@ -78,6 +79,8 @@ class Config(object):
     converting it back into whatever bytes the device needs.
     """
 
+    # The active DPI slot out of enabled ones.
+    raw_active_dpi_slot: int = attr.ib()
     dpi_disabled_slots: int = attr.ib()
     report_rate: int = attr.ib()
     independent_xy_resolution: bool = attr.ib()
@@ -148,6 +151,9 @@ class Config(object):
 
         xy_independent = bool(obj.config & CONFIG_FLAGS_XY_RESOLUTION)
 
+        # Shift by half a byte to get the second nimble.
+        raw_active_dpi_slot = (obj.dpi & CONFIG_FLAGS_ACTIVE_DPI_SLOT_MASK) >> 4
+
         try:
             sensor = Sensor(obj.sensor_type)
         except ValueError:
@@ -170,6 +176,7 @@ class Config(object):
         # Now create the Config object with all the data we have converted
         # already
         return cls(
+            raw_active_dpi_slot=raw_active_dpi_slot,
             dpi_disabled_slots=obj.dpi_disabled_slots,
             report_rate=report_rate,
             independent_xy_resolution=xy_independent,
@@ -323,15 +330,24 @@ class SinowealthDevice:
         caps = (ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION,)
         max_dpi = get_max_dpi(config.sensor)
         dpi_list = tuple(range(100, max_dpi + 1, 100))
+        enabled_dpi_count = 0
         for ridx, dpi in enumerate(config.dpis):
-            ratbag.Resolution.create(
+            is_enabled = not (config.dpi_disabled_slots & 1 << ridx)
+
+            resolution = ratbag.Resolution.create(
                 p,
                 index=ridx,
                 capabilities=caps,
                 dpi_list=dpi_list,
                 dpi=dpi,
-                enabled=not (config.dpi_disabled_slots & 1 << ridx),
+                enabled=is_enabled,
             )
+
+            if is_enabled:
+                enabled_dpi_count += 1
+
+                if enabled_dpi_count == config.raw_active_dpi_slot:
+                    resolution.set_active()
 
         ratbag_device.connect("commit", self.cb_commit)
 

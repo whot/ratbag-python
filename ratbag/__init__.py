@@ -118,14 +118,14 @@ class Ratbag(GObject.Object):
         hook onto hidraw devices.
         """
 
-        from ratbag.driver import DeviceConfig
+        from ratbag.driver import DeviceConfig, DriverUnavailable
 
         datafiles = ratbag.util.load_data_files()
 
         # drivers want the list of all entries passed as one, so we need to
         # extract them first, into a dict of
         # "drivername" : [DeviceConfig(match1), DeviceConfig(match2), ...]
-        drivers: Dict[str, List["ratbag.driver.DeviceConfig"]] = {}
+        drivers: Dict[str, List["DeviceConfig"]] = {}
         for f in datafiles:
             supported_devices = [
                 DeviceConfig(match, f.driver_options) for match in f.matches
@@ -135,7 +135,7 @@ class Ratbag(GObject.Object):
         for drivername, configs in drivers.items():
             try:
                 self.add_driver(drivername, configs)
-            except ratbag.driver.DriverUnavailable as e:
+            except DriverUnavailable as e:
                 logger.error(f"{e}")
 
     def add_driver(

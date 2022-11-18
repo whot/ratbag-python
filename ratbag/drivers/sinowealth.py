@@ -36,6 +36,21 @@ class Sensor(enum.IntEnum):
 SENSORS_NEEDING_RAW_VALUE_SHIFT = (Sensor.PMW3327, Sensor.PMW3360)
 
 
+def get_max_dpi(sensor: Sensor) -> int:
+    # Arbitrary, but I think every sensor supports this DPI, and this is
+    # about as high as most people would ever like to go anyway.
+    DPI_FALLBACK = 2000
+
+    MAX_DPI_PER_SENSOR = {
+        Sensor.PMW3327: 10200,
+        Sensor.PMW3360: 12000,
+        Sensor.PMW3389: 16000,
+        Sensor.UNKNOWN: DPI_FALLBACK,
+    }
+
+    return MAX_DPI_PER_SENSOR[sensor]
+
+
 class ReportID(enum.IntEnum):
     CONFIG = 0x4
     CMD = 0x5
@@ -306,9 +321,8 @@ class SinowealthDevice:
         )
 
         caps = (ratbag.Resolution.Capability.SEPARATE_XY_RESOLUTION,)
-        # TODO: set the DPI range according to found sensor.
-        # NOTE: 10200 is the biggest commonly supported resolution, it's used by PWM3327.
-        dpi_list = tuple(range(100, 10200 + 1, 100))
+        max_dpi = get_max_dpi(config.sensor)
+        dpi_list = tuple(range(100, max_dpi + 1, 100))
         for ridx, dpi in enumerate(config.dpis):
             ratbag.Resolution.create(
                 p,

@@ -24,6 +24,15 @@ CONFIG_FLAGS_XY_RESOLUTION = 0x80
 CONFIG_FLAGS_REPORT_RATE_MASK = 0x0F
 
 
+class Sensor(enum.IntEnum):
+    PMW3360 = 0x06
+    PMW3327 = 0x0E
+    PMW3389 = 0x0F
+    # There might be a sensor with such value, but let's just hope there
+    # isn't one.
+    UNKNOWN = 0xFF
+
+
 class ReportID(enum.IntEnum):
     CONFIG = 0x4
     CMD = 0x5
@@ -55,6 +64,7 @@ class Config(object):
     report_rate: int = attr.ib()
     independent_xy_resolution: bool = attr.ib()
     dpis: List[Tuple[int, int]] = attr.ib()
+    sensor: Sensor = attr.ib()
 
     @classmethod
     def from_bytes(cls, data: bytes) -> "Config":
@@ -120,6 +130,14 @@ class Config(object):
 
         xy_independent = bool(obj.config & CONFIG_FLAGS_XY_RESOLUTION)
 
+        try:
+            sensor = Sensor(obj.sensor_type)
+        except ValueError:
+            logger.error(
+                f"Unknown sensor ID `{obj.sensor_type}`, report this to developers!"
+            )
+            sensor = Sensor.UNKNOWN
+
         def raw2dpi(raw: int) -> int:
             # TODO: support different sensors. This is for PWM3360.
             return (raw + 1) * 100
@@ -137,6 +155,7 @@ class Config(object):
             report_rate=report_rate,
             independent_xy_resolution=xy_independent,
             dpis=dpis,
+            sensor=sensor,
         )
 
 

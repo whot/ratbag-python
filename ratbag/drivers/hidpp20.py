@@ -17,7 +17,7 @@ from gi.repository import GObject
 import ratbag
 import ratbag.hid
 from ratbag.parser import Parser, Spec
-from ratbag.driver import HidrawMonitor, ratbag_driver
+from ratbag.driver import HidrawMonitor, ratbag_driver, ProtocolError
 
 logger = logging.getLogger(__name__)
 
@@ -852,7 +852,7 @@ class Hidpp20Device(GObject.Object):
         ).run(self)
         logger.debug(mem_query)
         if mem_query.checksum != crc(mem_query.data):
-            raise ratbag.driver.ProtocolError.from_rodent(
+            raise ProtocolError.from_rodent(
                 self.hidraw_device, "Invalid checksum for onboard profiles"
             )
 

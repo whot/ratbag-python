@@ -61,6 +61,11 @@ class ReportID(enum.IntEnum):
     MACRO = 8
 
 
+class RoccatProtocolError(Exception):
+    def __init__(self, message):
+        self.message = message
+
+
 class RoccatProfile(object):
     """
     Represents the reply from the :attr:`ReportID.PROFILE_SETTINGS` feature request.
@@ -129,7 +134,7 @@ class RoccatProfile(object):
 
     def from_data(self, data):
         if len(data) != RoccatProfile.SIZE:
-            raise ratbag.ProtocolError(f"Invalid size {len(data)} for Profile")
+            raise RoccatProtocolError(f"Invalid size {len(data)} for Profile")
 
         Parser.to_object(
             data=data,
@@ -139,7 +144,7 @@ class RoccatProfile(object):
 
         # Checksum first because if we have garbage, don't touch anything
         if crc(data) != self.checksum:
-            raise ratbag.ProtocolError(f"CRC validation failed for profile {self.idx}")
+            raise RoccatProtocolError(f"CRC validation failed for profile {self.idx}")
 
         return self  # just to allow for chaining
 
@@ -361,7 +366,7 @@ class RoccatMacro(object):
 
     def from_data(self, data):
         if len(data) != RoccatMacro.SIZE:
-            raise ratbag.ProtocolError(message=f"Invalid size {len(data)} for Macro")
+            raise RoccatProtocolError(message=f"Invalid size {len(data)} for Macro")
 
         Parser.to_object(
             data=data,
@@ -370,7 +375,7 @@ class RoccatMacro(object):
         )
 
         if crc(data) != self.checksum:
-            raise ratbag.ProtocolError(
+            raise RoccatProtocolError(
                 f"CRC validation failed for macro on button {self.profile}.{self.button_idx}"
             )
 
@@ -445,7 +450,7 @@ class RoccatKeyMapping(object):
 
     def from_data(self, data):
         if len(data) != RoccatKeyMapping.SIZE:
-            raise ratbag.ProtocolError(
+            raise RoccatProtocolError(
                 message=f"Invalid size {len(data)} for KeyMapping"
             )
 
@@ -457,7 +462,7 @@ class RoccatKeyMapping(object):
         )
 
         if crc(data) != self.checksum:
-            raise ratbag.ProtocolError(
+            raise RoccatProtocolError(
                 f"CRC validation failed for mapping on {self.profile_id}"
             )
         return self  # to allow for chaining
@@ -756,5 +761,8 @@ class RoccatDriver(ratbag.driver.HidrawDriver):
         roccat_device = RoccatDevice(self, rodent)
 
         # Calling start() will make the device talk to the physical device
-        ratbag_device = roccat_device.start()
+        try:
+            ratbag_device = roccat_device.start()
+        except RoccatProtocolError as e:
+            raise ratbag.driver.ProtocolError.from_rodent(rodent, e.message)
         self.emit("device-added", ratbag_device)

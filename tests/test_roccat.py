@@ -350,3 +350,17 @@ class TestRoccatDriver(object):
         assert transaction.success is True
         assert dev.profiles[1].resolutions[1] == (1400, 1400)
         assert dev.profiles[2].resolutions[4] == (1300, 1300)
+
+
+def test_protocol_error():
+    p = roccat.RoccatProfile(1)
+    with pytest.raises(roccat.RoccatProtocolError):
+        p.from_data(bytes(6))
+
+    m = roccat.RoccatMacro(1, 1)
+    with pytest.raises(roccat.RoccatProtocolError):
+        m.from_data(bytes(6))
+
+    k = roccat.RoccatKeyMapping(1)
+    with pytest.raises(roccat.RoccatProtocolError):
+        k.from_data(bytes(6))

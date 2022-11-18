@@ -586,16 +586,21 @@ def ratbagcli_show(ctx, name: str):
         for e in ctx.obj.get("emulators", []):
             e.setup()
 
+        devices = []
+
         def cb_device_added(ratbagcli, device):
+            nonlocal devices
+
             if name is None or name in device.name:
-                device_dict = {"devices": [device.as_dict()]}
-                click.echo(yaml.dump(device_dict, default_flow_style=None))
+                devices.append(device.as_dict())
 
         ratbagd.connect("device-added", cb_device_added)
         ratbagd.start()
 
         GLib.timeout_add(1000, lambda: mainloop.quit())
         mainloop.run()
+
+        click.echo(yaml.dump({"devices": devices}, default_flow_style=None))
     except KeyboardInterrupt:
         pass
 

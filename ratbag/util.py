@@ -3,11 +3,6 @@
 # SPDX-License-Identifier: MIT
 #
 # This file is formatted with Python Black
-"""
-.. module:: util
-   :synopsis: A collection of utility functions
-
-"""
 
 import attr
 import binascii

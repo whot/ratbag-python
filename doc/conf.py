@@ -28,13 +28,13 @@ author = "The libratbag authors"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinxcontrib.apidoc",
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.ifconfig",
     "sphinx.ext.doctest",
     "sphinx_autodoc_typehints",
     "myst_parser",
+    "autoapi.extension",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -45,10 +45,9 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["test*"]
 
-apidoc_module_dir = "../ratbag"
-apidoc_output_dir = "."
-
-autodoc_member_order = "bysource"
+autoapi_dirs = ["../ratbag"]
+autoapi_type = "python"
+autoapi_member_order = "bysource"
 
 # -- Options for HTML output -------------------------------------------------
 

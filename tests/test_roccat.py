@@ -8,9 +8,11 @@
 import libevdev
 import logging
 import pytest
+from pathlib import Path
 
 from gi.repository import GLib
 
+import ratbag
 import ratbag.driver
 import ratbag.drivers.roccat as roccat
 from ratbag.util import as_hex
@@ -75,8 +77,8 @@ class RoccatTestDevice(ratbag.driver.Rodent):
 
     def __init__(self):
         info = ratbag.driver.DeviceInfo(
-            path="/does/not/exist",
-            syspath="/sys/does/not/exist",
+            path=Path("/does/not/exist"),
+            syspath=Path("/sys/does/not/exist"),
             name=f"{type(self).__name__}",
             bus="usb",
             vid=0x1234,

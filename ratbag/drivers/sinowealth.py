@@ -255,7 +255,7 @@ class SinowealthDevice:
         # query firmware version
         fwquery = QueryFWVersion.create()
         fw = fwquery.run(self.rodent)
-        logger.info(f"firmware version: {fw.version}")
+        logger.debug(f"firmware version: {fw.version}")
 
         # read the config from the device
         cquery = QueryRawConfig.create()

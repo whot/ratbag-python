@@ -90,12 +90,12 @@ class ExampleDriver(ratbag.driver.Driver):
 
     def _on_commit(self, device: ratbag.Device, transaction: ratbag.CommitTransaction):
         for p in device.profiles:
-            if not p.dirty:
+            if not p.dirty:  # type: ignore
                 continue
 
             logger.debug(f"Profile {p.index} has changes to be written")
             for res in p.resolutions:
-                if not res.dirty:
+                if not res.dirty:  # type: ignore
                     continue
                 x, y = res.dpi
                 logger.debug(f"Writing out resolution {res.index} for dpi {x},{y}")

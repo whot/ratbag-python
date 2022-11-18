@@ -498,7 +498,7 @@ class Device(GObject.Object):
         GLib.idle_add(self._cb_idle_commit, transaction)
 
     def _cb_idle_commit(self, transaction: CommitTransaction) -> bool:
-        if not self.dirty:
+        if not self.dirty:  # type: ignore
             # well, that was easy
             transaction.complete(True)
             return False  # don't reschedule idle func

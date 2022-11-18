@@ -33,6 +33,9 @@ class Sensor(enum.IntEnum):
     UNKNOWN = 0xFF
 
 
+SENSORS_NEEDING_RAW_VALUE_SHIFT = (Sensor.PMW3327, Sensor.PMW3360)
+
+
 class ReportID(enum.IntEnum):
     CONFIG = 0x4
     CMD = 0x5
@@ -139,8 +142,9 @@ class Config(object):
             sensor = Sensor.UNKNOWN
 
         def raw2dpi(raw: int) -> int:
-            # TODO: support different sensors. This is for PWM3360.
-            return (raw + 1) * 100
+            if sensor in SENSORS_NEEDING_RAW_VALUE_SHIFT:
+                raw += 1
+            return raw * 100
 
         converted = [raw2dpi(r) for r in obj.dpis]
         if xy_independent:

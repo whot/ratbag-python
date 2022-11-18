@@ -271,11 +271,10 @@ class SinowealthDevice:
         )
 
         # now set up the ratbag device
-        p = ratbag.Profile(
+        p = ratbag.Profile.create(
             device=ratbag_device,
             index=0,
             name="Unnamed profile",
-            capabilities=[],
             report_rates=(125, 250, 500, 1000),
             report_rate=config.report_rate,
             active=True,  # we only have one profile

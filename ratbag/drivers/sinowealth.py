@@ -286,7 +286,7 @@ class SinowealthDevice:
         # NOTE: 10200 is the biggest commonly supported resolution, it's used by PWM3327.
         dpi_list = tuple(range(100, 10200 + 1, 100))
         for ridx, dpi in enumerate(config.dpis):
-            ratbag.Resolution(
+            ratbag.Resolution.create(
                 p,
                 index=ridx,
                 capabilities=caps,

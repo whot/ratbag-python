@@ -99,7 +99,7 @@ class Config(object):
             Spec("B", "sensor_type"),
             Spec("BBB", "?"),
             Spec("B", "config"),  # Second nibble is the eport rate.
-            # Two nibbles: active DPI (out of enabled ones) and DPI count.
+            # Two nibbles: 1-based active DPI (out of enabled ones) and DPI count.
             Spec("B", "dpi"),
             Spec("B", "dpi_disabled_slots"),  # bit mask
             Spec("B", "dpis", repeat=16),

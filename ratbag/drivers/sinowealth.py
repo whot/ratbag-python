@@ -262,11 +262,11 @@ class SinowealthDevice:
         creply = cquery.run(self.rodent)
         config = Config.from_bytes(creply.data)
 
-        ratbag_device = ratbag.Device(
+        ratbag_device = ratbag.Device.create(
             self.driver,
-            str(self.rodent.path),
-            self.rodent.name,
-            self.rodent.model,
+            path=str(self.rodent.path),
+            name=self.rodent.name,
+            model=self.rodent.model,
             firmware_version=fw.version,
         )
 

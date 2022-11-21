@@ -1,0 +1,22 @@
+# This file is generated, it will be overritten on update
+#
+# Put this file in /etc/udev/hwdb.d/ and run systemd-hwdb update before plugging in your device.
+#
+# The lookup keys are composed in 80-ratbag.rules
+#
+# After changing entries in this file (or installing a new version of this
+# file) run: sudo systemd-hwdb update
+# Then unplug your device and plug it back in again.
+#
+# To add local entries for testing, create a new file
+#   /etc/udev/hwdb.d/81-ratbag-local.hwdb
+# and add a rule there. Look at the modalias file for your device
+#   /sys/class/hidraw/hidraw0/device/modalias
+# for the string we match against. That string contains three keys that matter:
+# 'b' is the zero-prefixed 4-digit uppercase hex bus type (3 for usb or 5 for bluetooth)
+# 'v' for the zero-prefixed 8-digit uppercase hex vendor id
+# 'p' for the zero-prefixed 8-digit uppercase hex product id
+#
+# Ignore the 'g' key, use "g*" in the hwd entry.
+
+@GENERATED_HWDB_ENTRIES@

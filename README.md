@@ -11,6 +11,19 @@ devices. This means you need to run any tool as root or, alternatively and
 even less secure: `chmod o+rw /dev/hidrawN` where `N` is the number of your
 device.
 
+This repo ships with a udev rule/hwdb that enables uaccess on all known ratbag
+devices, i.e. allowing the logged-in user to access hidraw devices without
+having to be root. To enable this on your machine, run this in the repository:
+
+```
+$ ./udev/ratbag-generate-hwdb
+$ sudo cp udev/80-ratbag.rules /etc/udev/rules.d
+$ sudo cp udev/80-ratbag.hwdb /etc/udev/hwdb.d
+$ sudo systemd-hwdb update
+```
+
+This needs to be done before plugging in your device.
+
 ### ratbagcli
 
 This package provides the `ratbagcli` commandline tool to interact with a

@@ -1,0 +1,15 @@
+# This file is part of rattlesnake
+#
+# Put this file in /etc/udev/rules.d/
+
+ACTION=="remove", GOTO="ratbag_end"
+
+# Devices that match our hwdb get the uaccess tag applied, i.e. they can be accessed by
+# a logged-in user without a password required.
+#
+# Note that this makes it possible for keyboard sniffers to run under your
+# username, so use this with the appropriate caution.
+IMPORT{builtin}="hwdb --subsystem=hid --lookup-prefix=ratbag:"
+ENV{RATBAG_DEVICE}=="1", TAG+="uaccess"
+
+LABEL="ratbag_end"

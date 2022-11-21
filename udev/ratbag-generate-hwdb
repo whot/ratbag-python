@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+#
+# This file is formatted with Python black
+
+import argparse
+import configparser
+import logging
+from pathlib import Path
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(Path(__file__).name)
+
+script_dir = Path(__file__).absolute().parent
+
+parser = argparse.ArgumentParser("Tool to generate hwdb entries")
+parser.add_argument("--template", type=Path, default=script_dir / "80-ratbag.hwdb.in")
+parser.add_argument("--verbose", action='count', default=0)
+parser.add_argument("--datadir", type=Path, default=script_dir / ".." / "data" / "devices")
+
+ns = parser.parse_args()
+logger.setLevel(logging.DEBUG if ns.verbose else logging.INFO)
+
+hwdb = {}
+
+class Entry:
+    def __init__(self, busname, vidstr, pidstr):
+        self.name = name
+        self.bus = {
+                "usb": "0003",
+                "bluetooth": "0005",
+        }[busname]
+        vid = int(vidstr, 16)
+        self.vid = f"{vid:08X}" if vid else "00000000"
+        pid = int(pidstr, 16)
+        self.pid = f"{pid:08X}" if pid else "00000000"
+
+    @property
+    def matchstr(self):
+        return f"ratbag:hid:b{self.bus}g*v{self.vid}p{self.pid}"
+
+logger.debug(f"Data directory is {ns.datadir}")
+
+for file in ns.datadir.glob("*.device"):
+    logger.debug(f"Parsing {file}")
+
+    c = configparser.ConfigParser()
+    c.read(file)
+
+    sect = c["Device"]
+
+    match = sect["DeviceMatch"]
+    name = sect["Name"]
+    matches = match.split(";")
+
+    entries = hwdb.get(name, [])
+
+    for m in matches:
+        bus, vid, pid = m.split(":")
+        entries.append(Entry(bus, vid, pid))
+
+    hwdb[name] = entries
+
+outfile = ns.template.stem
+if not outfile.endswith(".hwdb"):
+    outfile = f"{outfile}.hwdb"
+
+logger.debug(f"Writing to {outfile}")
+
+with open(ns.template) as infile:
+    with open(Path(ns.template.parent) / outfile, "w") as outfile:
+        for line in infile:
+            if "@GENERATED_HWDB_ENTRIES@" not in line:
+                outfile.write(line)
+                continue
+
+            for name in sorted(hwdb.keys()):
+                entries = hwdb[name]
+                print(f"\n# {name}", file=outfile)
+                for e in entries:
+                    print(f"{e.matchstr}", file=outfile)
+                print(" RATBAG_DEVICE=1", file=outfile)
+
+            outfile.flush()
+

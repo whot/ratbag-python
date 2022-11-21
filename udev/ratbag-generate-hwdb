@@ -13,7 +13,7 @@ logger = logging.getLogger(Path(__file__).name)
 script_dir = Path(__file__).absolute().parent
 
 parser = argparse.ArgumentParser("Tool to generate hwdb entries")
-parser.add_argument("--template", type=Path, default=script_dir / "80-ratbag.hwdb.in")
+parser.add_argument("--template", type=Path, default=script_dir / "70-ratbag.hwdb.in")
 parser.add_argument("--verbose", action='count', default=0)
 parser.add_argument("--datadir", type=Path, default=script_dir / ".." / "data" / "devices")
 

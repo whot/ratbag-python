@@ -1,0 +1,459 @@
+# This file is generated, it will be overritten on update
+#
+# The lookup keys are composed in 70-ratbag.rules
+#
+# After changing entries in this file (or installing a new version of this
+# file) run: sudo systemd-hwdb update
+# Then unplug your device and plug it back in again.
+#
+# To add local entries for testing, create a new file
+#   /etc/udev/hwdb.d/81-ratbag-local.hwdb
+# and add a rule there. Look at the modalias file for your device
+#   /sys/class/hidraw/hidraw0/device/modalias
+# for the string we match against. That string contains three keys that matter:
+# 'b' is the zero-prefixed 4-digit uppercase hex bus type (3 for usb or 5 for bluetooth)
+# 'v' for the zero-prefixed 8-digit uppercase hex vendor id
+# 'p' for the zero-prefixed 8-digit uppercase hex product id
+#
+# Ignore the 'g' key, use "g*" in the hwd entry.
+
+
+# ASUS ROG Chakram
+ratbag:hid:b0003g*v00000B05p000018E3
+ratbag:hid:b0003g*v00000B05p000018E5
+ RATBAG_DEVICE=1
+
+# ASUS ROG GX860 Buzzard Mouse
+ratbag:hid:b0003g*v00000B05p00001816
+ RATBAG_DEVICE=1
+
+# ASUS ROG Gladius II
+ratbag:hid:b0003g*v00000B05p00001845
+ RATBAG_DEVICE=1
+
+# ASUS ROG Gladius II Origin
+ratbag:hid:b0003g*v00000B05p00001877
+ RATBAG_DEVICE=1
+
+# ASUS ROG Gladius II Origin PNK LTD
+ratbag:hid:b0003g*v00000B05p000018CD
+ RATBAG_DEVICE=1
+
+# ASUS ROG Keris Wireless
+ratbag:hid:b0003g*v00000B05p0000195E
+ratbag:hid:b0003g*v00000B05p00001960
+ RATBAG_DEVICE=1
+
+# ASUS ROG Pugio
+ratbag:hid:b0003g*v00000B05p00001846
+ RATBAG_DEVICE=1
+
+# ASUS ROG Strix Carry
+ratbag:hid:b0003g*v00000B05p000018B4
+ RATBAG_DEVICE=1
+
+# ASUS ROG Strix Impact
+ratbag:hid:b0003g*v00000B05p00001847
+ RATBAG_DEVICE=1
+
+# ASUS ROG Strix Impact II Wireless
+ratbag:hid:b0003g*v00000B05p00001947
+ratbag:hid:b0003g*v00000B05p00001949
+ RATBAG_DEVICE=1
+
+# Etekcity Scroll Alpha
+ratbag:hid:b0003g*v00001EA7p00004011
+ RATBAG_DEVICE=1
+
+# G.Skill MX-780
+ratbag:hid:b0003g*v000028DAp00003101
+ RATBAG_DEVICE=1
+
+# G5
+ratbag:hid:b0003g*v0000046Dp0000C041
+ RATBAG_DEVICE=1
+
+# G9x [Original]
+ratbag:hid:b0003g*v0000046Dp0000C066
+ RATBAG_DEVICE=1
+
+# Glorious Model D
+ratbag:hid:b0003g*v0000258Ap00000033
+ RATBAG_DEVICE=1
+
+# Glorious Model O/O-
+ratbag:hid:b0003g*v0000258Ap00000036
+ RATBAG_DEVICE=1
+
+# Logitech G Powerplay
+ratbag:hid:b0003g*v0000046Dp0000405F
+ RATBAG_DEVICE=1
+
+# Logitech G Pro Wireless
+ratbag:hid:b0003g*v0000046Dp00004079
+ratbag:hid:b0003g*v0000046Dp0000C088
+ RATBAG_DEVICE=1
+
+# Logitech G Pro X Wireless Superlight
+ratbag:hid:b0003g*v0000046Dp00004093
+ratbag:hid:b0003g*v0000046Dp0000C094
+ RATBAG_DEVICE=1
+
+# Logitech G300
+ratbag:hid:b0003g*v0000046Dp0000C246
+ RATBAG_DEVICE=1
+
+# Logitech G402 Gaming Mouse
+ratbag:hid:b0003g*v0000046Dp0000C07E
+ RATBAG_DEVICE=1
+
+# Logitech G403
+ratbag:hid:b0003g*v0000046Dp0000C083
+ RATBAG_DEVICE=1
+
+# Logitech G403 Hero
+ratbag:hid:b0003g*v0000046Dp0000C08F
+ RATBAG_DEVICE=1
+
+# Logitech G403 Wireless
+ratbag:hid:b0003g*v0000046Dp0000405D
+ratbag:hid:b0003g*v0000046Dp0000C082
+ RATBAG_DEVICE=1
+
+# Logitech G5
+ratbag:hid:b0003g*v0000046Dp0000C049
+ RATBAG_DEVICE=1
+
+# Logitech G500
+ratbag:hid:b0003g*v0000046Dp0000C068
+ RATBAG_DEVICE=1
+
+# Logitech G500s
+ratbag:hid:b0003g*v0000046Dp0000C24E
+ RATBAG_DEVICE=1
+
+# Logitech G502 Hero
+ratbag:hid:b0003g*v0000046Dp0000C08B
+ RATBAG_DEVICE=1
+
+# Logitech G502 Hero Wireless
+ratbag:hid:b0003g*v0000046Dp0000407F
+ratbag:hid:b0003g*v0000046Dp0000C08D
+ RATBAG_DEVICE=1
+
+# Logitech G502 Proteus Core
+ratbag:hid:b0003g*v0000046Dp0000C07D
+ RATBAG_DEVICE=1
+
+# Logitech G502 Proteus Spectrum
+ratbag:hid:b0003g*v0000046Dp0000C332
+ RATBAG_DEVICE=1
+
+# Logitech G502 X
+ratbag:hid:b0003g*v0000046Dp0000C099
+ RATBAG_DEVICE=1
+
+# Logitech G502 X Wireless
+ratbag:hid:b0003g*v0000046Dp0000C098
+ RATBAG_DEVICE=1
+
+# Logitech G513
+ratbag:hid:b0003g*v0000046Dp0000C33C
+ RATBAG_DEVICE=1
+
+# Logitech G600
+ratbag:hid:b0003g*v0000046Dp0000C24A
+ RATBAG_DEVICE=1
+
+# Logitech G602
+ratbag:hid:b0003g*v0000046Dp0000402C
+ RATBAG_DEVICE=1
+
+# Logitech G603
+ratbag:hid:b0003g*v0000046Dp0000406C
+ratbag:hid:b0005g*v0000046Dp0000B01C
+ RATBAG_DEVICE=1
+
+# Logitech G604
+ratbag:hid:b0003g*v0000046Dp00004085
+ratbag:hid:b0005g*v0000046Dp0000B024
+ RATBAG_DEVICE=1
+
+# Logitech G635
+ratbag:hid:b0003g*v0000046Dp00000A89
+ RATBAG_DEVICE=1
+
+# Logitech G7
+ratbag:hid:b0003g*v0000046Dp0000C51A
+ RATBAG_DEVICE=1
+
+# Logitech G700
+ratbag:hid:b0003g*v0000046Dp0000C531
+ratbag:hid:b0003g*v0000046Dp0000C06B
+ RATBAG_DEVICE=1
+
+# Logitech G700s
+ratbag:hid:b0003g*v0000046Dp0000C07C
+ RATBAG_DEVICE=1
+
+# Logitech G703
+ratbag:hid:b0003g*v0000046Dp0000C087
+ratbag:hid:b0003g*v0000046Dp00004070
+ RATBAG_DEVICE=1
+
+# Logitech G703 Hero
+ratbag:hid:b0003g*v0000046Dp00004086
+ratbag:hid:b0003g*v0000046Dp0000C090
+ RATBAG_DEVICE=1
+
+# Logitech G733 Gaming Headset
+ratbag:hid:b0003g*v0000046Dp00000AB5
+ RATBAG_DEVICE=1
+
+# Logitech G815
+ratbag:hid:b0003g*v0000046Dp0000C33F
+ RATBAG_DEVICE=1
+
+# Logitech G9
+ratbag:hid:b0003g*v0000046Dp0000C048
+ RATBAG_DEVICE=1
+
+# Logitech G900
+ratbag:hid:b0003g*v0000046Dp0000C081
+ratbag:hid:b0003g*v0000046Dp00004053
+ RATBAG_DEVICE=1
+
+# Logitech G903
+ratbag:hid:b0003g*v0000046Dp0000C086
+ratbag:hid:b0003g*v0000046Dp00004067
+ RATBAG_DEVICE=1
+
+# Logitech G903 Hero
+ratbag:hid:b0003g*v0000046Dp0000C091
+ratbag:hid:b0003g*v0000046Dp00004087
+ RATBAG_DEVICE=1
+
+# Logitech G910
+ratbag:hid:b0003g*v0000046Dp0000C335
+ RATBAG_DEVICE=1
+
+# Logitech G915
+ratbag:hid:b0003g*v0000046Dp0000C33E
+ RATBAG_DEVICE=1
+
+# Logitech G915 TKL
+ratbag:hid:b0003g*v0000046Dp0000C343
+ratbag:hid:b0005g*v0000046Dp0000B35F
+ RATBAG_DEVICE=1
+
+# Logitech G935
+ratbag:hid:b0003g*v0000046Dp00000A87
+ RATBAG_DEVICE=1
+
+# Logitech G9x [Call of Duty MW3 Edition]
+ratbag:hid:b0003g*v0000046Dp0000C249
+ RATBAG_DEVICE=1
+
+# Logitech Gaming Mouse G Pro
+ratbag:hid:b0003g*v0000046Dp0000C085
+ratbag:hid:b0003g*v0000046Dp0000C08C
+ RATBAG_DEVICE=1
+
+# Logitech Gaming Mouse G102/G103/G203
+ratbag:hid:b0003g*v0000046Dp0000C084
+ratbag:hid:b0003g*v0000046Dp0000C092
+ RATBAG_DEVICE=1
+
+# Logitech Gaming Mouse G302
+ratbag:hid:b0003g*v0000046Dp0000C07F
+ RATBAG_DEVICE=1
+
+# Logitech Gaming Mouse G303
+ratbag:hid:b0003g*v0000046Dp0000C080
+ RATBAG_DEVICE=1
+
+# Logitech Gaming Mouse G305
+ratbag:hid:b0003g*v0000046Dp00004074
+ RATBAG_DEVICE=1
+
+# Logitech M325
+ratbag:hid:b0003g*v0000046Dp0000400A
+ RATBAG_DEVICE=1
+
+# Logitech M500s
+ratbag:hid:b0003g*v0000046Dp0000C093
+ RATBAG_DEVICE=1
+
+# Logitech M545
+ratbag:hid:b0003g*v0000046Dp00004052
+ RATBAG_DEVICE=1
+
+# Logitech M570
+ratbag:hid:b0003g*v0000046Dp00001028
+ RATBAG_DEVICE=1
+
+# Logitech M585/M590
+ratbag:hid:b0003g*v0000046Dp0000406B
+ratbag:hid:b0005g*v0000046Dp0000B01B
+ RATBAG_DEVICE=1
+
+# Logitech M705
+ratbag:hid:b0003g*v0000046Dp0000101B
+ RATBAG_DEVICE=1
+
+# Logitech M720
+ratbag:hid:b0003g*v0000046Dp0000405E
+ratbag:hid:b0005g*v0000046Dp0000B015
+ RATBAG_DEVICE=1
+
+# Logitech MX Anywhere 2
+ratbag:hid:b0003g*v0000046Dp0000404A
+ratbag:hid:b0003g*v0000046Dp00004072
+ratbag:hid:b0003g*v0000046Dp00004063
+ratbag:hid:b0005g*v0000046Dp0000B013
+ratbag:hid:b0005g*v0000046Dp0000B018
+ratbag:hid:b0005g*v0000046Dp0000B01F
+ RATBAG_DEVICE=1
+
+# Logitech MX Anywhere 2S
+ratbag:hid:b0005g*v0000046Dp0000B01A
+ratbag:hid:b0003g*v0000046Dp0000406A
+ RATBAG_DEVICE=1
+
+# Logitech MX Anywhere 3
+ratbag:hid:b0005g*v0000046Dp0000B025
+ratbag:hid:b0003g*v0000046Dp00004090
+ RATBAG_DEVICE=1
+
+# Logitech MX Anywhere 3B
+ratbag:hid:b0005g*v0000046Dp0000B02D
+ RATBAG_DEVICE=1
+
+# Logitech MX Ergo
+ratbag:hid:b0005g*v0000046Dp0000B01D
+ratbag:hid:b0003g*v0000046Dp0000406F
+ RATBAG_DEVICE=1
+
+# Logitech MX Master
+ratbag:hid:b0003g*v0000046Dp00004041
+ratbag:hid:b0005g*v0000046Dp0000B012
+ratbag:hid:b0003g*v0000046Dp00004060
+ratbag:hid:b0005g*v0000046Dp0000B017
+ratbag:hid:b0005g*v0000046Dp0000B01E
+ratbag:hid:b0003g*v0000046Dp00004071
+ RATBAG_DEVICE=1
+
+# Logitech MX Master 2S
+ratbag:hid:b0005g*v0000046Dp0000B019
+ratbag:hid:b0003g*v0000046Dp00004069
+ RATBAG_DEVICE=1
+
+# Logitech MX Master 3
+ratbag:hid:b0005g*v0000046Dp0000B023
+ratbag:hid:b0003g*v0000046Dp00004082
+ RATBAG_DEVICE=1
+
+# Logitech MX Vertical
+ratbag:hid:b0005g*v0000046Dp0000B020
+ratbag:hid:b0003g*v0000046Dp0000407B
+ratbag:hid:b0003g*v0000046Dp0000C08A
+ RATBAG_DEVICE=1
+
+# Logitech Marathon M705
+ratbag:hid:b0003g*v0000046Dp0000406D
+ RATBAG_DEVICE=1
+
+# Logitech T650
+ratbag:hid:b0003g*v0000046Dp00004101
+ RATBAG_DEVICE=1
+
+# Logitech Wireless Touchpad
+ratbag:hid:b0003g*v0000046Dp00004011
+ RATBAG_DEVICE=1
+
+# MX518
+ratbag:hid:b0003g*v0000046Dp0000C08E
+ RATBAG_DEVICE=1
+
+# Nubwo x7 spectrum
+ratbag:hid:b0003g*v0000258Ap00000012
+ RATBAG_DEVICE=1
+
+# Roccat Kone EMP
+ratbag:hid:b0003g*v00001E7Dp00002E24
+ RATBAG_DEVICE=1
+
+# Roccat Kone Pure
+ratbag:hid:b0003g*v00001E7Dp00002DC2
+ratbag:hid:b0003g*v00001E7Dp00002DBE
+ratbag:hid:b0003g*v00001E7Dp00002DCB
+ RATBAG_DEVICE=1
+
+# Roccat Kone XTD
+ratbag:hid:b0003g*v00001E7Dp00002E22
+ RATBAG_DEVICE=1
+
+# SinoWealth Generic Mouse (0027)
+ratbag:hid:b0003g*v0000258Ap00000027
+ RATBAG_DEVICE=1
+
+# SinoWealth Generic Mouse (0029)
+ratbag:hid:b0003g*v0000258Ap00000029
+ RATBAG_DEVICE=1
+
+# SinoWealth Generic Mouse (1007)
+ratbag:hid:b0003g*v0000258Ap00001007
+ RATBAG_DEVICE=1
+
+# SteelSeries Kinzu V2
+ratbag:hid:b0003g*v00001038p00001378
+ RATBAG_DEVICE=1
+
+# SteelSeries Kinzu V2 Pro Edition
+ratbag:hid:b0003g*v00001038p00001366
+ RATBAG_DEVICE=1
+
+# SteelSeries Kinzu V3
+ratbag:hid:b0003g*v00001038p00001388
+ RATBAG_DEVICE=1
+
+# SteelSeries Rival
+ratbag:hid:b0003g*v00001038p00001384
+ratbag:hid:b0003g*v00001038p00001392
+ratbag:hid:b0003g*v00001038p00001710
+ratbag:hid:b0003g*v00001038p00001712
+ratbag:hid:b0003g*v00001038p0000171C
+ratbag:hid:b0003g*v00001038p00001394
+ratbag:hid:b0003g*v00001038p0000171A
+ratbag:hid:b0003g*v00001038p00001716
+ratbag:hid:b0003g*v00001038p00001714
+ratbag:hid:b0003g*v00001038p00001718
+ RATBAG_DEVICE=1
+
+# SteelSeries Rival 100/105
+ratbag:hid:b0003g*v00001038p00001702
+ratbag:hid:b0003g*v00001038p0000170A
+ratbag:hid:b0003g*v00001038p0000170B
+ratbag:hid:b0003g*v00001038p0000170C
+ratbag:hid:b0003g*v00001038p00001814
+ RATBAG_DEVICE=1
+
+# SteelSeries Rival 310
+ratbag:hid:b0003g*v00001038p00001720
+ RATBAG_DEVICE=1
+
+# SteelSeries Rival 600
+ratbag:hid:b0003g*v00001038p00001724
+ RATBAG_DEVICE=1
+
+# SteelSeries Sensei 310
+ratbag:hid:b0003g*v00001038p00001722
+ RATBAG_DEVICE=1
+
+# SteelSeries Sensei Raw
+ratbag:hid:b0003g*v00001038p00001369
+ RATBAG_DEVICE=1
+
+# openinput
+ratbag:hid:b0003g*v00001D50p0000616A
+ RATBAG_DEVICE=1
